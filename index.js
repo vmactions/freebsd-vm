@@ -5,6 +5,11 @@ const io = require('@actions/io');
 const fs = require("fs");
 const path = require("path");
 
+async function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
 
 async function setup() {
   try {
