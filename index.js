@@ -20,7 +20,7 @@ async function setup() {
   try {
 
     await exec.exec("brew install -qf tesseract", [], {silent: true});
-    await exec.exec("pip3 install -qf pytesseract", [], {silent: true});
+    await exec.exec("pip3 install -q pytesseract", [], {silent: true});
 
 
     let workingDir=__dirname;
