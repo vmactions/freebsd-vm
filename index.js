@@ -136,5 +136,7 @@ async function main() {
 
 
 
-main();
+main().catch(ex => {
+  core.setFailed(ex.message);
+});
 
