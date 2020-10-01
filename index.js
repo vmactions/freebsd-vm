@@ -22,7 +22,7 @@ async function setup() {
 
     let s7z = workingDir + "/freebsd-12.1.7z";
     await io.mv(img, s7z);
-    await exec.exec("7z e " + s7z + "  -o " + workingDir);
+    await exec.exec("7z e " + s7z + "  -o" + workingDir);
 
     let vhd = workingDir + "/" + imgName + ".vhd";
 
