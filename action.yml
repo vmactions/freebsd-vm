@@ -1,0 +1,16 @@
+name: 'FreeBSD-vm'
+description: 'Run CI in FreeBSD for GitHub Actions'
+inputs:
+  prepare:
+    description: 'Install some tools before CI runs'
+    required: false
+  run:
+    description: 'The CI command to run'
+    required: true
+  envs:
+    description: 'The envs to pass into FreeBSD vm'
+    required: false
+
+runs:
+  using: 'node12'
+  main: 'index.js'

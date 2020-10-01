@@ -1,0 +1,25 @@
+
+name: Test
+
+on: [push]
+
+jobs:
+  testfreebsd:
+    runs-on: macos-latest
+    name: A job to run test FreeBSD
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@main
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        prepare: pkg install -y curl
+        run: |
+          pwd
+          whoami
+          env
+          freebsd-version

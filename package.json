@@ -1,0 +1,29 @@
+{
+  "name": "vmactions-freebsd",
+  "version": "0.0.1",
+  "description": "FM actions for FreeBSD",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vmactions/freebsd.git"
+  },
+  "keywords": [
+    "GitHub",
+    "Actions",
+    "FreeBSD"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vmactions/freebsd/issues"
+  },
+  "homepage": "https://github.com/vmactions/freebsd",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
+    "@actions/github": "^4.0.0",
+    "@actions/io": "^1.0.2",
+    "@actions/tool-cache": "^1.6.0",
+    "shelljs": "^0.8.4"
+  }
+}
