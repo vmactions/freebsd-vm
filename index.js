@@ -45,6 +45,7 @@ async function setup() {
 
     fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_rsa.pub")));
     fs.appendFileSync(path.join(sshHome, "config"), "StrictHostKeyChecking=accept-new\n");
+    fs.appendFileSync(path.join(sshHome, "config"), "SendEnv   CI  GITHUB_* \n");
     await exec.exec("chmod 700 " + sshHome);
 
     let vmName = "freebsd";
@@ -129,7 +130,7 @@ async function main() {
   console.log("run: " + run);
 
   try {
-    run = "cd $GITHUB_WORKSPACE\n && " + run;
+    run = 'cd "$GITHUB_WORKSPACE" && ' + run;
     await execSSH(run);
   } catch (error) {
     core.setFailed(error.message);
