@@ -32,6 +32,7 @@ jobs:
         prepare: pkg install -y curl
         run: |
           pwd
+          ls -lah
           whoami
           env
           freebsd-version
