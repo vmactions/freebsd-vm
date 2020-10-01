@@ -22,13 +22,14 @@ async function setup() {
 
     let s7z = workingDir + "/freebsd-12.1.7z";
     await io.mv(img, s7z);
-    await exec.exec("7z e " + s7z);
+    await exec.exec("7z e " + s7z + "  -o " + workingDir);
+
     let vhd = workingDir + "/" + imgName + ".vhd";
 
     let sshHome = path.join(process.env["HOME"], ".ssh");
     let authorized_keys = path.join(sshHome, "authorized_keys");
 
-    fs.appendFileSync(authorized_keys, fs.readFileSync("id_rsa.pub"));
+    fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_rsa.pub")));
     await exec.exec("chmod 700 " + sshHome);
 
     let vmName = "freebsd";
