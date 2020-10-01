@@ -13,10 +13,14 @@ async function sleep (ms) {
 
 async function setup() {
   try {
+
+    await exec.exec("brew install tesseract");
+    await exec.exec("pip3 install pytesseract");
+
+
     let workingDir=__dirname;
     
     let imgName = "FreeBSD-12.1-RELEASE-amd64";
-
 
 
     let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.6/freebsd-12.1.7z";
