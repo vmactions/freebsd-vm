@@ -10,6 +10,9 @@ inputs:
   envs:
     description: 'The envs to pass into FreeBSD vm'
     required: false
+branding:
+  icon: 'activity'  
+  color: 'green'
 
 runs:
   using: 'node12'
