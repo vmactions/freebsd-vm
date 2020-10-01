@@ -39,6 +39,7 @@ async function setup() {
     let authorized_keys = path.join(sshHome, "authorized_keys");
 
     fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_rsa.pub")));
+    fs.appendFileSync(path.join(sshHome, "config"), "StrictHostKeyChecking=accept-new");
     await exec.exec("chmod 700 " + sshHome);
 
     let vmName = "freebsd";
@@ -89,6 +90,7 @@ async function setup() {
 
 
     core.info("Setting up VM");
+
     await exec.exec("ssh -t -p 2222 root@localhost", [], {input: "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work"});
 
 
