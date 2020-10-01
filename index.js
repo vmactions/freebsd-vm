@@ -39,7 +39,7 @@ async function setup() {
     let authorized_keys = path.join(sshHome, "authorized_keys");
 
     fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_rsa.pub")));
-    fs.appendFileSync(path.join(sshHome, "config"), "StrictHostKeyChecking=accept-new");
+    fs.appendFileSync(path.join(sshHome, "config"), "StrictHostKeyChecking=accept-new\n");
     await exec.exec("chmod 700 " + sshHome);
 
     let vmName = "freebsd";
@@ -115,7 +115,7 @@ async function main() {
   var envs = core.getInput("envs");
   console.log("envs:" + envs);
   if (envs) {
-    fs.appendFileSync(path.join(process.env["HOME"] , "/.ssh/config"), "SendEnv " + envs);
+    fs.appendFileSync(path.join(process.env["HOME"] , "/.ssh/config"), "SendEnv " + envs + "\n");
   }
 
   var prepare = core.getInput("prepare");
