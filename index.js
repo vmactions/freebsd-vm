@@ -9,6 +9,11 @@ async function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+async function execSSH(cmd, desp = "") {
+  core.info(desp);
+  core.info("exec ssh: " + cmd);
+  await exec.exec("ssh -t -p 2222 root@localhost", [], {input: cmd});
+}
 
 
 async function setup() {
@@ -87,15 +92,11 @@ async function setup() {
 
     }
 
+    let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
+    await execSSH(cmd1, "Setting up VM");
 
-
-    core.info("Setting up VM");
-
-    await exec.exec("ssh -t -p 2222 root@localhost", [], {input: "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work"});
-
-
-    core.info("Setup sshfs");
-    await exec.exec("ssh -t -p 2222 root@localhost", [], {input: "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work"});
+    let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
+    await execSSH(cmd2, "Setup sshfs");
 
     core.info("OK, Ready!");
 
