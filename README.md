@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.3
+      uses: vmactions/freebsd-vm@v0.0.4
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: pkg install -y curl
