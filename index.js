@@ -62,7 +62,7 @@ async function setup(nat) {
     
     if(nat) {
       let nats = nat.split("\n").filter(x => x !== "");
-      nats.forEach(element => {
+      for(let element of nats) {
         core.info("Add nat: " + element);
         let segs = element.split(":");
         if(segs.length === 3) {
