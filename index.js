@@ -80,7 +80,7 @@ async function setup(nat) {
           await exec.exec("sudo vboxmanage modifyvm "+ vmName + "  --natpf1 '"+ hostPort +"," + proto + ",," + hostPort+",,"+ vmPort + "'");
     
         }
-      });
+      };
     }
 
     await exec.exec("sudo vboxmanage startvm " + vmName + " --type headless");
