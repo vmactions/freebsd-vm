@@ -14,10 +14,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@main
+      uses: vmactions/freebsd-vm@nat
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: pkg install -y curl
+        nat:
+        - "8080": "80"
+        - "8443": "443"
         run: |
           pwd
           ls -lah

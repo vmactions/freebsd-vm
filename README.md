@@ -30,6 +30,9 @@ jobs:
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: pkg install -y curl
+        nat:
+        - "8080": "80"
+        - "8443": "443"
         run: |
           pwd
           ls -lah

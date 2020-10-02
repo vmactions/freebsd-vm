@@ -112,6 +112,10 @@ async function setup() {
 
 
 async function main() {
+  let nat = core.getInput("nat");
+  core.info("nat: "+ nat);
+  core.info("nat json: "+ JSON.stringify(nat));
+
   await setup();
 
   var envs = core.getInput("envs");
