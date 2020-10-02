@@ -16,7 +16,7 @@ async function execSSH(cmd, desp = "") {
 }
 
 
-async function setup() {
+async function setup(nat) {
   try {
 
     await exec.exec("brew install -qf tesseract", [], {silent: true});
@@ -60,6 +60,29 @@ async function setup() {
 
     await exec.exec("sudo vboxmanage modifyvm "+ vmName + "  --natpf1 'guestssh,tcp,,2222,,22'");
     
+    if(nat) {
+      let nats = nat.split("\n").filter(x => x !== "");
+      nats.forEach(element => {
+        core.info("Add nat: " + element);
+        let segs = element.split(":");
+        if(segs.length === 3) {
+          //udp:"8081": "80"
+          let proto = segs[0].trim().trim('"');
+          let hostPort = segs[1].trim().trim('"');
+          let vmPort = segs[2].trim().trim('"');
+
+          await exec.exec("sudo vboxmanage modifyvm "+ vmName + "  --natpf1 '"+ hostPort +"," + proto + ",," + hostPort+",,"+ vmPort + "'");
+    
+        } else if(segs.length === 2) {
+          let proto = "tcp"
+          let hostPort = segs[0].trim().trim('"');
+          let vmPort = segs[1].trim().trim('"');
+          await exec.exec("sudo vboxmanage modifyvm "+ vmName + "  --natpf1 '"+ hostPort +"," + proto + ",," + hostPort+",,"+ vmPort + "'");
+    
+        }
+      });
+    }
+
     await exec.exec("sudo vboxmanage startvm " + vmName + " --type headless");
 
     core.info("sleep 300 seconds for first boot");
@@ -116,7 +139,7 @@ async function main() {
   core.info("nat: "+ nat);
   core.info("nat json: "+ JSON.stringify(nat));
 
-  await setup();
+  await setup(nat);
 
   var envs = core.getInput("envs");
   console.log("envs:" + envs);
