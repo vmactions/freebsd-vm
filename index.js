@@ -157,8 +157,7 @@ async function main() {
   console.log("run: " + run);
 
   try {
-    run = 'cd "$GITHUB_WORKSPACE" && ' + run;
-    await execSSH(run);
+    await exec.exec("ssh -p 2222 root@localhost 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], {input: run});
   } catch (error) {
     core.setFailed(error.message);
   }
