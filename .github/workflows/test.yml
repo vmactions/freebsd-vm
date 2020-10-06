@@ -23,10 +23,10 @@ jobs:
           "8443": "443"
           udp:"8081": "80"
         run: |
-          if [ "test" ]; then;
+          if [ -n "test" ]; then;
             echo "false";
           fi;
-          if [ "test" ]; then;
+          if [ -n "test" ]; then;
             echo "test";
           fi;
           pwd
