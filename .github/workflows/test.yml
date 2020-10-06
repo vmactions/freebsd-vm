@@ -27,7 +27,7 @@ jobs:
             echo "false";
           fi
           if [ "test" ]; then
-            echo "test"
+            echo "test";
           fi
           pwd
           ls -lah
