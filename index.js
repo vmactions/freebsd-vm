@@ -157,7 +157,12 @@ async function main() {
   console.log("run: " + run);
 
   try {
-    await exec.exec("ssh -p 2222 root@localhost sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], {input: run});
+    var usesh = core.getInput("usesh").toLowerCase() == "true";
+    if(usesh) {
+      await exec.exec("ssh -p 2222 root@localhost sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], {input: run});
+    } else {
+      await exec.exec("ssh -p 2222 root@localhost sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], {input: run});
+    }
   } catch (error) {
     core.setFailed(error.message);
   }

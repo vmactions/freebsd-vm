@@ -13,6 +13,9 @@ inputs:
   nat:
     description: 'The NAT ports to FreeBSD vm'
     required: false
+  usesh:
+    description: 'Use sh instead of the default shell: csh'
+    required: false
 branding:
   icon: 'activity'  
   color: 'green'

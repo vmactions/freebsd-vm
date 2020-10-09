@@ -22,13 +22,14 @@ jobs:
           "8080": "80"
           "8443": "443"
           udp:"8081": "80"
+        usesh: true
         run: |
-          if [ -n "test" ]; then;
-            echo "false";
-          fi;
-          if [ -n "test" ]; then;
-            echo "test";
-          fi;
+          if [ -n "test" ]; then
+            echo "false"
+          fi
+          if [ "test" ]; then
+            echo "test"
+          fi
           pwd
           ls -lah
           whoami
