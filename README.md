@@ -29,6 +29,7 @@ jobs:
       uses: vmactions/freebsd-vm@v0.0.4
       with:
         envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
         prepare: pkg install -y curl
         nat: |
           "8080": "80"
@@ -62,6 +63,8 @@ All the source code tree in the Host machine are mounted into the VM.
 All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 
 So, you will have the same directory and same defualt env variables when you `run` the CI script.
+
+The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
 
 
 
