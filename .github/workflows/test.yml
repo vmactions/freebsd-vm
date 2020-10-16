@@ -23,7 +23,6 @@ jobs:
           "8443": "443"
           udp:"8081": "80"
         usesh: true
-        sync: rsync
         run: |
           if [ -n "test" ]; then
             echo "false"
