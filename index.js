@@ -133,7 +133,7 @@ async function setup(nat) {
     if (sync == "rsync") {
       let cmd2 = "pkg  install  -y rsync";
       await execSSH(cmd2, "Setup rsync");
-      await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  /Users/runner/work freebsd:work");
+      await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  /Users/runner/work/* freebsd:work");
     } else {
       let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
       await execSSH(cmd2, "Setup sshfs");
@@ -186,7 +186,7 @@ async function main() {
     let sync = core.getInput("sync");
     if (sync == "rsync") {
       core.info("get back by rsync");
-      await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  freebsd:work /Users/runner/work");
+      await exec.exec("rsync -uvzrtopg  --exclude _actions/vmactions/freebsd-vm  freebsd:work/* /Users/runner/work");
     }
   }
 }
