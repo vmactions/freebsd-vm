@@ -12,12 +12,17 @@ async function sleep(ms) {
 async function execSSH(cmd, desp = "") {
   core.info(desp);
   core.info("exec ssh: " + cmd);
-  await exec.exec("ssh -t -p 2222 root@localhost", [], { input: cmd });
+  await exec.exec("ssh -t freebsd", [], { input: cmd });
 }
 
 
 async function setup(nat) {
   try {
+
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "Host freebsd " + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " User root" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
 
     await exec.exec("brew install -qf tesseract", [], { silent: true });
     await exec.exec("pip3 install -q pytesseract", [], { silent: true });
@@ -120,13 +125,6 @@ async function setup(nat) {
 
     }
 
-
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "Host freebsd " + "\n");
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " User root" + "\n");
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
-
-
     await execSSH("ntpdate -b pool.ntp.org", "Sync FreeBSD time");
 
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
@@ -170,7 +168,7 @@ async function main() {
   var prepare = core.getInput("prepare");
   if (prepare) {
     core.info("Running prepare: " + prepare);
-    await exec.exec("ssh -t -p 2222 root@localhost", [], { input: prepare });
+    await exec.exec("ssh -t freebsd", [], { input: prepare });
   }
 
   var run = core.getInput("run");
@@ -179,9 +177,9 @@ async function main() {
   try {
     var usesh = core.getInput("usesh").toLowerCase() == "true";
     if (usesh) {
-      await exec.exec("ssh -p 2222 root@localhost sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], { input: run });
+      await exec.exec("ssh freebsd sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], { input: run });
     } else {
-      await exec.exec("ssh -p 2222 root@localhost sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], { input: run });
+      await exec.exec("ssh freebsd sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], { input: run });
     }
   } catch (error) {
     core.setFailed(error.message);
@@ -189,7 +187,7 @@ async function main() {
     let sync = core.getInput("sync");
     if (sync == "rsync") {
       core.info("get back by rsync");
-      await exec.exec("rsync -uvzrtopg  --exclude _actions/vmactions/freebsd-vm  freebsd:work/ /Users/runner/work");
+      await exec.exec("rsync -uvzrtopg  freebsd:work/ /Users/runner/work");
     }
   }
 }
