@@ -30,6 +30,7 @@ jobs:
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
+        sync: sshfs
         prepare: pkg install -y curl
         nat: |
           "8080": "80"
