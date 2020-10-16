@@ -126,6 +126,9 @@ async function setup(nat) {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
 
+
+    await execSSH("ntpdate -b pool.ntp.org", "Sync FreeBSD time");
+
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
 
