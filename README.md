@@ -26,16 +26,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.4
+      uses: vmactions/freebsd-vm@v0.0.6
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
-        sync: sshfs
         prepare: pkg install -y curl
-        nat: |
-          "8080": "80"
-          "8443": "443"
-          udp:"8081": "80"
+
         run: |
           pwd
           ls -lah
@@ -67,6 +63,49 @@ So, you will have the same directory and same defualt env variables when you `ru
 
 The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
 
+The code is shared from the host to the FreeBSD VM via `sshfs`, you can choose to use `rsync` to share code instead.
+
+
+```
+
+...
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v0.0.6
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        sync: rsync
+        prepare: pkg install -y curl
+      
+
+
+...
+
+
+```
+
+You can add NAT port between the host and the VM.
+
+```
+...
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v0.0.6
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        nat: |
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+...
+```
 
 
 # Under the hood
