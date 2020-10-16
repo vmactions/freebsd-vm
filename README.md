@@ -31,7 +31,6 @@ jobs:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
         prepare: pkg install -y curl
-
         run: |
           pwd
           ls -lah
