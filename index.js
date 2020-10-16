@@ -120,6 +120,12 @@ async function setup(nat) {
 
     }
 
+
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "Host freebsd " + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "  User root" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "  HostName localhost" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "  Port 2222" + "\n");
+
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
 
@@ -127,7 +133,7 @@ async function setup(nat) {
     if (sync == "rsync") {
       let cmd2 = "pkg  install  -y rsync";
       await execSSH(cmd2, "Setup rsync");
-      await exec.exec("rsync -e 'ssh -p 2222' -avzrtopg --exclude work/_actions/vmactions/freebsd-vm  /Users/runner/work root@localhost:work/");
+      await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  /Users/runner/work freebsd:work");
     } else {
       let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
       await execSSH(cmd2, "Setup sshfs");
@@ -180,7 +186,7 @@ async function main() {
     let sync = core.getInput("sync");
     if (sync == "rsync") {
       core.info("get back by rsync");
-      await exec.exec("rsync -e 'ssh -p 2222' -auvzrtopg  root@localhost:work/ /Users/runner/work");
+      await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  freebsd:work /Users/runner/work");
     }
   }
 }
