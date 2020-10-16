@@ -122,9 +122,9 @@ async function setup(nat) {
 
 
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "Host freebsd " + "\n");
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "  User root" + "\n");
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "  HostName localhost" + "\n");
-    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "  Port 2222" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " User root" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
 
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
