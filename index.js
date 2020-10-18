@@ -23,7 +23,10 @@ async function setup(nat) {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " User root" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
-
+    fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "StrictHostKeyChecking=accept-new\n");
+    
+    
+    
     await exec.exec("brew install -qf tesseract", [], { silent: true });
     await exec.exec("pip3 install -q pytesseract", [], { silent: true });
 
@@ -49,7 +52,7 @@ async function setup(nat) {
     let authorized_keys = path.join(sshHome, "authorized_keys");
 
     fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_rsa.pub")));
-    fs.appendFileSync(path.join(sshHome, "config"), "StrictHostKeyChecking=accept-new\n");
+
     fs.appendFileSync(path.join(sshHome, "config"), "SendEnv   CI  GITHUB_* \n");
     await exec.exec("chmod 700 " + sshHome);
 
