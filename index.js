@@ -16,6 +16,61 @@ async function execSSH(cmd, desp = "") {
 }
 
 
+
+async function getScreenText(vmName) {
+  let png = path.join(__dirname, "/screen.png");
+  await vboxmanage(vmName, "controlvm", "screenshotpng  " + png);
+  await exec.exec("sudo chmod 666 " + png);
+  let output = "";
+  await exec.exec("pytesseract  " + png, [], {
+    listeners: {
+      stdout: (s) => {
+        output += s;
+      }
+    }
+  });
+  return output;
+}
+
+async function waitFor(vmName, tag) {
+
+  let slept = 0;
+  while (true) {
+    slept += 1;
+    if (slept >= 300) {
+      throw new Error("Timeout can not boot");
+    }
+    await sleep(1000);
+
+    let output = await getScreenText(vmName);
+
+    if (tag) {
+      if (output.includes(tag)) {
+        core.info("OK");
+        await sleep(1000);
+        return true;
+      } else {
+        core.info("Checking, please wait....");
+      }
+    } else {
+      if (!output.trim()) {
+        core.info("OK");
+        return true;
+      } else {
+        core.info("Checking, please wait....");
+      }
+    }
+
+  }
+
+  return false;
+}
+
+
+async function vboxmanage(vmName, cmd, args = "") {
+  await exec.exec("sudo  vboxmanage " + cmd + "   " + vmName + "   " + args);
+}
+
 async function setup(nat) {
   try {
 
@@ -24,19 +79,18 @@ async function setup(nat) {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "StrictHostKeyChecking=accept-new\n");
-    
-    
-    
+
+
+
     await exec.exec("brew install -qf tesseract", [], { silent: true });
     await exec.exec("pip3 install -q pytesseract", [], { silent: true });
-
 
     let workingDir = __dirname;
 
     let imgName = "FreeBSD-12.1-RELEASE-amd64";
 
 
-    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.6/freebsd-12.1.7z";
+    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.7/freebsd-12.1.7z";
 
     core.info("Downloading image: " + url);
     let img = await tc.downloadTool(url);
@@ -46,8 +100,6 @@ async function setup(nat) {
     await io.mv(img, s7z);
     await exec.exec("7z e " + s7z + "  -o" + workingDir);
 
-    let vhd = workingDir + "/" + imgName + ".vhd";
-
     let sshHome = path.join(process.env["HOME"], ".ssh");
     let authorized_keys = path.join(sshHome, "authorized_keys");
 
@@ -56,17 +108,12 @@ async function setup(nat) {
     fs.appendFileSync(path.join(sshHome, "config"), "SendEnv   CI  GITHUB_* \n");
     await exec.exec("chmod 700 " + sshHome);
 
+
+    let ova = workingDir + "/freebsd-12.1.ova";
+    await vboxmanage("", "import", path.join(workingDir, ova));
+
+
     let vmName = "freebsd";
-    core.info("Create VM");
-    await exec.exec("sudo vboxmanage  createvm  --name " + vmName + " --ostype FreeBSD_64  --default   --basefolder freebsd --register");
-
-    await exec.exec("sudo vboxmanage  storagectl " + vmName + "  --name SATA --add sata  --controller IntelAHCI ");
-
-    await exec.exec("sudo vboxmanage  storageattach " + vmName + "    --storagectl SATA --port 0  --device 0  --type hdd --medium " + vhd);
-
-    await exec.exec("sudo vboxmanage modifyvm " + vmName + " --vrde on  --vrdeport 33389");
-
-    await exec.exec("sudo vboxmanage modifyvm " + vmName + "  --natpf1 'guestssh,tcp,,2222,,22'");
 
     if (nat) {
       let nats = nat.split("\n").filter(x => x !== "");
@@ -78,55 +125,23 @@ async function setup(nat) {
           let proto = segs[0].trim().trim('"');
           let hostPort = segs[1].trim().trim('"');
           let vmPort = segs[2].trim().trim('"');
-
-          await exec.exec("sudo vboxmanage modifyvm " + vmName + "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
+          await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
 
         } else if (segs.length === 2) {
           let proto = "tcp"
           let hostPort = segs[0].trim().trim('"');
           let vmPort = segs[1].trim().trim('"');
-          await exec.exec("sudo vboxmanage modifyvm " + vmName + "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
-
+          await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
         }
       };
     }
 
-    await exec.exec("sudo vboxmanage startvm " + vmName + " --type headless");
+    await vboxmanage(vmName, "startvm", " --type headless");
 
-    core.info("sleep 300 seconds for first boot");
-    let loginTag = "FreeBSD/amd64 (freebsd) (ttyv0)"
-    let slept = 0;
-    while (true) {
-      slept += 20;
-      if (slept >= 300) {
-        throw new Error("Timeout can not boot");
-      }
-      await sleep(20000);
+    core.info("First boot");
 
-      await exec.exec("sudo  vboxmanage  controlvm " + vmName + "  screenshotpng  screen.png")
-
-
-      await exec.exec("sudo chmod 666 screen.png");
-
-      let output = "";
-      await exec.exec("pytesseract  screen.png", [], {
-        listeners: {
-          stdout: (s) => {
-            output += s;
-          }
-        }
-      });
-
-
-      if (output.includes(loginTag)) {
-        core.info("Login ready, sleep last 10 seconds");
-        await sleep(5000);
-        break;
-      } else {
-        core.info("The VM is booting, please wait....");
-      }
-
-    }
+    let loginTag = "FreeBSD/amd64 (freebsd) (ttyv0)";
+    await waitFor(vmName, loginTag);
 
     await execSSH("ntpdate -b pool.ntp.org", "Sync FreeBSD time");
 
@@ -150,8 +165,6 @@ async function setup(nat) {
     core.setFailed(error.message);
   }
 }
-
-
 
 
 
