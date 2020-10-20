@@ -109,7 +109,7 @@ async function setup(nat) {
     await exec.exec("chmod 700 " + sshHome);
 
 
-    let ova = workingDir + "/freebsd-12.1.ova";
+    let ova = "freebsd-12.1.ova";
     await vboxmanage("", "import", path.join(workingDir, ova));
 
 
