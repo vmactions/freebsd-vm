@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.7
+      uses: vmactions/freebsd-vm@v0.0.8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
