@@ -90,7 +90,7 @@ async function setup(nat) {
     let imgName = "FreeBSD-12.1-RELEASE-amd64";
 
 
-    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.7/freebsd-12.1.7z";
+    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.7/freebsd-12.2.7z";
 
     core.info("Downloading image: " + url);
     let img = await tc.downloadTool(url);
