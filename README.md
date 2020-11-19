@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.8
+      uses: vmactions/freebsd-vm@v0.0.9
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -73,7 +73,7 @@ The code is shared from the host to the FreeBSD VM via `sshfs`, you can choose t
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.6
+      uses: vmactions/freebsd-vm@v0.0.9
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -95,7 +95,7 @@ You can add NAT port between the host and the VM.
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.6
+      uses: vmactions/freebsd-vm@v0.0.9
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
