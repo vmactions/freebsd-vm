@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.9
+      uses: vmactions/freebsd-vm@v0.1.0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -73,7 +73,7 @@ The code is shared from the host to the FreeBSD VM via `sshfs`, you can choose t
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.9
+      uses: vmactions/freebsd-vm@v0.1.0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -95,7 +95,7 @@ You can add NAT port between the host and the VM.
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.0.9
+      uses: vmactions/freebsd-vm@v0.1.0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -103,6 +103,23 @@ You can add NAT port between the host and the VM.
           "8080": "80"
           "8443": "443"
           udp:"8081": "80"
+...
+```
+
+
+The default memory of the VM is 1024MB, you can use `mem` option to set the memory size:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v0.1.0
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        mem: 2048
 ...
 ```
 
