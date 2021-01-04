@@ -71,7 +71,7 @@ async function vboxmanage(vmName, cmd, args = "") {
   await exec.exec("sudo  vboxmanage " + cmd + "   " + vmName + "   " + args);
 }
 
-async function setup(nat) {
+async function setup(nat, mem) {
   try {
 
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "Host freebsd " + "\n");
@@ -81,14 +81,10 @@ async function setup(nat) {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "StrictHostKeyChecking=accept-new\n");
 
 
-
     await exec.exec("brew install -qf tesseract", [], { silent: true });
     await exec.exec("pip3 install -q pytesseract", [], { silent: true });
 
     let workingDir = __dirname;
-
-    let imgName = "FreeBSD-12.2-RELEASE-amd64";
-
 
     let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.8/freebsd-12.2.7z";
 
@@ -136,6 +132,10 @@ async function setup(nat) {
       };
     }
 
+    if (mem) {
+      await vboxmanage(vmName, "modifyvm", "  --memory " + mem);
+    }
+
     await vboxmanage(vmName, "startvm", " --type headless");
 
     core.info("First boot");
@@ -171,9 +171,11 @@ async function setup(nat) {
 async function main() {
   let nat = core.getInput("nat");
   core.info("nat: " + nat);
-  core.info("nat json: " + JSON.stringify(nat));
 
-  await setup(nat);
+  let mem = core.getInput("mem");
+  core.info("mem: " + mem);
+
+  await setup(nat, mem);
 
   var envs = core.getInput("envs");
   console.log("envs:" + envs);

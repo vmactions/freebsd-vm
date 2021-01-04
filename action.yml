@@ -10,6 +10,9 @@ inputs:
   envs:
     description: 'The envs to pass into FreeBSD vm'
     required: false
+  mem:
+    description: 'Set the memory size of the vm'
+    required: false
   nat:
     description: 'The NAT ports to FreeBSD vm'
     required: false
