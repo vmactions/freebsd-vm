@@ -22,7 +22,6 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      ASSUME_ALWAYS_YES: yes
     steps:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
@@ -46,12 +45,11 @@ jobs:
 
 The `runs-on: macos-latest` must be `macos-latest`.
 
-The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into freebsd vm. These are optional, but `ASSUME_ALWAYS_YES: yes` is mandatory if you are going to use `pkg install` in the `prepare` phase later on.
+The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into freebsd vm.
 
 The `run: xxxxx `  is the command you want to run in freebsd vm.
 
 The env variables are all copied into the VM, and the source code and directory are all synchronized into the VM.
-
 
 The working dir for `run` in the VM is the same as in the Host machine.
 
