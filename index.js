@@ -24,6 +24,7 @@ async function getScreenText(vmName) {
   let output = "";
   await exec.exec("pytesseract  " + png, [], {
     listeners: {
+      silent: true,
       stdout: (s) => {
         output += s;
       }
