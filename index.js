@@ -150,13 +150,13 @@ async function setup(nat, mem) {
     await execSSH(cmd1, "Setting up VM");
 
     let sync = core.getInput("sync");
-    if (sync == "rsync") {
+    if (sync == "sshfs") {
+      let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
+      await execSSH(cmd2, "Setup sshfs");
+    } else {
       let cmd2 = "pkg  install  -y rsync";
       await execSSH(cmd2, "Setup rsync");
       await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  /Users/runner/work/ freebsd:work");
-    } else {
-      let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
-      await execSSH(cmd2, "Setup sshfs");
     }
 
     core.info("OK, Ready!");
@@ -204,7 +204,7 @@ async function main() {
     core.setFailed(error.message);
   } finally {
     let sync = core.getInput("sync");
-    if (sync == "rsync") {
+    if (sync != "sshfs") {
       core.info("get back by rsync");
       await exec.exec("rsync -uvzrtopg  freebsd:work/ /Users/runner/work");
     }

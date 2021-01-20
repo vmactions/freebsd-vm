@@ -20,7 +20,7 @@ inputs:
     description: 'Use sh instead of the default shell: csh'
     required: false
   sync:
-    description: 'How to synchronize the source code to/from the VM, Values can be:  sshfs(default), and rsync'
+    description: 'How to synchronize the source code to/from the VM, Values can be:  rsync(default), and sshfs'
     required: false
 branding:
   icon: 'activity'  

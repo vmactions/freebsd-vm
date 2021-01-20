@@ -62,7 +62,7 @@ So, you will have the same directory and same defualt env variables when you `ru
 
 The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
 
-The code is shared from the host to the FreeBSD VM via `sshfs`, you can choose to use `rsync` to share code instead.
+The code is shared from the host to the FreeBSD VM via `rsync`, you can choose to use to `sshfs` share code instead.
 
 
 ```
@@ -77,7 +77,7 @@ The code is shared from the host to the FreeBSD VM via `sshfs`, you can choose t
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
-        sync: rsync
+        sync: sshfs
         prepare: pkg install -y curl
       
 
