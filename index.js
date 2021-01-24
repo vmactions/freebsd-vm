@@ -137,6 +137,8 @@ async function setup(nat, mem) {
       await vboxmanage(vmName, "modifyvm", "  --memory " + mem);
     }
 
+    await vboxmanage(vmName, "modifyvm", " --cpus 3");
+
     await vboxmanage(vmName, "startvm", " --type headless");
 
     core.info("First boot");
