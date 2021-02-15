@@ -47,10 +47,9 @@ The `runs-on: macos-latest` must be `macos-latest`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into freebsd vm.
 
-The `run: xxxxx `  is the command you want to run in freebsd vm.
+The `run: xxxxx`  is the command you want to run in freebsd vm.
 
 The env variables are all copied into the VM, and the source code and directory are all synchronized into the VM.
-
 
 The working dir for `run` in the VM is the same as in the Host machine.
 
@@ -58,7 +57,7 @@ All the source code tree in the Host machine are mounted into the VM.
 
 All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 
-So, you will have the same directory and same defualt env variables when you `run` the CI script.
+So, you will have the same directory and same default env variables when you `run` the CI script.
 
 The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
 
@@ -130,14 +129,4 @@ GitHub only supports Ubuntu, Windows and MacOS out of the box.
 
 However, the MacOS support virtualization. It has VirtualBox installed.
 
-So, we run the FreeBSD VM in VirbualBox on MacOS.
-
-
-
-
-
-
-
-
-
-
+So, we run the FreeBSD VM in VirtualBox on MacOS.
