@@ -87,7 +87,7 @@ async function setup(nat, mem) {
 
     let workingDir = __dirname;
 
-    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.8/freebsd-13.0.7z";
+    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.9/freebsd-13.0.7z";
 
     core.info("Downloading image: " + url);
     let img = await tc.downloadTool(url);
