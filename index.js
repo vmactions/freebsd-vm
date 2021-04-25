@@ -87,13 +87,13 @@ async function setup(nat, mem) {
 
     let workingDir = __dirname;
 
-    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.8/freebsd-12.2.7z";
+    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.9/freebsd-13.0.7z";
 
     core.info("Downloading image: " + url);
     let img = await tc.downloadTool(url);
     core.info("Downloaded file: " + img);
 
-    let s7z = workingDir + "/freebsd-12.2.7z";
+    let s7z = workingDir + "/freebsd-13.0.7z";
     await io.mv(img, s7z);
     await exec.exec("7z e " + s7z + "  -o" + workingDir);
 
@@ -106,7 +106,7 @@ async function setup(nat, mem) {
     await exec.exec("chmod 700 " + sshHome);
 
 
-    let ova = "freebsd-12.2.ova";
+    let ova = "freebsd-13.0.ova";
     await vboxmanage("", "import", path.join(workingDir, ova));
 
 
