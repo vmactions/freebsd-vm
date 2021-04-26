@@ -143,7 +143,7 @@ async function setup(nat, mem) {
 
     core.info("First boot");
 
-    let loginTag = "FreeBSD/amd64 (freebsd) (ttyv0)";
+    let loginTag = "FreeBSD/amd64 (freebsd) (ttyv";
     await waitFor(vmName, loginTag);
 
     try {
