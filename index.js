@@ -156,7 +156,7 @@ async function setup(nat, mem) {
 
     let sync = core.getInput("sync");
     if (sync == "sshfs") {
-      let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fuse.ko && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
+      let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fusefs && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
       await execSSH(cmd2, "Setup sshfs");
     } else {
       let cmd2 = "pkg  install  -y rsync";
