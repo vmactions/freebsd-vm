@@ -23,7 +23,7 @@
     "@actions/exec": "^1.0.4",
     "@actions/github": "^4.0.0",
     "@actions/io": "^1.0.2",
-    "@actions/tool-cache": "^1.6.0",
+    "@actions/tool-cache": "^1.7.1",
     "shelljs": "^0.8.4"
   }
 }
