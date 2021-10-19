@@ -43,7 +43,7 @@ jobs:
 ```
 
 
-The `runs-on: macos-latest` must be `macos-latest`.
+The `runs-on: macos-10.15` must be `macos-10.15`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into freebsd vm.
 
