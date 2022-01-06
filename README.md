@@ -1,6 +1,20 @@
 # Run GitHub CI in FreeBSD 
 ![Test](https://github.com/vmactions/freebsd-vm/workflows/Test/badge.svg)
 
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-black.svg)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=bugs)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=coverage)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=os-runners_freebsd-vm&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=os-runners_freebsd-vm)
+
 Use this action to run your CI in FreeBSD.
 
 The github workflow only supports Ubuntu, Windows and MacOS. But what if you need a FreeBSD?
