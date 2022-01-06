@@ -3,6 +3,7 @@ const exec = require('@actions/exec');
 const tc = require('@actions/tool-cache');
 const io = require('@actions/io');
 const fs = require("fs");
+const net = require("net")
 const path = require("path");
 
 async function sleep(ms) {
@@ -15,20 +16,31 @@ async function execSSH(cmd, desp = "") {
   await exec.exec("ssh -t freebsd", [], { input: cmd });
 }
 
-async function getScreenText(vmName) {
-  let png = path.join(__dirname, "/screen.png");
-  await vboxmanage(vmName, "controlvm", "screenshotpng  " + png);
-  await exec.exec("sudo chmod 666 " + png);
-  let output = "";
-  await exec.exec("pytesseract  " + png, [], {
-    listeners: {
-      silent: true,
-      stdout: (s) => {
-        output += s;
-      }
-    }
-  });
-  return output;
+async function isSSHreachable() {
+  const promise = new Promise(((resolve, reject) => {
+    const socket = new net.Socket();
+
+    const onError = () => {
+      socket.destroy();
+      reject();
+    };
+
+    socket.setTimeout(1000);
+    socket.once('error', onError);
+    socket.once('timeout', onError);
+
+    socket.connect(2222, 'freebsd', () => {
+      socket.end();
+      resolve();
+    });
+  }));
+
+  try {
+    await promise;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function waitFor(vmName, tag) {
@@ -40,29 +52,8 @@ async function waitFor(vmName, tag) {
       throw new Error("Timeout can not boot");
     }
     await sleep(1000);
-
-    let output = await getScreenText(vmName);
-
-    if (tag) {
-      if (output.includes(tag)) {
-        console.info("OK");
-        await sleep(1000);
-        return true;
-      } else {
-        console.info("Checking, please wait....");
-      }
-    } else {
-      if (!output.trim()) {
-        console.info("OK");
-        return true;
-      } else {
-        console.info("Checking, please wait....");
-      }
-    }
-
+    return !!isSSHreachable();
   }
-
-  return false;
 }
 
 async function vboxmanage(vmName, cmd, args = "") {
@@ -77,10 +68,6 @@ async function setup(version, nat, mem) {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " HostName localhost" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), " Port 2222" + "\n");
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "StrictHostKeyChecking=accept-new\n");
-
-
-    await exec.exec("brew install -qf tesseract", [], { silent: true });
-    await exec.exec("pip3 install -q pytesseract", [], { silent: true });
 
     let workingDir = __dirname;
 
