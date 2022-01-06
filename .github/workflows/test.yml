@@ -11,11 +11,11 @@ jobs:
         version: [ "12.3", "13.0" ]
     runs-on: macos-10.15
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@main
 
     - name: start and test FreeBSD VM
       id: test
-      uses: expeditioneer/freebsd-vm@main
+      uses: os-runners/freebsd-vm@main
       with:
         prepare: pkg install -y curl
         version: ${{ matrix.version }}
