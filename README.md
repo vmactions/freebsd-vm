@@ -1,4 +1,5 @@
-# Run GitHub CI in FreeBSD ![Test](https://github.com/vmactions/freebsd-vm/workflows/Test/badge.svg)
+# Run GitHub CI in FreeBSD 
+![Test](https://github.com/vmactions/freebsd-vm/workflows/Test/badge.svg)
 
 Use this action to run your CI in FreeBSD.
 

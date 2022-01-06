@@ -10,8 +10,8 @@ async function sleep(ms) {
 }
 
 async function execSSH(cmd, desp = "") {
-  core.info(desp);
-  core.info("exec ssh: " + cmd);
+  console.info(desp);
+  console.info("exec ssh: " + cmd);
   await exec.exec("ssh -t freebsd", [], { input: cmd });
 }
 
@@ -45,18 +45,18 @@ async function waitFor(vmName, tag) {
 
     if (tag) {
       if (output.includes(tag)) {
-        core.info("OK");
+        console.info("OK");
         await sleep(1000);
         return true;
       } else {
-        core.info("Checking, please wait....");
+        console.info("Checking, please wait....");
       }
     } else {
       if (!output.trim()) {
-        core.info("OK");
+        console.info("OK");
         return true;
       } else {
-        core.info("Checking, please wait....");
+        console.info("Checking, please wait....");
       }
     }
 
@@ -86,9 +86,9 @@ async function setup(version, nat, mem) {
 
     let url = `https://github.com/expeditioneer/freebsd-builder/releases/latest/download/freebsd-${version}.tar.xz`;
 
-    core.info("Downloading image: " + url);
+    console.info("Downloading image: " + url);
     let img = await tc.downloadTool(url);
-    core.info("Downloaded file: " + img);
+    console.info("Downloaded file: " + img);
 
     let vmArchive = workingDir + `/freebsd-${version}.tar.xz`;
     await io.mv(img, vmArchive);
@@ -112,7 +112,7 @@ async function setup(version, nat, mem) {
     if (nat) {
       let nats = nat.split("\n").filter(x => x !== "");
       for (let element of nats) {
-        core.info("Add nat: " + element);
+        console.info("Add nat: " + element);
         let segs = element.split(":");
         if (segs.length === 3) {
           //udp:"8081": "80"
@@ -138,7 +138,7 @@ async function setup(version, nat, mem) {
 
     await vboxmanage(vmName, "startvm", " --type headless");
 
-    core.info("First boot");
+    console.info("First boot");
 
     let loginTag = "FreeBSD/amd64 (freebsd) (ttyv";
     await waitFor(vmName, loginTag);
@@ -146,7 +146,7 @@ async function setup(version, nat, mem) {
     try {
       await execSSH("ntpdate -b pool.ntp.org || ntpdate -b us.pool.ntp.org || ntpdate -b asia.pool.ntp.org", "Sync FreeBSD time");
     } catch (ex) {
-      core.info("can not sync time")
+      console.info("can not sync time")
     }
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
@@ -161,7 +161,7 @@ async function setup(version, nat, mem) {
       await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  /Users/runner/work/ freebsd:work");
     }
 
-    core.info("OK, Ready!");
+    console.info("OK, Ready!");
 
   }
   catch (error) {
@@ -191,7 +191,7 @@ async function main() {
 
   var prepare = core.getInput("prepare");
   if (prepare) {
-    core.info("Running prepare: " + prepare);
+    console.info("Running prepare: " + prepare);
     await exec.exec("ssh -t freebsd", [], { input: prepare });
   }
 
@@ -210,7 +210,7 @@ async function main() {
   } finally {
     let sync = core.getInput("sync");
     if (sync != "sshfs") {
-      core.info("get back by rsync");
+      console.info("get back by rsync");
       await exec.exec("rsync -uvzrtopg  freebsd:work/ /Users/runner/work");
     }
   }
