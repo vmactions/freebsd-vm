@@ -9,7 +9,7 @@ This action is to support FreeBSD.
 
 Sample workflow `freebsd.yml`:
 
-```yml
+```yaml
 
 name: Test
 
@@ -64,7 +64,7 @@ The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `r
 The code is shared from the host to the FreeBSD VM via `rsync`, you can choose to use to `sshfs` share code instead.
 
 
-```
+```yaml
 
 ...
 
@@ -88,7 +88,7 @@ The code is shared from the host to the FreeBSD VM via `rsync`, you can choose t
 
 You can add NAT port between the host and the VM.
 
-```
+```yaml
 ...
     steps:
     - uses: actions/checkout@v2
@@ -106,9 +106,9 @@ You can add NAT port between the host and the VM.
 ```
 
 
-The default memory of the VM is 1024MB, you can use `mem` option to set the memory size:
+The default memory of the VM is 8192MB, you can use `mem` option to set the memory size:
 
-```
+```yaml
 ...
     steps:
     - uses: actions/checkout@v2

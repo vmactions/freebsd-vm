@@ -1,11 +1,15 @@
+---
+
 name: 'FreeBSD-vm'
+
 description: 'Run CI in FreeBSD for GitHub Actions'
+
 inputs:
-  prepare:
-    description: 'Install some tools before CI runs'
-    required: false
   run:
     description: 'The CI command to run'
+    required: true
+  version:
+    description: 'The FreeBSD version to use, values can be: 12.7 and 13.0'
     required: true
   envs:
     description: 'The envs to pass into FreeBSD vm'
@@ -16,16 +20,20 @@ inputs:
   nat:
     description: 'The NAT ports to FreeBSD vm'
     required: false
-  usesh:
-    description: 'Use sh instead of the default shell: csh'
+  prepare:
+    description: 'Install some tools before CI runs'
     required: false
   sync:
     description: 'How to synchronize the source code to/from the VM, Values can be:  rsync(default), and sshfs'
     required: false
+  usesh:
+    description: 'Use sh instead of the default shell: csh'
+    required: false
+
 branding:
-  icon: 'activity'  
+  icon: 'activity'
   color: 'green'
 
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

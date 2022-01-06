@@ -15,8 +15,6 @@ async function execSSH(cmd, desp = "") {
   await exec.exec("ssh -t freebsd", [], { input: cmd });
 }
 
-
-
 async function getScreenText(vmName) {
   let png = path.join(__dirname, "/screen.png");
   await vboxmanage(vmName, "controlvm", "screenshotpng  " + png);
@@ -67,12 +65,11 @@ async function waitFor(vmName, tag) {
   return false;
 }
 
-
 async function vboxmanage(vmName, cmd, args = "") {
   await exec.exec("sudo  vboxmanage " + cmd + "   " + vmName + "   " + args);
 }
 
-async function setup(nat, mem) {
+async function setup(version, nat, mem) {
   try {
 
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "Host freebsd " + "\n");
@@ -87,26 +84,26 @@ async function setup(nat, mem) {
 
     let workingDir = __dirname;
 
-    let url = "https://github.com/vmactions/freebsd-builder/releases/download/v0.0.9/freebsd-13.0.7z";
+    let url = `https://github.com/expeditioneer/freebsd-builder/releases/latest/download/freebsd-${version}.tar.xz`;
 
     core.info("Downloading image: " + url);
     let img = await tc.downloadTool(url);
     core.info("Downloaded file: " + img);
 
-    let s7z = workingDir + "/freebsd-13.0.7z";
-    await io.mv(img, s7z);
-    await exec.exec("7z e " + s7z + "  -o" + workingDir);
+    let vmArchive = workingDir + `/freebsd-${version}.tar.xz`;
+    await io.mv(img, vmArchive);
+    await exec.exec(`tar -xf ${vmArchive} -C ${workingDir}`);
 
     let sshHome = path.join(process.env["HOME"], ".ssh");
     let authorized_keys = path.join(sshHome, "authorized_keys");
 
-    fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_rsa.pub")));
+    fs.appendFileSync(authorized_keys, fs.readFileSync(path.join(workingDir, "id_ed25519.pub")));
 
     fs.appendFileSync(path.join(sshHome, "config"), "SendEnv   CI  GITHUB_* \n");
     await exec.exec("chmod 700 " + sshHome);
 
 
-    let ova = "freebsd-13.0.ova";
+    let ova = `freebsd-${version}.ova`;
     await vboxmanage("", "import", path.join(workingDir, ova));
 
 
@@ -130,7 +127,7 @@ async function setup(nat, mem) {
           let vmPort = segs[1].trim().trim('"');
           await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
         }
-      };
+      }
     }
 
     if (mem) {
@@ -175,13 +172,16 @@ async function setup(nat, mem) {
 
 
 async function main() {
+  let version = core.getInput('version')
+  console.log(`FreeBSD version: ${version}`)
+
   let nat = core.getInput("nat");
-  core.info("nat: " + nat);
+  console.info("nat: " + nat);
 
   let mem = core.getInput("mem");
-  core.info("mem: " + mem);
+  console.info("mem: " + mem);
 
-  await setup(nat, mem);
+  await setup(version, nat, mem);
 
   var envs = core.getInput("envs");
   console.log("envs:" + envs);
@@ -215,8 +215,6 @@ async function main() {
     }
   }
 }
-
-
 
 main().catch(ex => {
   core.setFailed(ex.message);

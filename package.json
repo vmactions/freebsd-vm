@@ -19,11 +19,11 @@
   },
   "homepage": "https://github.com/vmactions/freebsd",
   "dependencies": {
-    "@actions/core": "^1.2.6",
-    "@actions/exec": "^1.0.4",
-    "@actions/github": "^4.0.0",
-    "@actions/io": "^1.0.2",
-    "@actions/tool-cache": "^1.6.0",
-    "shelljs": "^0.8.4"
+    "@actions/core": "latest",
+    "@actions/exec": "latest",
+    "@actions/github": "latest",
+    "@actions/io": "latest",
+    "@actions/tool-cache": "latest",
+    "shelljs": "latest"
   }
 }
