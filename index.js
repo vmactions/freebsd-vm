@@ -6,25 +6,25 @@ const fs = require('fs')
 const net = require('net')
 const path = require('path')
 
+let vmName = "FreeBSD"
+
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 async function execSSH(cmd, desc = "") {
     console.info(desc)
-    console.info("exec ssh: " + cmd)
+    console.info(cmd)
     var output = ""
-    await exec.exec("ssh -t FreeBSD", [], {
+    await exec.exec(`ssh -t ${vmName}`, [], {
         input: cmd, listeners: {
-            stdout: (s) => {
-                output += s
-            }
+            stdout: (s) => { output += s }
         }
     })
     console.info(output)
 }
 
-function isSSHReachable(vmName, port) {
+function isSSHReachable(port) {
     return new Promise(function (resolve, reject) {
         let timer = setTimeout(function () {
             reject("timeout");
@@ -42,8 +42,7 @@ function isSSHReachable(vmName, port) {
     });
 }
 
-async function waitFor(vmName, port) {
-
+async function waitFor(port) {
     var machineNotReady = true
 
     let slept = 0;
@@ -54,18 +53,17 @@ async function waitFor(vmName, port) {
         }
         await sleep(5000);
 
-        isSSHReachable(vmName, port).then(function () {
+        isSSHReachable(port).then(function () {
             console.info("VM is now up & running")
             sleep(1000);
             machineNotReady = false
         }, function (err) {
-            console.info(`Error: ${err}`)
-            console.info("Checking, please wait....")
+            console.error("Checking, please wait....")
         })
     }
 }
 
-async function vboxmanage(vmName, cmd, args = "") {
+async function vboxmanage(cmd, args = "") {
     await exec.exec("sudo  vboxmanage " + cmd + "   " + vmName + "   " + args);
 }
 
@@ -111,8 +109,6 @@ async function setup(version, nat, mem) {
         let ova = `freebsd-${version}.ova`;
         await vboxmanage("", "import", path.join(workingDir, ova));
 
-        let vmName = "freebsd";
-
         if (nat) {
             let nats = nat.split("\n").filter(x => x !== "");
             for (let element of nats) {
@@ -123,28 +119,28 @@ async function setup(version, nat, mem) {
                     let proto = segs[0].trim().trim('"');
                     let hostPort = segs[1].trim().trim('"');
                     let vmPort = segs[2].trim().trim('"');
-                    await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
+                    await vboxmanage("modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
 
                 } else if (segs.length === 2) {
                     let proto = "tcp"
                     let hostPort = segs[0].trim().trim('"');
                     let vmPort = segs[1].trim().trim('"');
-                    await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
+                    await vboxmanage("modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
                 }
             }
         }
 
         if (mem) {
-            await vboxmanage(vmName, "modifyvm", "  --memory " + mem);
+            await vboxmanage("modifyvm", "  --memory " + mem);
         }
 
-        await vboxmanage(vmName, "modifyvm", " --cpus 3");
+        await vboxmanage("modifyvm", " --cpus 3");
 
-        await vboxmanage(vmName, "startvm", " --type headless");
+        await vboxmanage("startvm", " --type headless");
 
         console.info("First boot");
 
-        await waitFor(vmName, port);
+        await waitFor(port);
 
         try {
             await execSSH("ntpdate -v -b pool.ntp.org || ntpdate -v -b us.pool.ntp.org || ntpdate -v -b asia.pool.ntp.org", "Sync FreeBSD time");
@@ -159,7 +155,6 @@ async function setup(version, nat, mem) {
             let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fusefs && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
             await execSSH(cmd2, "Setup sshfs");
         } else {
-            let cmd2 = "pkg  install  -y rsync";
             await execSSH(cmd2, "Setup rsync");
             await exec.exec("rsync -auvzrtopg  --exclude _actions/os-runners/freebsd-vm/*  /Users/runner/work/ FreeBSD:work");
         }
