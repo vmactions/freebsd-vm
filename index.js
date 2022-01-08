@@ -12,14 +12,12 @@ async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-async function execSSH(cmd, desc = "") {
-    console.info(desc)
+async function execSSH(cmd) {
     console.info(cmd)
     var output = ""
     await exec.exec(`ssh -t ${vmName}`, [], {
-        input: cmd, listeners: {
-            stdout: (s) => { output += s }
-        }
+        input: cmd,
+        listeners: { stdout: (s) => { output += s }}
     })
     console.info(output)
 }
@@ -143,19 +141,22 @@ async function setup(version, nat, mem) {
         await waitFor(port);
 
         try {
-            await execSSH("ntpdate -v -b pool.ntp.org || ntpdate -v -b us.pool.ntp.org || ntpdate -v -b asia.pool.ntp.org", "Sync FreeBSD time");
+            console.info(`Sync FreeBSD time`)
+            await execSSH(`ntpdate -v -b pool.ntp.org || ntpdate -v -b us.pool.ntp.org || ntpdate -v -b asia.pool.ntp.org`)
         } catch (ex) {
             console.info("can not sync time")
         }
         let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
-        await execSSH(cmd1, "Setting up VM");
+        console.info(`Setting up VM`)
+        await execSSH(cmd1)
 
         let sync = core.getInput("sync");
         if (sync == "sshfs") {
+
             let cmd2 = "pkg  install  -y fusefs-sshfs && kldload  fusefs && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work";
-            await execSSH(cmd2, "Setup sshfs");
+            console.info(`Setup sshfs`)
+            await execSSH(cmd2);
         } else {
-            await execSSH(cmd2, "Setup rsync");
             await exec.exec("rsync -auvzrtopg  --exclude _actions/os-runners/freebsd-vm/*  /Users/runner/work/ FreeBSD:work");
         }
 
