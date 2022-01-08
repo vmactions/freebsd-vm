@@ -19,7 +19,7 @@ jobs:
       with:
         prepare: pkg install -y dmidecode
         version: ${{ matrix.version }}
-        mem: 2048
+        memory: 4096
         nat: |
           "8080": "80"
           "8443": "443"

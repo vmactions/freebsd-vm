@@ -8,6 +8,50 @@ const path = require('path')
 
 let vmName = "FreeBSD"
 
+class VirtualMachine {
+    constructor() {
+        this.run = core.getInput("run")
+        this.version = core.getInput('version')
+        this.envs = core.getInput("envs")
+        this.memory = core.getInput("memory")
+        this.nat = core.getInput("nat")
+        this.prepare = core.getInput("prepare")
+        this.shell = this.getDesiredShell()
+        this.sync = core.getInput("sync")
+
+        if (this.envs) {
+            fs.appendFileSync(path.join(process.env["HOME"], `/.ssh/config`), `  SendEnv ${this.envs}`);
+        }
+    }
+
+    getDesiredShell() {
+        let useSH = core.getInput("usesh").toLowerCase() === "true"
+        if (useSH) {
+            return `sh`
+        } else {
+            return `$SHELL`
+        }
+    }
+
+    printInformation() {
+        console.log(`FreeBSD version: ${this.version}`)
+        console.log(`Memory: ${this.memory}`)
+
+        console.log(`Run command(s): ${this.run}`)
+
+        console.log(`*** Optional parameters ***`)
+        console.log(`Prepare Statement: ${this.prepare}`)
+        console.log(`Additional environment variables: ${this.envs}`)
+        console.log(`NAT: ${this.nat}`)
+        console.log(`Used Shell: ${this.shell}`)
+    }
+
+    async runCommand() {
+        await exec.exec(`ssh FreeBSD sh -c 'cd $GITHUB_WORKSPACE && exec ${this.shell}'`, [], {input: this.run})
+    }
+}
+
+
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -17,12 +61,16 @@ async function execSSH(cmd) {
     var output = ""
     await exec.exec(`ssh -t ${vmName}`, [], {
         input: cmd,
-        listeners: { stdout: (s) => { output += s }}
+        listeners: {
+            stdout: (s) => {
+                output += s
+            }
+        }
     })
     console.info(output)
 }
 
-function isSSHReachable(port) {
+function isSSHReachable(port) {;
     return new Promise(function (resolve, reject) {
         let timer = setTimeout(function () {
             reject("timeout");
@@ -75,7 +123,7 @@ async function setup(version, nat, mem) {
         let ssh_config = `
     Host FreeBSD
       User root
-      HostName localhost
+      HostName localhost;
       Port ${port}
       StrictHostKeyChecking=accept-new
       IdentityFile ~/.ssh/id_ed25519
@@ -169,44 +217,22 @@ async function setup(version, nat, mem) {
 
 
 async function main() {
-    let version = core.getInput('version')
-    console.log(`FreeBSD version: ${version}`)
+    let vm = new VirtualMachine()
+    vm.printInformation()
 
-    let nat = core.getInput("nat");
-    console.info("nat: " + nat);
+    await setup(vm.version, vm.nat, vm.memory);
 
-    let mem = core.getInput("mem");
-    console.info("mem: " + mem);
-
-    await setup(version, nat, mem);
-
-    var envs = core.getInput("envs");
-    console.log("envs:" + envs);
-    if (envs) {
-        fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "SendEnv " + envs + "\n");
-    }
-
-    var prepare = core.getInput("prepare");
-    if (prepare) {
+    if (vm.prepare) {
         console.info("Running prepare: " + prepare);
-        await exec.exec("ssh -t FreeBSD", [], {input: prepare});
+        await exec.exec("ssh -t FreeBSD", [], {input: prepare });
     }
-
-    var run = core.getInput("run");
-    console.log("run: " + run);
 
     try {
-        var usesh = core.getInput("usesh").toLowerCase() == "true";
-        if (usesh) {
-            await exec.exec("ssh FreeBSD sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], {input: run});
-        } else {
-            await exec.exec("ssh FreeBSD sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], {input: run});
-        }
+        await vm.runCommand()
     } catch (error) {
         core.setFailed(error.message);
     } finally {
-        let sync = core.getInput("sync");
-        if (sync != "sshfs") {
+        if (vm.sync !== "sshfs") {
             console.info("get back by rsync");
             await exec.exec("rsync -uvzrtopg  FreeBSD:work/ /Users/runner/work");
         }
@@ -215,5 +241,5 @@ async function main() {
 
 main().catch(ex => {
     core.setFailed(ex.message);
-});
+})
 
