@@ -208,10 +208,13 @@ async function main() {
   } catch (error) {
     core.setFailed(error.message);
   } finally {
-    let sync = core.getInput("sync");
-    if (sync != "sshfs") {
-      core.info("get back by rsync");
-      await exec.exec("rsync -uvzrtopg  freebsd:work/ /Users/runner/work");
+    let copyback = core.getInput("copyback");
+    if(copyback !== "false") {
+      let sync = core.getInput("sync");
+      if (sync != "sshfs") {
+        core.info("get back by rsync");
+        await exec.exec("rsync -uvzrtopg  freebsd:work/ /Users/runner/work");
+      }
     }
   }
 }
