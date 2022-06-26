@@ -5,7 +5,7 @@ on: [push]
 
 jobs:
   testfreebsd:
-    runs-on: macos-10.15
+    runs-on: macos-12
     name: A job to run test FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}

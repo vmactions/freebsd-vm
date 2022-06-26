@@ -17,7 +17,7 @@ on: [push]
 
 jobs:
   testfreebsd:
-    runs-on: macos-10.15
+    runs-on: macos-12
     name: A job to run test FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
@@ -43,7 +43,7 @@ jobs:
 ```
 
 
-The `runs-on: macos-10.15` must be `macos-10.15`.
+The `runs-on: macos-12` must be `macos-12`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into freebsd vm.
 
