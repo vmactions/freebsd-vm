@@ -6,7 +6,7 @@ const path = require("path");
 
 
 var osname = "freebsd";
-var loginTag = "FreeBSD/amd64 (freebsd) (tty";
+var loginTag = "64 (freebsd) (tty";
 var workingDir = __dirname;
 
 async function execSSH(cmd, desp = "") {
