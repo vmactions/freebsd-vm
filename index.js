@@ -1,76 +1,32 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
-const tc = require('@actions/tool-cache');
-const io = require('@actions/io');
 const fs = require("fs");
 const path = require("path");
 
-async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+
+
+var osname = "freebsd";
+var loginTag = "FreeBSD/amd64 (freebsd) (tty";
+var workingDir = __dirname;
 
 async function execSSH(cmd, desp = "") {
   core.info(desp);
   core.info("exec ssh: " + cmd);
-  await exec.exec("ssh -t freebsd", [], { input: cmd });
+  await exec.exec("ssh -t " + osname, [], { input: cmd });
 }
 
 
-
-async function getScreenText(vmName) {
-  let png = path.join(__dirname, "/screen.png");
-  await vboxmanage(vmName, "controlvm", "screenshotpng  " + png);
-  await exec.exec("sudo chmod 666 " + png);
-  let output = "";
-  await exec.exec("pytesseract  " + png, [], {
-    listeners: {
-      silent: true,
-      stdout: (s) => {
-        output += s;
-      }
-    }
-  });
-  return output;
-}
-
-async function waitFor(vmName, tag) {
-
-  let slept = 0;
-  while (true) {
-    slept += 1;
-    if (slept >= 300) {
-      throw new Error("Timeout can not boot");
-    }
-    await sleep(1000);
-
-    let output = await getScreenText(vmName);
-
-    if (tag) {
-      if (output.includes(tag)) {
-        core.info("OK");
-        await sleep(1000);
-        return true;
-      } else {
-        core.info("Checking, please wait....");
-      }
-    } else {
-      if (!output.trim()) {
-        core.info("OK");
-        return true;
-      } else {
-        core.info("Checking, please wait....");
-      }
-    }
-
+async function shell(cmd, cdToScriptHome = true) {
+  core.info("exec shell: " + cmd);
+  if(cdToScriptHome) {
+    await exec.exec("bash", [], { input: "cd " + workingDir + " && (" + cmd + ")" });
+  } else {
+    await exec.exec("bash", [], { input:  cmd  });
   }
 
-  return false;
+
 }
 
-
-async function vboxmanage(vmName, cmd, args = "") {
-  await exec.exec("sudo  vboxmanage " + cmd + "   " + vmName + "   " + args);
-}
 
 async function setup(nat, mem) {
   try {
@@ -122,29 +78,31 @@ async function setup(nat, mem) {
           let proto = segs[0].trim().trim('"');
           let hostPort = segs[1].trim().trim('"');
           let vmPort = segs[2].trim().trim('"');
-          await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
+
+          await shell("bash vbox.sh addNAT " + osname + " " + proto + " " + hostPort + " " + vmPort);
 
         } else if (segs.length === 2) {
           let proto = "tcp"
           let hostPort = segs[0].trim().trim('"');
           let vmPort = segs[1].trim().trim('"');
-          await vboxmanage(vmName, "modifyvm", "  --natpf1 '" + hostPort + "," + proto + ",," + hostPort + ",," + vmPort + "'");
+          await shell("bash vbox.sh addNAT " + osname + " " + proto + " " + hostPort + " " + vmPort);
         }
       };
     }
 
     if (mem) {
-      await vboxmanage(vmName, "modifyvm", "  --memory " + mem);
+      await shell("bash vbox.sh setMemory " + osname + " " + mem);
     }
 
-    await vboxmanage(vmName, "modifyvm", " --cpus 3");
+    await shell("bash vbox.sh setCPU " + osname + " 3");
 
-    await vboxmanage(vmName, "startvm", " --type headless");
+    await shell("bash vbox.sh startVM " + osname );
 
     core.info("First boot");
 
-    let loginTag = "FreeBSD/amd64 (freebsd) (ttyv";
-    await waitFor(vmName, loginTag);
+
+
+    await shell("bash vbox.sh waitForText " + osname + "  '"+ loginTag +"'");
 
     try {
       await execSSH("ntpdate -b pool.ntp.org || ntpdate -b us.pool.ntp.org || ntpdate -b asia.pool.ntp.org", "Sync FreeBSD time");
@@ -161,7 +119,7 @@ async function setup(nat, mem) {
     } else {
       let cmd2 = "pkg  install  -y rsync";
       await execSSH(cmd2, "Setup rsync");
-      await exec.exec("rsync -auvzrtopg  --exclude _actions/vmactions/freebsd-vm  /Users/runner/work/ freebsd:work");
+      await shell("rsync -auvzrtopg  --exclude _actions/vmactions/" + osname+ "-vm  /Users/runner/work/ " + osname + ":work", false);
     }
 
     core.info("OK, Ready!");
@@ -169,6 +127,8 @@ async function setup(nat, mem) {
   }
   catch (error) {
     core.setFailed(error.message);
+    await shell("pwd && ls -lah" );
+    await shell("bash -c 'pwd && ls -lah ~/.ssh/ && cat ~/.ssh/config'" );
   }
 }
 
@@ -192,7 +152,7 @@ async function main() {
   var prepare = core.getInput("prepare");
   if (prepare) {
     core.info("Running prepare: " + prepare);
-    await exec.exec("ssh -t freebsd", [], { input: prepare });
+    await exec.exec("ssh -t " + osname, [], { input: prepare });
   }
 
   var run = core.getInput("run");
@@ -201,9 +161,9 @@ async function main() {
   try {
     var usesh = core.getInput("usesh").toLowerCase() == "true";
     if (usesh) {
-      await exec.exec("ssh freebsd sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], { input: run });
+      await exec.exec("ssh " + osname + " sh -c 'cd $GITHUB_WORKSPACE && exec sh'", [], { input: run });
     } else {
-      await exec.exec("ssh freebsd sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], { input: run });
+      await exec.exec("ssh " + osname + " sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], { input: run });
     }
   } catch (error) {
     core.setFailed(error.message);
@@ -213,7 +173,7 @@ async function main() {
       let sync = core.getInput("sync");
       if (sync != "sshfs") {
         core.info("get back by rsync");
-        await exec.exec("rsync -uvzrtopg  freebsd:work/ /Users/runner/work");
+        await exec.exec("rsync -uvzrtopg  " + osname + ":work/ /Users/runner/work");
       }
     }
   }
