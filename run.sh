@@ -72,6 +72,10 @@ importVM() {
 
   bash $vmsh importVM "$ovafile"
 
+  if [ "$DEBUG" ]; then
+    bash $vmsh startWeb $osname
+    bash $vmsh startCF
+  fi
 
 }
 

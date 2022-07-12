@@ -101,6 +101,9 @@ async function setup(nat, mem) {
 
 
 async function main() {
+  let debug = core.getInput("debug");
+  process.env.DEBUG = debug;
+
   let nat = core.getInput("nat");
   core.info("nat: " + nat);
 
