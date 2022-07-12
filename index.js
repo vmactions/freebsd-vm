@@ -12,7 +12,7 @@ var workingDir = __dirname;
 async function execSSH(cmd, desp = "") {
   core.info(desp);
   core.info("exec ssh: " + cmd);
-  await exec.exec("ssh -t " + osname, [], { input: cmd });
+  await exec.exec("ssh " + osname, [], { input: cmd });
 }
 
 
