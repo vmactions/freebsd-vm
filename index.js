@@ -127,6 +127,7 @@ async function main() {
   var run = core.getInput("run");
   console.log("run: " + run);
 
+  var error = null;
   try {
     var usesh = core.getInput("usesh").toLowerCase() == "true";
     if (usesh) {
@@ -134,8 +135,9 @@ async function main() {
     } else {
       await exec.exec("ssh " + osname + " sh -c 'cd $GITHUB_WORKSPACE && exec \"$SHELL\"'", [], { input: run });
     }
-  } catch (error) {
-    core.setFailed(error.message);
+
+  } catch (err) {
+    error = err;
   } finally {
     let copyback = core.getInput("copyback");
     if(copyback !== "false") {
@@ -145,7 +147,12 @@ async function main() {
         await exec.exec("rsync -uvzrtopg  " + osname + ":work/ /Users/runner/work");
       }
     }
-    process.exit(0);
+    if(error) {
+      core.setFailed(error.message);
+      process.exit(1);
+    } else {
+      process.exit(0);
+    }
   }
 }
 
