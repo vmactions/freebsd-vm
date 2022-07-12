@@ -18,7 +18,6 @@ jobs:
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: pkg install -y curl
-        debug: 1
         mem: 2048
         nat: |
           "8080": "80"
