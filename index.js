@@ -145,6 +145,7 @@ async function main() {
         await exec.exec("rsync -uvzrtopg  " + osname + ":work/ /Users/runner/work");
       }
     }
+    process.exit(0);
   }
 }
 
