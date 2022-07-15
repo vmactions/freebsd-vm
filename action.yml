@@ -7,6 +7,9 @@ inputs:
   run:
     description: 'The CI command to run'
     required: true
+  release:
+    description: 'The release version of FreeBSD vm'
+    required: false
   envs:
     description: 'The envs to pass into FreeBSD vm'
     required: false

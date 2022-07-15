@@ -1,10 +1,21 @@
 
 name: Test
 
-on: [push]
+on:
+  push:
+    branches:
+      - '*'
+    paths:
+      - '**.sh'
+      - '.github/workflows/test.yml'
+      - 'index.js'
+      - 'conf/*'
 
 jobs:
   testfreebsd:
+    strategy:
+      matrix:
+        release: [ "", "12.3", "13.0", "13.1"]
     runs-on: macos-12
     name: A job to run test FreeBSD
     env:
@@ -19,7 +30,7 @@ jobs:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: pkg install -y curl
         mem: 2048
-        debug: 1
+        release: ${{ matrix.release }}
         nat: |
           "8080": "80"
           "8443": "443"
