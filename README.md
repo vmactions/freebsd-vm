@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.7
+      uses: vmactions/freebsd-vm@v0.1.8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -72,7 +72,7 @@ The code is shared from the host to the FreeBSD VM via `rsync`, you can choose t
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.7
+      uses: vmactions/freebsd-vm@v0.1.8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -94,7 +94,7 @@ You can add NAT port between the host and the VM.
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.7
+      uses: vmactions/freebsd-vm@v0.1.8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -114,7 +114,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.7
+      uses: vmactions/freebsd-vm@v0.1.8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -132,7 +132,7 @@ It uses [the latest FreeBSD release](conf/default.release.conf) by default, you 
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.7
+      uses: vmactions/freebsd-vm@v0.1.8
       with:
         release: 13.0
 ...
