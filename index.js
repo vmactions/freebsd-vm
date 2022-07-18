@@ -139,9 +139,9 @@ async function main() {
   try {
     var usesh = core.getInput("usesh").toLowerCase() == "true";
     if (usesh) {
-      await execSSHSH("cd $GITHUB_WORKSPACE && (" + run +")");
+      await execSSHSH("cd $GITHUB_WORKSPACE && ( " + run +" )");
     } else {
-      await execSSH("cd $GITHUB_WORKSPACE && (" + run +")");
+      await execSSH("cd $GITHUB_WORKSPACE && ( " + run +" )");
     }
 
   } catch (err) {
