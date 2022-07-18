@@ -23,6 +23,8 @@ if [ -z "$VM_RELEASE" ]; then
   VM_RELEASE=$DEFAULT_RELEASE
 fi
 
+export VM_RELEASE
+
 
 #load the release conf
 if [ ! -e "conf/$VM_RELEASE.conf" ]; then
@@ -65,12 +67,7 @@ osname="$VM_OS_NAME"
 ostype="$VM_OS_TYPE"
 sshport=$VM_SSH_PORT
 
-ova="$VM_OVA_NAME.ova"
-
-ovazip="$(echo "$OVA_LINK" | rev  | cut -d / -f 1 | rev)"
-
-
-ovafile="$ova"
+ovafile="$osname-$VM_RELEASE.ova"
 
 
 
@@ -81,14 +78,22 @@ importVM() {
 
   bash $vmsh setup
 
-  if [ ! -e "$ovazip" ]; then
+  if [ ! -e "$ovafile" ]; then
     echo "Downloading $OVA_LINK"
-    wget -q "$OVA_LINK"
+    wget -O "$ovafile" -q "$OVA_LINK"
   fi
 
-  if [ ! -e "$ovafile" ]; then
-    7za e -y $ovazip  -o.
+  if [ ! -e "id_rsa.pub" ]; then
+    echo "Downloading $VM_PUBID_LINK"
+    wget -O "id_rsa.pub" -q "$VM_PUBID_LINK"
   fi
+
+  if [ ! -e "mac.id_rsa" ]; then
+    echo "Downloading $VM_PUBID_LINK"
+    wget -O "mac.id_rsa" -q "$HOST_ID_LINK"
+  fi
+
+  ls -lah
 
   bash $vmsh addSSHAuthorizedKeys id_rsa.pub
   cat mac.id_rsa >$HOME/.ssh/mac.id_rsa
