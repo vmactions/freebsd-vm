@@ -10,9 +10,10 @@ on:
       - '.github/workflows/test.yml'
       - 'index.js'
       - 'conf/*'
+      - 'hooks/*'
 
 jobs:
-  testfreebsd:
+  test:
     strategy:
       matrix:
         release: [ "", "12.3", "13.0", "13.1"]

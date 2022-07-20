@@ -72,11 +72,7 @@ async function setup(nat, mem) {
 
     await shell("bash run.sh waitForLoginTag");
 
-    try {
-      await execSSH("ntpdate -b pool.ntp.org || ntpdate -b us.pool.ntp.org || ntpdate -b asia.pool.ntp.org", "Sync FreeBSD time");
-    } catch (ex) {
-      core.info("can not sync time")
-    }
+
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
 
@@ -125,6 +121,8 @@ async function main() {
   if (envs) {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "SendEnv " + envs + "\n");
   }
+
+  await shell("bash run.sh onStarted" );
 
   var prepare = core.getInput("prepare");
   if (prepare) {
