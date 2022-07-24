@@ -34,7 +34,7 @@ jobs:
           pkg install -y curl
 
         run: |
-                    pwd
+          pwd
           ls -lah
           whoami
           env
