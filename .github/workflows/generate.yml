@@ -51,7 +51,7 @@ jobs:
             base-vm/run.sh : run.sh
       - name: Update node_modules
         run: |
-          git rm -r node_modules
+          [ -e "node_modules" ] && git rm -r node_modules
           npm install --save
           git add node_modules
       - uses: EndBug/add-and-commit@v9
