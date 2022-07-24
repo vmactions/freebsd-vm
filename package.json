@@ -1,0 +1,25 @@
+{
+  "name": "vmactions-FreeBSD",
+  "version": "0.0.1",
+  "description": "GitHub actions for FreeBSD",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vmactions/freebsd-vm.git"
+  },
+  "keywords": [
+    "GitHub",
+    "Actions",
+    "FreeBSD"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vmactions/freebsd-vm/issues"
+  },
+  "homepage": "https://github.com/vmactions/freebsd-vm",
+  "dependencies": {
+    "@actions/core": "^1.9.0",
+    "@actions/exec": "^1.1.1"
+  }
+}

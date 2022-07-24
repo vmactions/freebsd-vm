@@ -1,0 +1,37 @@
+name: 'FreeBSD-vm'
+description: 'Run CI in FreeBSD for GitHub Actions'
+inputs:
+  prepare:
+    description: 'Install some tools before CI runs'
+    required: false
+  run:
+    description: 'The CI command to run'
+    required: true
+  release:
+    description: 'The release version of FreeBSD vm'
+    required: false
+  envs:
+    description: 'The envs to pass into FreeBSD vm'
+    required: false
+  mem:
+    description: 'Set the memory size of the vm'
+    required: false
+  nat:
+    description: 'The NAT ports to FreeBSD vm'
+    required: false
+  usesh:
+    description: 'Use sh instead of the default shell: csh'
+    required: false
+  sync:
+    description: 'How to synchronize the source code to/from the VM, Values can be:  rsync(default), and sshfs'
+    required: false
+  copyback:
+    description: 'whether or not to copy the build result repo back from the VM to the host Mac OS, defalt is True'
+    required: false
+branding:
+  icon: 'activity'  
+  color: 'green'
+
+runs:
+  using: 'node16'
+  main: 'index.js'
