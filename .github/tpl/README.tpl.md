@@ -138,7 +138,7 @@ It uses [the latest {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) 
 ...
 ```
 
-All the supported releases are here: [{{VM_NAME}}  "{{ALL_RELEASES}}](conf)
+All the supported releases are here: [{{VM_NAME}}  {{ALL_RELEASES}}](conf)
 
 
 # Under the hood
