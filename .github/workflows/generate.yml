@@ -33,7 +33,9 @@ jobs:
           echo "ALL_RELEASES=$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed 's/,/", "/g')" >> $GITHUB_ENV
 
           git clone https://github.com/vmactions/base-vm.git
-          
+
+          [ ! -e ".github/tpl" ] && mkdir -p .github/tpl
+
       - name: Generate files
         uses: vmactions/render@v0.0.1
         env:
