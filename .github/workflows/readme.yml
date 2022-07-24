@@ -1,0 +1,51 @@
+name: "Update Readme"
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '.github/tpl/*'
+      - '.github/data/*'
+      - '.github/workflows/readme.yml'
+
+  release:
+    types: [ published ]
+    
+    
+jobs:
+  readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get latest release
+        id: get-latest-release
+        uses: InsonusK/get-latest-release@v1.0.1
+        with:
+          myToken: ${{ github.token }}
+          view_top: 1
+
+      - name: Using main branch
+        run: |
+          git switch main || (git fetch --all && git checkout -b main origin/main)
+          . conf/default.release.conf
+          echo "DEFAULT_RELEASE=$DEFAULT_RELEASE" >> $GITHUB_ENV
+          echo "ALL_RELEASES=$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed 's/,/, /g')" >> $GITHUB_ENV
+
+      - name: Update the readme.md
+        uses: vmactions/render@v0.0.1
+        env:
+          LATEST_TAG: ${{ steps.get-latest-release.outputs.tag_name }}
+        with:
+          datafile: .github/data/datafile.ini
+          files: |
+            .github/tpl/README.tpl.md : README.md
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          message: "Update version to ${{ steps.get-latest-release.outputs.tag_name }}"
+          pull: '--rebase --autostash '
+          add: |
+            README.md
+

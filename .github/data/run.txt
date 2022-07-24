@@ -1,0 +1,5 @@
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
