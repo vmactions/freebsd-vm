@@ -142,7 +142,7 @@ It uses [the latest FreeBSD 13.1](conf/default.release.conf) by default, you can
 ...
 ```
 
-All the supported releases are here: [FreeBSD  "12.3", "13.0", "13.1", "](conf)
+All the supported releases are here: [FreeBSD  "12.3, 13.0, 13.1, ](conf)
 
 
 # Under the hood
