@@ -35,6 +35,7 @@ jobs:
           git clone https://github.com/vmactions/base-vm.git
 
           mkdir -p .github/tpl
+          cat base-vm/.github/tpl/README.tpl.md >.github/tpl/README.tpl.md
 
       - name: Generate files
         uses: vmactions/render@v0.0.1
@@ -44,7 +45,6 @@ jobs:
           datafile: .github/data/datafile.ini
           files: |
             base-vm/.github/tpl/test.tpl.yml : .github/workflows/test.yml
-            base-vm/.github/tpl/README.tpl.md : .github/tpl/README.tpl.md
             base-vm/.github/dependabot.yml : .github/dependabot.yml
             base-vm/.github/FUNDING.yml : .github/FUNDING.yml
             base-vm/.github/workflows/readme.yml : .github/workflows/readme.yml
