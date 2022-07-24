@@ -1,10 +1,10 @@
-# Run GitHub CI in FreeBSD ![Test](https://github.com/vmactions/freebsd-vm/workflows/Test/badge.svg)
+# Run GitHub CI in {{VM_NAME}} ![Test](https://github.com/{{GITHUB_REPOSITORY}}/workflows/Test/badge.svg)
 
-Use this action to run your CI in FreeBSD.
+Use this action to run your CI in {{VM_NAME}}.
 
-The github workflow only supports Ubuntu, Windows and MacOS. But what if you need to use FreeBSD?
+The github workflow only supports Ubuntu, Windows and MacOS. But what if you need to use {{VM_NAME}}?
 
-This action is to support FreeBSD.
+This action is to support {{VM_NAME}}.
 
 
 Sample workflow `test.yml`:
@@ -17,28 +17,24 @@ on: [push]
 
 jobs:
   test:
-    runs-on: macos-12
-    name: A job to run test in FreeBSD
+    runs-on: {{VM_RUNS_ON}}
+    name: A job to run test in {{VM_NAME}}
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
     steps:
     - uses: actions/checkout@v2
-    - name: Test in FreeBSD
+    - name: Test in {{VM_NAME}}
       id: test
-      uses: vmactions/freebsd-vm@v0.2.0
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
         prepare: |
-          pkg install -y curl
+          {{VM_PREPARE}}
 
         run: |
-          pwd
-          ls -lah
-          whoami
-          env
-          freebsd-version
+{{VM_RUN}}
 
 
 
@@ -46,7 +42,7 @@ jobs:
 ```
 
 
-The `runs-on: macos-12` must be `macos-12`.
+The `runs-on: {{VM_RUNS_ON}}` must be `{{VM_RUNS_ON}}`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into the vm.
 
@@ -62,7 +58,7 @@ All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 
 So, you will have the same directory and same default env variables when you `run` the CI script.
 
-The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
+{{VM_SHELL_COMMENTS}}
 
 The code is shared from the host to the VM via `rsync`, you can choose to use to `sshfs` share code instead.
 
@@ -75,13 +71,13 @@ The code is shared from the host to the VM via `rsync`, you can choose to use to
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0.2.0
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
         sync: sshfs
         prepare: |
-          pkg install -y curl
+          {{VM_PREPARE}}
 
 
 
@@ -98,7 +94,7 @@ You can add NAT port between the host and the VM.
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0.2.0
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -118,7 +114,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0.2.0
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -128,7 +124,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
 
 
 
-It uses [the latest FreeBSD 13.1](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
+It uses [the latest {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by default, you can use `release` option to use another version of {{VM_NAME}}:
 
 ```
 ...
@@ -136,13 +132,13 @@ It uses [the latest FreeBSD 13.1](conf/default.release.conf) by default, you can
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0.2.0
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
       with:
-        release: 13.0
+        release: {{VM_SET_RELEASE}}
 ...
 ```
 
-All the supported releases are here: [FreeBSD  "12.3", "13.0", "13.1", "](conf)
+All the supported releases are here: [{{VM_NAME}}  "{{ALL_RELEASES}}](conf)
 
 
 # Under the hood
@@ -151,6 +147,6 @@ GitHub only supports Ubuntu, Windows and MacOS out of the box.
 
 However, the MacOS support virtualization. It has VirtualBox installed.
 
-So, we run the FreeBSD VM in VirtualBox on MacOS.
+So, we run the {{VM_NAME}} VM in VirtualBox on MacOS.
 
 
