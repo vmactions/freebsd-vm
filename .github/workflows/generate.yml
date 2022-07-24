@@ -34,7 +34,7 @@ jobs:
 
           git clone https://github.com/vmactions/base-vm.git
 
-          [ ! -e ".github/tpl" ] && mkdir -p .github/tpl
+          mkdir -p .github/tpl
 
       - name: Generate files
         uses: vmactions/render@v0.0.1
