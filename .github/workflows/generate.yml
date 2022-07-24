@@ -43,7 +43,6 @@ jobs:
         with:
           datafile: .github/data/datafile.ini
           files: |
-            base-vm/.github/tpl/README.tpl.md : README.md
             base-vm/.github/tpl/test.tpl.yml : .github/workflows/test.yml
             base-vm/.github/tpl/README.tpl.md : .github/tpl/README.tpl.md
             base-vm/.github/dependabot.yml : .github/dependabot.yml
@@ -63,7 +62,6 @@ jobs:
           message: "Generate the project"
           pull: '--rebase --autostash '
           add: |
-            README.md
             .github/workflows/readme.yml
             .github/workflows/test.yml
             .github/tpl/README.tpl.md
