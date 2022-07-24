@@ -45,6 +45,7 @@ jobs:
             base-vm/.github/tpl/test.tpl.yml : .github/workflows/test.yml
             base-vm/.github/dependabot.yml : .github/dependabot.yml
             base-vm/.github/FUNDING.yml : .github/FUNDING.yml
+            base-vm/.github/workflows/readme.yml : .github/workflows/readme.yml
             base-vm/package.json : package.json
             base-vm/index.js : index.js
             base-vm/action.yml : action.yml
@@ -60,6 +61,7 @@ jobs:
           pull: '--rebase --autostash '
           add: |
             README.md
+            .github/workflows/readme.yml
             .github/workflows/test.yml
             .github/dependabot.yml
             .github/FUNDING.yml
