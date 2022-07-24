@@ -34,7 +34,7 @@ jobs:
           {{VM_PREPARE}}
 
         run: |
-          {{VM_RUN}}
+{{VM_RUN}}
 
 
 
