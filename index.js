@@ -32,10 +32,11 @@ async function shell(cmd, cdToScriptHome = true) {
 
 async function setup(nat, mem) {
   try {
-
+    core.startGroup("Importing VM");
     await shell("bash run.sh importVM");
+    core.endGroup();
 
-
+    core.startGroup("Set VM");
     if (nat) {
       let nats = nat.split("\n").filter(x => x !== "");
       for (let element of nats) {
@@ -63,9 +64,14 @@ async function setup(nat, mem) {
     }
 
     await shell("bash run.sh setCPU  3");
+    core.endGroup();
 
+    core.startGroup("Run onBeforeStartVM");
     await shell("bash run.sh onBeforeStartVM " );
+    core.endGroup();
 
+
+    core.startGroup("Run startVM");
     await shell("bash run.sh startVM " );
 
     core.info("First boot");
@@ -73,8 +79,9 @@ async function setup(nat, mem) {
     await shell("bash run.sh waitForBooting");
 
     await shell("bash run.sh waitForLoginTag");
+    core.endGroup();
 
-
+    core.startGroup("Initialize files in VM");
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
 
@@ -88,6 +95,7 @@ async function setup(nat, mem) {
     }
 
     core.info("OK, Ready!");
+    core.endGroup();
 
   }
   catch (error) {
@@ -124,16 +132,23 @@ async function main() {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "SendEnv " + envs + "\n");
   }
 
+  core.startGroup("Run onStarted in VM");
   await shell("bash run.sh onStarted" );
+  core.endGroup();
 
+  core.startGroup("Run 'prepare' in VM");
   var prepare = core.getInput("prepare");
   if (prepare) {
     core.info("Running prepare: " + prepare);
     await execSSH(prepare);
   }
 
+  core.endGroup();
+
+  core.startGroup("Run 'run' in VM");
   var run = core.getInput("run");
   console.log("run: " + run);
+
 
   var error = null;
   try {
@@ -147,13 +162,18 @@ async function main() {
   } catch (err) {
     error = err;
   } finally {
+    core.endGroup();
+
+
     let copyback = core.getInput("copyback");
     if(copyback !== "false") {
+      core.startGroup("Copy files back from the VM");
       let sync = core.getInput("sync");
       if (sync != "sshfs") {
         core.info("get back by rsync");
         await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
       }
+      core.endGroup();
     }
     if(error) {
       core.setFailed(error.message);

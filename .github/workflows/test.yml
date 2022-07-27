@@ -35,6 +35,7 @@ jobs:
         prepare: |
           pkg install -y curl
         mem: 2048
+        copyback: false
         release: ${{ matrix.release }}
         nat: |
           "8080": "80"
