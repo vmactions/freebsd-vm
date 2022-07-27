@@ -1,0 +1,38 @@
+name: "Manual"
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: macos-12
+    env:
+      DEBUG: 1
+      NGROK_TOKEN : ${{ secrets.NGROK_TOKEN }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run establish a ngrok tunnel
+      id: test
+      uses: vmactions/ngrok-tunnel@v0.0.1
+      with:
+        protocol: tcp
+        port: 3390
+    - name: Sleep
+      run: |
+        for i in $(seq 1 10) ; do echo $i; sleep 1; done
+        touch /tmp/keepalive
+        echo "====================================="
+        echo "please loin the SSH bellow, and run: "
+        echo "bash run.sh importVM"
+        echo "bash run.sh onBeforeStartVM "
+        echo "bash run.sh startVM "
+        echo "====================================="
+
+    - uses: neilpang/debugger-action@master
+
+
+
+
+
+
+
