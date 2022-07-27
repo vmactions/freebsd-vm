@@ -48,11 +48,15 @@ fi
 
 . $_conf_filename
 
+export VM_ISO_LINK
+export VM_OS_NAME
+export VM_RELEASE
+export VM_INSTALL_CMD
+export VM_LOGIN_TAG
+
 
 ##########################################################
 
-
-export VM_OS_NAME
 
 vmsh="$VM_VBOX"
 
@@ -175,6 +179,26 @@ onStarted() {
   fi
 }
 
+
+onBeforeStartVM() {
+  #run in the host machine, the VM is imported, but not booted yet.
+  if [ -e "hooks/onBeforeStartVM.sh" ]; then
+    echo "Run hooks/onBeforeStartVM.sh"
+    . hooks/onBeforeStartVM.sh
+  else
+    echo "Skip hooks/onBeforeStartVM.sh"
+  fi
+}
+
+waitForBooting() {
+  #press enter for grub booting to speedup booting
+  if [ -e "hooks/waitForBooting.sh" ]; then
+    echo "Run hooks/waitForBooting.sh"
+    . hooks/waitForBooting.sh
+  else
+    echo "Skip hooks/waitForBooting.sh"
+  fi
+}
 
 
 "$@"

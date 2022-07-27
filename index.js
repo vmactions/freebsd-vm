@@ -64,11 +64,13 @@ async function setup(nat, mem) {
 
     await shell("bash run.sh setCPU  3");
 
+    await shell("bash run.sh onBeforeStartVM " );
+
     await shell("bash run.sh startVM " );
 
     core.info("First boot");
 
-
+    await shell("bash run.sh waitForBooting");
 
     await shell("bash run.sh waitForLoginTag");
 
