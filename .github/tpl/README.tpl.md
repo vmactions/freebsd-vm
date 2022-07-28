@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in {{VM_NAME}}
       id: test
-      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -40,6 +40,10 @@ jobs:
 
 
 ```
+
+
+The latest major version is: `{{LATEST_MAJOR}}`, which is the most recommended to use. (You can also use the latest full version: `{{LATEST_TAG}}`)  
+
 
 
 The `runs-on: {{VM_RUNS_ON}}` must be `{{VM_RUNS_ON}}`.
@@ -71,7 +75,7 @@ The code is shared from the host to the VM via `rsync`, you can choose to use to
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -94,7 +98,7 @@ You can add NAT port between the host and the VM.
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -114,7 +118,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -132,7 +136,7 @@ It uses [the latest {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) 
     - uses: actions/checkout@v2
     - name: Test
       id: test
-      uses: {{GITHUB_REPOSITORY}}@{{LATEST_TAG}}
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         release: {{VM_SET_RELEASE}}
 ...
