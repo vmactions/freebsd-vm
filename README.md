@@ -46,6 +46,10 @@ jobs:
 ```
 
 
+The latest major version is: `v0`, which is the most recommended to use. (You can also use the latest full version: `v0.2.2`)  
+
+
+
 The `runs-on: macos-12` must be `macos-12`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into the vm.
