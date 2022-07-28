@@ -1,0 +1,14 @@
+name: Update Major Release Tag
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  update-majorver:
+    name: Update Major Release Tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nowactions/update-majorver@v1
