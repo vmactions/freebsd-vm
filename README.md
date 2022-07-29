@@ -46,7 +46,7 @@ jobs:
 ```
 
 
-The latest major version is: `v0`, which is the most recommended to use. (You can also use the latest full version: `v0.2.2`)  
+The latest major version is: `v0`, which is the most recommended to use. (You can also use the latest full version: `v0.2.3`)  
 
 
 
