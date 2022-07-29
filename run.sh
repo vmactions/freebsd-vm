@@ -175,7 +175,7 @@ runSSHFSInVM() {
 
 onStarted() {
   if [ -e "hooks/onStarted.sh" ]; then
-    ssh "$osname" <hooks/onStarted.sh
+    ssh "$osname" sh <hooks/onStarted.sh
   fi
 }
 
