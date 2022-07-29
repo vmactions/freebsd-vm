@@ -3,7 +3,7 @@
 
 
 
-ntpdate -b pool.ntp.org || ntpdate -b us.pool.ntp.org || ntpdate -b asia.pool.ntp.org
+ntpdate -b pool.ntp.org || (sleep 2; ntpdate -b us.pool.ntp.org )|| ( sleep 2; ntpdate -b asia.pool.ntp.org) || (sleep 2; ntpdate -b 0.ubuntu.pool.ntp.org)
 
 
 
