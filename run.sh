@@ -174,20 +174,27 @@ EOF
 }
 
 runSSHFSInVM() {
+  echo "Reloading sshd services in the Host"
   sudo sh <<EOF
   echo "" >>/etc/ssh/sshd_config
   echo "StrictModes no" >>/etc/ssh/sshd_config
 EOF
   sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
   sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
-
+  echo "Insalling $VM_SSHFS_PKG"
   ssh "$osname" sh <<EOF
 
 $VM_INSTALL_CMD $VM_SSHFS_PKG
 
+EOF
+  echo "Run sshfs"
+  ssh "$osname" sh <<EOF
+echo 'StrictHostKeyChecking=accept-new' >.ssh/config
+
 sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work
 
 EOF
+
 
 }
 
