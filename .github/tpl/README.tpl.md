@@ -91,9 +91,7 @@ The code is shared from the host to the VM via `rsync`, you can choose to use to
 ```
 
 
-When using `rsync`,  you can define `copyback: false` to not copy files back from the VM in to the host
-
-The code is shared from the host to the VM via `rsync`, you can choose to use to `sshfs` share code instead.
+When using `rsync`,  you can define `copyback: false` to not copy files back from the VM in to the host.
 
 
 ```
