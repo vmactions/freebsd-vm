@@ -174,7 +174,7 @@ EOF
 }
 
 runSSHFSInVM() {
-  sudo <<EOF
+  sudo sh <<EOF
   echo "" >>/etc/ssh/sshd_config
   echo "StrictModes no" >>/etc/ssh/sshd_config
 EOF
