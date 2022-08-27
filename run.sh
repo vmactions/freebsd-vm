@@ -165,11 +165,30 @@ rsyncBackFromVM() {
 
 
 installRsyncInVM() {
-  ssh "$osname" "$VM_INSTALL_CMD $VM_RSYNC_PKG"
+  ssh "$osname" sh <<EOF
+
+$VM_INSTALL_CMD $VM_RSYNC_PKG
+
+EOF
+
 }
 
 runSSHFSInVM() {
-  ssh "$osname" "$VM_INSTALL_CMD $VM_SSHFS_PKG && sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work"
+  sudo <<EOF
+  echo "" >>/etc/ssh/sshd_config
+  echo "StrictModes no" >>/etc/ssh/sshd_config
+EOF
+  sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
+  sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+
+  ssh "$osname" sh <<EOF
+
+$VM_INSTALL_CMD $VM_SSHFS_PKG
+
+sshfs -o allow_other,default_permissions runner@10.0.2.2:work /Users/runner/work
+
+EOF
+
 }
 
 

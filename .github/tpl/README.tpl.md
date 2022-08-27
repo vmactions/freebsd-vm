@@ -90,6 +90,38 @@ The code is shared from the host to the VM via `rsync`, you can choose to use to
 
 ```
 
+
+When using `rsync`,  you can define `copyback: false` to not copy files back from the VM in to the host
+
+The code is shared from the host to the VM via `rsync`, you can choose to use to `sshfs` share code instead.
+
+
+```
+
+...
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        sync: rsync
+        copyback: false
+        prepare: |
+          {{VM_PREPARE}}
+
+
+
+...
+
+
+```
+
+
+
 You can add NAT port between the host and the VM.
 
 ```
