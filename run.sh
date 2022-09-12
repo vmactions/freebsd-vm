@@ -195,7 +195,6 @@ $VM_INSTALL_CMD $VM_SSHFS_PKG
 EOF
     echo "Run sshfs"
     ssh "$osname" sh <<EOF
-echo 'StrictHostKeyChecking=accept-new' >.ssh/config
 
 sshfs -o allow_other,default_permissions host:work /Users/runner/work
 
@@ -243,6 +242,13 @@ waitForBooting() {
   fi
 }
 
+
+showDebugInfo() {
+  pwd && ls -lah
+  bash -c 'pwd && ls -lah ~/.ssh/ && cat ~/.ssh/config'
+  cat $_conf_filename
+
+}
 
 "$@"
 

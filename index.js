@@ -103,8 +103,7 @@ async function setup(nat, mem) {
 
   }
   catch (error) {
-    await shell("pwd && ls -lah" );
-    await shell("bash -c 'pwd && ls -lah ~/.ssh/ && cat ~/.ssh/config'" );
+    await shell("bash run.sh showDebugInfo");
     core.setFailed(error.message);
     throw error;
   }
