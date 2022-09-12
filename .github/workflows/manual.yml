@@ -9,6 +9,7 @@ jobs:
     env:
       DEBUG: 1
       NGROK_TOKEN : ${{ secrets.NGROK_TOKEN }}
+      VM_RELEASE: ${{ secrets.VM_RELEASE }}
     steps:
     - uses: actions/checkout@v2
     - name: Run establish a ngrok tunnel
