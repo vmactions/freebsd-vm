@@ -207,9 +207,18 @@ EOF
 }
 
 
+#run in the vm, just as soon as the vm is up
 onStarted() {
   if [ -e "hooks/onStarted.sh" ]; then
     ssh "$osname" sh <hooks/onStarted.sh
+  fi
+}
+
+
+#run in the vm, just after the files are initialized
+onInitialized() {
+  if [ -e "hooks/onInitialized.sh" ]; then
+    ssh "$osname" sh <hooks/onInitialized.sh
   fi
 }
 

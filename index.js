@@ -81,6 +81,10 @@ async function setup(nat, mem) {
     await shell("bash run.sh waitForLoginTag");
     core.endGroup();
 
+    core.startGroup("Run onStarted in VM");
+    await shell("bash run.sh onStarted" );
+    core.endGroup();
+
     core.startGroup("Initialize files in VM");
     let cmd1 = "mkdir -p /Users/runner/work && ln -s /Users/runner/work/  work";
     await execSSH(cmd1, "Setting up VM");
@@ -133,8 +137,8 @@ async function main() {
     fs.appendFileSync(path.join(process.env["HOME"], "/.ssh/config"), "SendEnv " + envs + "\n");
   }
 
-  core.startGroup("Run onStarted in VM");
-  await shell("bash run.sh onStarted" );
+  core.startGroup("Run onInitialized in VM");
+  await shell("bash run.sh onInitialized" );
   core.endGroup();
 
   core.startGroup("Run 'prepare' in VM");
