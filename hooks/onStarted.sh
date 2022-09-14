@@ -10,6 +10,8 @@ freebsd-version
 
 date -u
 
+tree .
+
 
 
 
