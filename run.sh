@@ -244,9 +244,20 @@ waitForBooting() {
 
 
 showDebugInfo() {
+  echo "==================Debug Info===================="
   pwd && ls -lah
   bash -c 'pwd && ls -lah ~/.ssh/ && cat ~/.ssh/config'
   cat $_conf_filename
+
+  echo "===================Debug Info in VM============="
+  ssh "$osname" sh <<EOF
+pwd
+ls -lah
+whoami
+tree .
+
+EOF
+  echo "================================================"
 
 }
 

@@ -103,7 +103,9 @@ async function setup(nat, mem) {
 
   }
   catch (error) {
-    await shell("bash run.sh showDebugInfo");
+    try {
+      await shell("bash run.sh showDebugInfo");
+    } catch(ex){}
     core.setFailed(error.message);
     throw error;
   }
@@ -165,6 +167,9 @@ async function main() {
 
   } catch (err) {
     error = err;
+    try {
+      await shell("bash run.sh showDebugInfo");
+    } catch(ex){}
   } finally {
     core.endGroup();
 
