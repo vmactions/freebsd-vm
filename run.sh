@@ -196,7 +196,7 @@ EOF
     echo "Run sshfs"
     ssh "$osname" sh <<EOF
 
-sshfs -o allow_other,default_permissions host:work /Users/runner/work
+sshfs -o reconnect,ServerAliveInterval=1,ServerAliveCountMax=2,allow_other,default_permissions host:work /Users/runner/work
 
 EOF
 
