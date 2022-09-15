@@ -24,6 +24,38 @@ concurrency:
 
 
 jobs:
+  testsshfs:
+    if: ! contains(github.repository, 'solaris')
+    strategy:
+      matrix:
+        release: [ "12.3", "13.0", "13.1", ""]
+    runs-on: macos-12
+    name: A job to run test FreeBSD
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@main
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        prepare: |
+          pkg install -y curl
+        mem: 2048
+        copyback: false
+        release: ${{ matrix.release }}
+        nat: |
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        sync: sshfs
+        run: |
+          tree .
+          tree /Users/runner/work/
+
   test:
     strategy:
       matrix:
@@ -61,40 +93,7 @@ jobs:
 
 
 
-  testsshfs:
-    if: ! contains(github.repository, 'solaris')
-    strategy:
-      matrix:
-        release: [ "12.3", "13.0", "13.1", ""]
-    runs-on: macos-12
-    name: A job to run test FreeBSD
-    env:
-      MYTOKEN : ${{ secrets.MYTOKEN }}
-      MYTOKEN2: "value2"
-    steps:
-    - uses: actions/checkout@v2
-    - name: Test in FreeBSD
-      id: test
-      uses: vmactions/freebsd-vm@main
-      with:
-        envs: 'MYTOKEN MYTOKEN2'
-        prepare: |
-          pkg install -y curl
-        mem: 2048
-        copyback: false
-        release: ${{ matrix.release }}
-        nat: |
-          "8080": "80"
-          "8443": "443"
-          udp:"8081": "80"
-        usesh: true
-        sync: sshfs
-        run: |
-          pwd
-          ls -lah
-          whoami
-          env
-          freebsd-version
+
 
 
 
