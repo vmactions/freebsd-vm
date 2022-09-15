@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   testsshfs:
-    if: ! contains(github.repository, 'solaris')
+    if: ${{ !contains(github.repository, 'solaris') }}
     strategy:
       matrix:
         release: [ "12.3", "13.0", "13.1", ""]
