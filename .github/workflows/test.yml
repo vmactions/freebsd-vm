@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   testsshfs:
-    if: ${{ !contains(github.repository, 'solaris') }}
+    if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd')}}
     strategy:
       matrix:
         release: [ "12.3", "13.0", "13.1", ""]
