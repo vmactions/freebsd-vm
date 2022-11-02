@@ -2,6 +2,7 @@
 
 set -e
 
+export PATH=$PATH:/Library/Frameworks/Python.framework/Versions/Current/bin
 
 _script="$0"
 _script_home="$(dirname "$_script")"
