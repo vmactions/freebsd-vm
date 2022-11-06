@@ -7,6 +7,7 @@ on:
     branches:
       - 'main'
     paths:
+      - 'conf/*'
       - '.github/data/*'
       - '.github/workflows/generate.yml'
 
