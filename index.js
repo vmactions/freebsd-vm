@@ -143,10 +143,18 @@ async function main() {
   core.endGroup();
 
   core.startGroup("Run 'prepare' in VM");
+ 
+  var usesh = core.getInput("usesh").toLowerCase() == "true";
+
   var prepare = core.getInput("prepare");
   if (prepare) {
     core.info("Running prepare: " + prepare);
-    await execSSH(prepare);
+    if (usesh) {
+      await execSSHSH(prepare);
+    } else {
+      await execSSH(prepare);
+    }
+
   }
 
   core.endGroup();
@@ -158,7 +166,7 @@ async function main() {
 
   var error = null;
   try {
-    var usesh = core.getInput("usesh").toLowerCase() == "true";
+
     if (usesh) {
       await execSSHSH("cd $GITHUB_WORKSPACE;\n" + run);
     } else {
