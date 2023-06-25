@@ -46,7 +46,7 @@ jobs:
 ```
 
 
-The latest major version is: `v0`, which is the most recommended to use. (You can also use the latest full version: `v0.3.0`)  
+The latest major version is: `v0`, which is the most recommended to use. (You can also use the latest full version: `v0.3.1`)  
 
 
 
@@ -162,7 +162,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
 
 
 
-It uses [the latest FreeBSD 13.1](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
+It uses [the latest FreeBSD 13.2](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
 
 ```
 ...
@@ -176,7 +176,7 @@ It uses [the latest FreeBSD 13.1](conf/default.release.conf) by default, you can
 ...
 ```
 
-All the supported releases are here: [FreeBSD  12.3, 13.0, 13.1](conf)
+All the supported releases are here: [FreeBSD  12.3, 13.0, 13.1, 13.2](conf)
 
 
 # Under the hood
