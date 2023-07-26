@@ -17,7 +17,7 @@ cd "$_script_home"
 #find the release number
 if [ -z "$VM_RELEASE" ]; then
   if [ ! -e "conf/default.release.conf" ]; then
-    echo "The VM_RELEASE is empty,  but the conf/default.release.conf is not found. something wrong."
+    echo "The VM_RELEASE is empty,  but the conf/default.release.conf is not found. Something wrong."
     exit 1
   fi
   . "conf/default.release.conf"
@@ -29,7 +29,7 @@ export VM_RELEASE
 
 #load the release conf
 if [ ! -e "conf/$VM_RELEASE.conf" ]; then
-  echo "Can not find release conf: conf/$VM_RELEASE.conf"
+  echo "Cannot find release conf: conf/$VM_RELEASE.conf"
   echo "The supported release conf: "
   ls conf/*
   exit 1
@@ -177,7 +177,7 @@ EOF
 
 runSSHFSInVM() {
   # remove these when using the vbox v0.0.2 and newer
-  echo "Reloading sshd services in the Host"
+  echo "Reloading sshd services on the Host"
   sudo sh <<EOF
   echo "" >>/etc/ssh/sshd_config
   echo "StrictModes no" >>/etc/ssh/sshd_config
@@ -189,7 +189,7 @@ EOF
   if [ -e "hooks/onRunSSHFS.sh" ] && ssh "$osname" sh <hooks/onRunSSHFS.sh; then
     echo "OK";
   elif [ "$VM_SSHFS_PKG" ]; then
-    echo "Insalling $VM_SSHFS_PKG"
+    echo "Installing $VM_SSHFS_PKG"
     ssh "$osname" sh <<EOF
 
 $VM_INSTALL_CMD $VM_SSHFS_PKG
