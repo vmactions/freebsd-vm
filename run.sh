@@ -73,7 +73,7 @@ osname="$VM_OS_NAME"
 ostype="$VM_OS_TYPE"
 sshport=$VM_SSH_PORT
 
-ovafile="$osname-$VM_RELEASE.ova"
+ovafile="$osname-$VM_RELEASE.qcow2.xz"
 
 
 
@@ -87,6 +87,7 @@ importVM() {
   if [ ! -e "$ovafile" ]; then
     echo "Downloading $OVA_LINK"
     wget -O "$ovafile" -q "$OVA_LINK"
+    xz -d $ovafile
   fi
 
   if [ ! -e "id_rsa.pub" ]; then
@@ -105,7 +106,7 @@ importVM() {
   cat host.id_rsa >$HOME/.ssh/host.id_rsa
   chmod 600 $HOME/.ssh/host.id_rsa
 
-  bash $vmsh importVM "$ovafile"
+  bash $vmsh importVM "$osname-$VM_RELEASE.qcow2"
 
   bash $vmsh addSSHHost $osname "$_idfile"
 
