@@ -75,12 +75,9 @@ sshport=$VM_SSH_PORT
 
 ovafile="$osname-$VM_RELEASE.qcow2.xz"
 
-
+_idfile='~/.ssh/host.id_rsa'
 
 importVM() {
-  _idfile='~/.ssh/host.id_rsa'
-
-
 
   bash $vmsh setup
 
@@ -106,9 +103,7 @@ importVM() {
   cat host.id_rsa >$HOME/.ssh/host.id_rsa
   chmod 600 $HOME/.ssh/host.id_rsa
 
-  bash $vmsh importVM "$osname-$VM_RELEASE.qcow2"
-
-  bash $vmsh addSSHHost $osname "$_idfile"
+  bash $vmsh importVM $osname $ostype "$osname-$VM_RELEASE.qcow2"
 
   if [ "$DEBUG" ]; then
     bash $vmsh startWeb $osname
@@ -213,6 +208,7 @@ EOF
 
 #run in the vm, just as soon as the vm is up
 onStarted() {
+  bash $vmsh addSSHHost $osname "$_idfile"
   if [ -e "hooks/onStarted.sh" ]; then
     ssh "$osname" sh <hooks/onStarted.sh
   fi
