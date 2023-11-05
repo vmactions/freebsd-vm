@@ -107,7 +107,6 @@ importVM() {
 
   if [ "$DEBUG" ]; then
     bash $vmsh startWeb $osname
-    bash $vmsh startCF
   fi
 
 }
