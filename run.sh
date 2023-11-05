@@ -95,7 +95,7 @@ importVM() {
   fi
 
   if [ ! -e "host.id_rsa" ]; then
-    echo "Downloading $VM_PUBID_LINK"
+    echo "Downloading $HOST_ID_LINK"
     wget -O "host.id_rsa" -q "$HOST_ID_LINK"
   fi
 
