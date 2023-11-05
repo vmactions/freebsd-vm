@@ -28,7 +28,7 @@ jobs:
     if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd')}}
     strategy:
       matrix:
-        release: [ "12.3", "13.0", "13.1", "13.2", ""]
+        release: [ "13.2", ""]
     runs-on: ubuntu-22.04
     name: A job to run test sshfs FreeBSD
     env:
@@ -59,7 +59,7 @@ jobs:
   test:
     strategy:
       matrix:
-        release: [ "12.3", "13.0", "13.1", "13.2", ""]
+        release: [ "13.2", ""]
     runs-on: ubuntu-22.04
     name: A job to run test FreeBSD
     env:
