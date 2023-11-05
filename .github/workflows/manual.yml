@@ -13,7 +13,12 @@ jobs:
       SEC_VBOX : ${{ secrets.SEC_VBOX }}
     steps:
     - uses: actions/checkout@v3
-    - name: Run establish a ngrok tunnel
+    - uses: vmactions/cf-tunnel@v0
+      id: tunnel
+      with:
+        protocol: http
+        port: 8000
+    - name: Run vnc tunnel
       id: test
       uses: vmactions/ngrok-tunnel@v0.0.1
       with:
