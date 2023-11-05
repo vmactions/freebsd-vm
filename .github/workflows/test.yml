@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         release: [ "12.3", "13.0", "13.1", "13.2", ""]
-    runs-on: macos-12
+    runs-on: ubuntu-22.04
     name: A job to run test sshfs FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
@@ -60,7 +60,7 @@ jobs:
     strategy:
       matrix:
         release: [ "12.3", "13.0", "13.1", "13.2", ""]
-    runs-on: macos-12
+    runs-on: ubuntu-22.04
     name: A job to run test FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}

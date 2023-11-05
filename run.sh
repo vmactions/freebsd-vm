@@ -78,9 +78,9 @@ ovafile="$osname-$VM_RELEASE.ova"
 
 
 importVM() {
-  _idfile='~/.ssh/mac.id_rsa'
+  _idfile='~/.ssh/host.id_rsa'
 
-  bash $vmsh addSSHHost $osname $sshport "$_idfile"
+
 
   bash $vmsh setup
 
@@ -94,18 +94,20 @@ importVM() {
     wget -O "id_rsa.pub" -q "$VM_PUBID_LINK"
   fi
 
-  if [ ! -e "mac.id_rsa" ]; then
+  if [ ! -e "host.id_rsa" ]; then
     echo "Downloading $VM_PUBID_LINK"
-    wget -O "mac.id_rsa" -q "$HOST_ID_LINK"
+    wget -O "host.id_rsa" -q "$HOST_ID_LINK"
   fi
 
   ls -lah
 
   bash $vmsh addSSHAuthorizedKeys id_rsa.pub
-  cat mac.id_rsa >$HOME/.ssh/mac.id_rsa
-  chmod 600 $HOME/.ssh/mac.id_rsa
+  cat host.id_rsa >$HOME/.ssh/host.id_rsa
+  chmod 600 $HOME/.ssh/host.id_rsa
 
   bash $vmsh importVM "$ovafile"
+
+  bash $vmsh addSSHHost $osname "$_idfile"
 
   if [ "$DEBUG" ]; then
     bash $vmsh startWeb $osname
