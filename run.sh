@@ -83,8 +83,10 @@ importVM() {
 
   if [ ! -e "$ovafile" ]; then
     echo "Downloading $OVA_LINK"
-    wget -O "$ovafile" -q "$OVA_LINK"
+    axel -n 8 -o "$ovafile" -q "$OVA_LINK"
+    echo "Download finished, extract"
     xz -d $ovafile
+    echo "Extract finished"
   fi
 
   if [ ! -e "id_rsa.pub" ]; then
