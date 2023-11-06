@@ -55,7 +55,7 @@ jobs:
         sync: sshfs
         run: |
           tree .
-          tree /Users/runner/work/
+          tree $HOME/work/
 
   test:
     strategy:

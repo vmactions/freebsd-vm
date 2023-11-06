@@ -150,7 +150,7 @@ startVM() {
 rsyncToVM() {
   _pwd="$PWD"
   cd "$_oldPWD"
-  rsync -avrtopg -e 'ssh -o MACs=umac-64-etm@openssh.com' --exclude _actions --exclude _PipelineMapping --exclude _temp  /Users/runner/work/  $osname:work
+  rsync -avrtopg -e 'ssh -o MACs=umac-64-etm@openssh.com' --exclude _actions --exclude _PipelineMapping --exclude _temp  $HOME/work/  $osname:work
   cd "$_pwd"
 }
 
@@ -158,7 +158,7 @@ rsyncToVM() {
 rsyncBackFromVM() {
   _pwd="$PWD"
   cd "$_oldPWD"
-  rsync -vrtopg   -e 'ssh -o MACs=umac-64-etm@openssh.com' $osname:work/ /Users/runner/work
+  rsync -vrtopg   -e 'ssh -o MACs=umac-64-etm@openssh.com' $osname:work/ $HOME/work
   cd "$_pwd"
 }
 
@@ -195,7 +195,7 @@ EOF
     echo "Run sshfs"
     ssh "$osname" sh <<EOF
 
-sshfs -o reconnect,ServerAliveCountMax=2,allow_other,default_permissions host:work /Users/runner/work
+sshfs -o reconnect,ServerAliveCountMax=2,allow_other,default_permissions host:work $HOME/work
 
 EOF
 
