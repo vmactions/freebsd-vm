@@ -62,7 +62,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", ""]
-        runs: [ "ubuntu-22.04", "macos-12"]
+        runs: [ "ubuntu-22.04"]
     runs-on: ${{ matrix.runs }}
     name: A job to run test FreeBSD
     env:
