@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0
+      uses: vmactions/freebsd-vm@v1
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -46,7 +46,7 @@ jobs:
 ```
 
 
-The latest major version is: `v0`, which is the most recommended to use. (You can also use the latest full version: `v0.3.1`)  
+The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.0.0`)  
 
 
 
@@ -79,7 +79,7 @@ The code is shared from the host to the VM via `rsync`, you can choose to use to
     - uses: actions/checkout@v3
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0
+      uses: vmactions/freebsd-vm@v1
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -106,7 +106,7 @@ When using `rsync`,  you can define `copyback: false` to not copy files back fro
     - uses: actions/checkout@v3
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0
+      uses: vmactions/freebsd-vm@v1
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -132,7 +132,7 @@ You can add NAT port between the host and the VM.
     - uses: actions/checkout@v3
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0
+      uses: vmactions/freebsd-vm@v1
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -152,7 +152,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
     - uses: actions/checkout@v3
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0
+      uses: vmactions/freebsd-vm@v1
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
@@ -170,7 +170,7 @@ It uses [the latest FreeBSD 13.2](conf/default.release.conf) by default, you can
     - uses: actions/checkout@v3
     - name: Test
       id: test
-      uses: vmactions/freebsd-vm@v0
+      uses: vmactions/freebsd-vm@v1
       with:
         release: 13.2
 ...
