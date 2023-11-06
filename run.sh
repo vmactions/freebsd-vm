@@ -173,15 +173,6 @@ EOF
 }
 
 runSSHFSInVM() {
-  # remove these when using the vbox v0.0.2 and newer
-  echo "Reloading sshd services in the Host"
-  sudo sh <<EOF
-  echo "" >>/etc/ssh/sshd_config
-  echo "StrictModes no" >>/etc/ssh/sshd_config
-EOF
-  sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
-  sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
-
 
   if [ -e "hooks/onRunSSHFS.sh" ] && ssh "$osname" sh <hooks/onRunSSHFS.sh; then
     echo "OK";
