@@ -181,10 +181,9 @@ All the supported releases are here: [FreeBSD  13.2](conf)
 
 # Under the hood
 
-GitHub only supports Ubuntu, Windows and MacOS out of the box.
+We use Qemu and Libvirt to run the FreeBSD VM.
 
-However, the MacOS support virtualization. It has VirtualBox installed.
 
-So, we run the FreeBSD VM in VirtualBox on MacOS.
+
 
 
