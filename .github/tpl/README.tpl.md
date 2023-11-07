@@ -177,10 +177,9 @@ All the supported releases are here: [{{VM_NAME}}  {{ALL_RELEASES}}](conf)
 
 # Under the hood
 
-GitHub only supports Ubuntu, Windows and MacOS out of the box.
+We use Qemu and Libvirt to run the {{VM_NAME}} VM.
 
-However, the MacOS support virtualization. It has VirtualBox installed.
 
-So, we run the {{VM_NAME}} VM in VirtualBox on MacOS.
+
 
 
