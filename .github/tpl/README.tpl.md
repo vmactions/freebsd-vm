@@ -182,4 +182,11 @@ We use Qemu and Libvirt to run the {{VM_NAME}} VM.
 
 
 
+# Upcoming features:
+
+1. Runs on MacOS to use cpu accelaration.
+2. Support ARM and other architecture.
+
+
+
 
