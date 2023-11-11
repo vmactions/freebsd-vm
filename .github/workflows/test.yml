@@ -31,7 +31,7 @@ jobs:
         release: [ "13.2", ""]
         runs: [ "ubuntu-22.04"]
     runs-on: ${{ matrix.runs }}
-    name: A job to run test sshfs FreeBSD
+    name: sshfs FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
@@ -64,7 +64,7 @@ jobs:
         release: [ "13.2", ""]
         runs: [ "ubuntu-22.04"]
     runs-on: ${{ matrix.runs }}
-    name: A job to run test FreeBSD
+    name: FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"

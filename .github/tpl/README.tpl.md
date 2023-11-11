@@ -140,7 +140,7 @@ You can add NAT port between the host and the VM.
 ```
 
 
-The default memory of the VM is 1024MB, you can use `mem` option to set the memory size:
+The default memory of the VM is 6144MB, you can use `mem` option to set the memory size:
 
 ```
 ...
@@ -152,7 +152,7 @@ The default memory of the VM is 1024MB, you can use `mem` option to set the memo
       with:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
-        mem: 2048
+        mem: 4096
 ...
 ```
 

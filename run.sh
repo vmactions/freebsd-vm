@@ -116,7 +116,13 @@ importVM() {
 
 
 waitForLoginTag() {
-  bash $vmsh waitForText "$osname" "$VM_LOGIN_TAG"
+  if [ -e "hooks/waitForLoginTag.sh" ]; then
+    echo "Run hooks/waitForLoginTag.sh"
+    . hooks/waitForLoginTag.sh
+  else
+    bash $vmsh waitForText "$osname" "$VM_LOGIN_TAG"
+  fi
+
 }
 
 
@@ -239,7 +245,7 @@ waitForBooting() {
 showDebugInfo() {
   echo "==================Debug Info===================="
   pwd && ls -lah
-  bash -c 'pwd && ls -lah ~/.ssh/ && cat ~/.ssh/config'
+  bash -c 'pwd && ls -lah ~/.ssh/ && [ -e "~/.ssh/config" ] && cat ~/.ssh/config'
   cat $_conf_filename
 
   echo "===================Debug Info in VM============="
