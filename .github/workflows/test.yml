@@ -40,7 +40,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@249eeadcd21bfe64fde26166a44a1010ae1049a1
+      uses: vmactions/freebsd-vm@696b99cbf308d6db6fee8f1e1ffa1134d3d4b80f
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -60,7 +60,7 @@ jobs:
           tree $HOME/work/
     - name: Test NAT
       run: 
-        ssh -p 10022 root@localhost "uname -a;whoami;pwd"
+        ssh -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
 
   test:
     strategy:
@@ -77,7 +77,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@249eeadcd21bfe64fde26166a44a1010ae1049a1
+      uses: vmactions/freebsd-vm@696b99cbf308d6db6fee8f1e1ffa1134d3d4b80f
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -99,7 +99,7 @@ jobs:
           freebsd-version
     - name: Test NAT
       run: 
-        ssh -p 10022 root@localhost "uname -a;whoami;pwd"
+        ssh -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
 
 
 
