@@ -145,7 +145,7 @@ addNAT() {
 
   if ! command -v socat; then
     if bash $vmsh isLinux; then
-      apt-get install -y socat
+      sudo apt-get install -y socat
     else
       brew install socat
     fi
