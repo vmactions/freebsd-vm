@@ -143,7 +143,7 @@ addNAT() {
   _vmport="$3"
   _vmip=$(bash $vmsh getVMIP "$osname")
 
-  if !command -v socat; then
+  if ! command -v socat; then
     if bash $vmsh isLinux; then
       apt-get install -y socat
     else
