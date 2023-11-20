@@ -138,7 +138,25 @@ execSSHSH() {
 
 
 addNAT() {
-  bash $vmsh addNAT "$osname" "$@"
+  _prot="$1"
+  _hostport="$2"
+  _vmport="$3"
+  _vmip=$(bash $vmsh getVMIP "$osname")
+
+  if !command -v socat; then
+    if bash $vmsh isLinux; then
+      apt-get install -y socat
+    else
+      brew install socat
+    fi
+  fi
+
+  if [ "$_prot" == "udp" ]; then
+    socat UDP4-RECVFROM:$_hostport,fork UDP4-SENDTO:$_vmip:$_vmport &
+  else
+    socat TCP-LISTEN:$_hostport,fork TCP:$_vmip:$_vmport &
+  fi
+
 }
 
 setMemory() {

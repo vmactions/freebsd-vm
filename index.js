@@ -37,27 +37,7 @@ async function setup(nat, mem) {
     core.endGroup();
 
     core.startGroup("Set VM");
-    if (nat) {
-      let nats = nat.split("\n").filter(x => x !== "");
-      for (let element of nats) {
-        core.info("Add nat: " + element);
-        let segs = element.split(":");
-        if (segs.length === 3) {
-          //udp:"8081": "80"
-          let proto = segs[0].trim().trim('"');
-          let hostPort = segs[1].trim().trim('"');
-          let vmPort = segs[2].trim().trim('"');
 
-          await shell("bash run.sh addNAT " + proto + " " + hostPort + " " + vmPort);
-
-        } else if (segs.length === 2) {
-          let proto = "tcp"
-          let hostPort = segs[0].trim().trim('"');
-          let vmPort = segs[1].trim().trim('"');
-          await shell("bash run.sh addNAT " + proto + " " + hostPort + " " + vmPort);
-        }
-      };
-    }
 
     if (mem) {
       await shell("bash run.sh setMemory " + mem);
@@ -82,6 +62,30 @@ async function setup(nat, mem) {
     core.endGroup();
 
     core.startGroup("Run onStarted in VM");
+
+	if (nat) {
+      let nats = nat.split("\n").filter(x => x !== "");
+      for (let element of nats) {
+        core.info("Add nat: " + element);
+        let segs = element.split(":");
+        if (segs.length === 3) {
+          //udp:"8081": "80"
+          let proto = segs[0].trim().trim('"');
+          let hostPort = segs[1].trim().trim('"');
+          let vmPort = segs[2].trim().trim('"');
+
+          await shell("bash run.sh addNAT " + proto + " " + hostPort + " " + vmPort);
+
+        } else if (segs.length === 2) {
+          let proto = "tcp"
+          let hostPort = segs[0].trim().trim('"');
+          let vmPort = segs[1].trim().trim('"');
+          await shell("bash run.sh addNAT " + proto + " " + hostPort + " " + vmPort);
+        }
+      };
+    }
+
+
     await shell("bash run.sh onStarted" );
     core.endGroup();
 
