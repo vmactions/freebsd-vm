@@ -1,4 +1,4 @@
-name: "Generate the project from BaseVM"
+name: "Step 2, Generate the project from BaseVM"
 on:
   schedule:
     - cron: '10 1 * * *'
