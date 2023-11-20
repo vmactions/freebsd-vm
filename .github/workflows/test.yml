@@ -37,10 +37,10 @@ jobs:
       MYTOKEN2: "value2"
       SEC_VBOX : ${{ secrets.SEC_VBOX }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@main
+      uses: vmactions/freebsd-vm@6933933611
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -60,7 +60,7 @@ jobs:
           tree $HOME/work/
     - name: Test NAT
       run: 
-        ssh -p 10022 root@localost "uname -a;whoami;pwd"
+        ssh -p 10022 root@localhost "uname -a;whoami;pwd"
 
   test:
     strategy:
@@ -74,10 +74,10 @@ jobs:
       MYTOKEN2: "value2"
       SEC_VBOX : ${{ secrets.SEC_VBOX }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@main
+      uses: vmactions/freebsd-vm@6933933611
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -99,7 +99,7 @@ jobs:
           freebsd-version
     - name: Test NAT
       run: 
-        ssh -p 10022 root@localost "uname -a;whoami;pwd"
+        ssh -p 10022 root@localhost "uname -a;whoami;pwd"
 
 
 
