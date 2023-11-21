@@ -262,7 +262,7 @@ waitForBooting() {
 
 showDebugInfo() {
   echo "==================Debug Info===================="
-  pwd && ls -lah
+  pwd && ls -lah && sudo ps aux
   bash -c 'pwd && ls -lah ~/.ssh/ && [ -e "~/.ssh/config" ] && cat ~/.ssh/config'
   cat $_conf_filename
 
