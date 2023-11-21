@@ -46,7 +46,7 @@ jobs:
 ```
 
 
-The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.0.1`)  
+The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.0.2`)  
 
 
 
@@ -176,7 +176,7 @@ It uses [the latest FreeBSD 13.2](conf/default.release.conf) by default, you can
 ...
 ```
 
-All the supported releases are here: [FreeBSD  13.2](conf)
+All the supported releases are here: [FreeBSD  12.4, 13.2, 14.0](conf)
 
 
 # Under the hood
