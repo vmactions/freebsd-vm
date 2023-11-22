@@ -40,7 +40,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@1139483cbfb21dd1fb7f72ac9d127c8276f53988
+      uses: vmactions/freebsd-vm@68f126546e0b52cc4eae632c64e621e32b34f2a2
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -77,7 +77,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@1139483cbfb21dd1fb7f72ac9d127c8276f53988
+      uses: vmactions/freebsd-vm@68f126546e0b52cc4eae632c64e621e32b34f2a2
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
