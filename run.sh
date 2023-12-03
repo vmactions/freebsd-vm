@@ -116,14 +116,8 @@ importVM() {
 
 
 
-waitForLoginTag() {
-  if [ -e "hooks/waitForLoginTag.sh" ]; then
-    echo "Run hooks/waitForLoginTag.sh"
-    . hooks/waitForLoginTag.sh
-  else
-    bash $vmsh waitForText "$osname" "$VM_LOGIN_TAG"
-  fi
-
+waitForVMReady() {
+  bash $vmsh waitForVMReady "$osname"
 }
 
 
@@ -248,16 +242,6 @@ onBeforeStartVM() {
     . hooks/onBeforeStartVM.sh
   else
     echo "Skip hooks/onBeforeStartVM.sh"
-  fi
-}
-
-waitForBooting() {
-  #press enter for grub booting to speedup booting
-  if [ -e "hooks/waitForBooting.sh" ]; then
-    echo "Run hooks/waitForBooting.sh"
-    . hooks/waitForBooting.sh
-  else
-    echo "Skip hooks/waitForBooting.sh"
   fi
 }
 
