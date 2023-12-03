@@ -55,7 +55,8 @@ export VM_RELEASE
 export VM_INSTALL_CMD
 export VM_SSHFS_PKG
 export VM_LOGIN_TAG
-
+export VM_OCR
+export VM_DISK
 
 ##########################################################
 
@@ -142,8 +143,9 @@ addNAT() {
   _hostport="$2"
   _vmport="$3"
   _vmip=$(bash $vmsh getVMIP "$osname")
-
+  echo "vm ip: $_vmip"
   if ! command -v socat; then
+    echo "installing socat"
     if bash $vmsh isLinux; then
       sudo apt-get install -y socat
     else
