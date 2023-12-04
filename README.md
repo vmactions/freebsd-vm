@@ -17,7 +17,7 @@ on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     name: A job to run test in FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
@@ -50,7 +50,7 @@ The latest major version is: `v1`, which is the most recommended to use. (You ca
 
 
 
-The `runs-on: ubuntu-22.04` must be `ubuntu-22.04`.
+The `runs-on: ubuntu-latest` must be `ubuntu-latest`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into the vm.
 
