@@ -45,8 +45,8 @@ jobs:
 The latest major version is: `{{LATEST_MAJOR}}`, which is the most recommended to use. (You can also use the latest full version: `{{LATEST_TAG}}`)  
 
 
+If you are migrating from the previous `v0`, please change the `runs-on: ` to `runs-on: {{VM_RUNS_ON}}`
 
-The `runs-on: {{VM_RUNS_ON}}` must be `{{VM_RUNS_ON}}`.
 
 The `envs: 'MYTOKEN MYTOKEN2'` is the env names that you want to pass into the vm.
 
@@ -158,7 +158,7 @@ The default memory of the VM is 6144MB, you can use `mem` option to set the memo
 
 
 
-It uses [the latest {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by default, you can use `release` option to use another version of {{VM_NAME}}:
+It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by default, you can use `release` option to use another version of {{VM_NAME}}:
 
 ```
 ...
