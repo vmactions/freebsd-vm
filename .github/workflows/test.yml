@@ -36,13 +36,20 @@ jobs:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
       SEC_VBOX : ${{ secrets.SEC_VBOX }}
+      DEBUG: 1
     steps:
     - uses: actions/checkout@v4
+    - name: Creating Web console
+      uses: vmactions/cf-tunnel@v0
+      id: tunnel
+      with:
+        protocol: http
+        port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@c0cbdd07c7a2d03aacd73a043dc41f186a5f3ae5
+      uses: vmactions/freebsd-vm@8ead37ba53d01e8f4abffd69cc94e7aa680f1aa0
       with:
-        envs: 'MYTOKEN MYTOKEN2'
+        envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
           pkg install -y curl
         mem: 2048
@@ -60,7 +67,7 @@ jobs:
           tree $HOME/work/
     - name: Test NAT
       run: 
-        ssh -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
+        ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
 
   test:
     strategy:
@@ -77,7 +84,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@c0cbdd07c7a2d03aacd73a043dc41f186a5f3ae5
+      uses: vmactions/freebsd-vm@8ead37ba53d01e8f4abffd69cc94e7aa680f1aa0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -99,7 +106,7 @@ jobs:
           freebsd-version
     - name: Test NAT
       run: 
-        ssh -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
+        ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
 
 
 
