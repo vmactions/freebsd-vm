@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   testsshfs:
-    if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd')}}
+    if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd') && !contains(github.repository, 'omnios')}}
     strategy:
       matrix:
         release: [ "12.4", "13.2", "14.0", ""]
@@ -47,7 +47,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@f734a691a77f00f60f9781bed1de5e5f03a219a2
+      uses: vmactions/freebsd-vm@d15962094b143b2f5bf3002071274ba104823914
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -84,7 +84,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@f734a691a77f00f60f9781bed1de5e5f03a219a2
+      uses: vmactions/freebsd-vm@d15962094b143b2f5bf3002071274ba104823914
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
