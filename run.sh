@@ -148,9 +148,9 @@ addNAT() {
   fi
 
   if [ "$_prot" == "udp" ]; then
-    sudo socat UDP4-RECVFROM:$_hostport,fork UDP4-SENDTO:$_vmip:$_vmport &
+    sudo socat UDP4-RECVFROM:$_hostport,fork UDP4-SENDTO:$_vmip:$_vmport >/dev/null 2>&1 &
   else
-    sudo socat TCP-LISTEN:$_hostport,fork TCP:$_vmip:$_vmport &
+    sudo socat TCP-LISTEN:$_hostport,fork TCP:$_vmip:$_vmport >/dev/null 2>&1 &
   fi
 
 }
