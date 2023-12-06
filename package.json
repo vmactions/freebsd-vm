@@ -1,6 +1,6 @@
 {
   "name": "vmactions-FreeBSD",
-  "version": "0.0.1",
+  "version": "1.0.4",
   "description": "GitHub actions for FreeBSD",
   "main": "index.js",
   "repository": {
