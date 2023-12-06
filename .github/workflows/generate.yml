@@ -26,12 +26,18 @@ jobs:
           myToken: ${{ github.token }}
           view_top: 1
 
-      - name: Using main branch
+      - name: Preparing env variables
         run: |
           git switch main || (git fetch --all && git checkout -b main origin/main)
           . conf/default.release.conf
           echo "DEFAULT_RELEASE=$DEFAULT_RELEASE" >> $GITHUB_ENV
           echo "ALL_RELEASES=\"$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed "s/,\$//" | sed 's/,/", "/g')\"" >> $GITHUB_ENV
+          LATEST_TAG="${{ steps.get-latest-release.outputs.tag_name }}"
+          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          echo "LATEST_VERSION_NUMBER=${LATEST_TAG:1}" >> $GITHUB_ENV
+
+          oldHash="$(cat .github/workflows/test.yml | grep -i "uses: ${{ github.repository }}" | head -1 | cut -d @ -f 2)"
+          echo "OLD_HASH=${oldHash}" >> $GITHUB_ENV
 
           git clone https://github.com/vmactions/base-vm.git
 
@@ -40,8 +46,6 @@ jobs:
 
       - name: Generate files
         uses: vmactions/render@v0.0.1
-        env:
-          LATEST_TAG: ${{ steps.get-latest-release.outputs.tag_name }}
         with:
           datafile: .github/data/datafile.ini
           files: |
@@ -54,11 +58,39 @@ jobs:
             base-vm/index.js : index.js
             base-vm/action.yml : action.yml
             base-vm/run.sh : run.sh
+
       - name: Update node_modules
         run: |
           [ -e "node_modules" ] && git rm -r node_modules
           npm install --save
           git add node_modules
+
+      - name: Check modifications
+        run: |
+          #if only hash id in test.yml changes, skip
+          currentHash="$(cat .github/workflows/test.yml | grep -i "uses: ${{ github.repository }}" | head -1 | cut -d @ -f 2)"
+          echo "Current hash: $currentHash"
+          parentHash="$OLD_HASH"
+          echo "Parent hash: $parentHash"
+          git diff
+          cp .github/workflows/test.yml test.yml.back
+          sed -i "s/$currentHash/$parentHash/g" .github/workflows/test.yml
+          if git diff --quiet; then
+            echo "no changes"
+          else
+            #has changes:
+            rm -f test.yml.back
+            rm -rf base-vm
+            #commit all changes and get new hash
+            git config  user.email "ghactions@vmactions.org"
+            git config  user.name "Generate.yml"
+            git add .
+            git commit -m "Update"
+            newHash="$(git rev-parse main)"
+            echo "New hash: $newHash"
+            #modify test.yml
+            sed -i "s/$parentHash/$newHash/g" .github/workflows/test.yml
+          fi
       - uses: EndBug/add-and-commit@v9
         with:
           message: "Generated from https://github.com/vmactions/base-vm"
