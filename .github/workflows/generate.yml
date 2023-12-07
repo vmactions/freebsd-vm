@@ -85,7 +85,7 @@ jobs:
             git config  user.email "ghactions@vmactions.org"
             git config  user.name "Generate.yml"
             git add .
-            git commit -m "Update"
+            git commit -m "Generated from base-vm"
             newHash="$(git rev-parse main)"
             echo "New hash: $newHash"
             #modify test.yml
@@ -93,7 +93,7 @@ jobs:
           fi
       - uses: EndBug/add-and-commit@v9
         with:
-          message: "Generated from https://github.com/vmactions/base-vm"
+          message: "Update test hash"
           pull: '--rebase --autostash '
           add: |
             .github/workflows/readme.yml
