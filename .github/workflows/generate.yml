@@ -70,11 +70,14 @@ jobs:
           #if only hash id in test.yml changes, skip
           currentHash="$(cat .github/workflows/test.yml | grep -i "uses: ${{ github.repository }}" | head -1 | cut -d @ -f 2)"
           echo "Current hash: $currentHash"
-          parentHash="$OLD_HASH"
-          echo "Parent hash: $parentHash"
+          lastHash="$(git rev-parse 'HEAD~1')"
+          echo "Last hash: $lastHash"
+          oldHash="$lastHash"
+          echo "OLD_HASH: $OLD_HASH"
+          echo "Old hash using last hash: $oldHash"
           git diff
           cp .github/workflows/test.yml test.yml.back
-          sed -i "s/$currentHash/$parentHash/g" .github/workflows/test.yml
+          sed -i "s/$currentHash/$oldHash/g" .github/workflows/test.yml
           if git diff --quiet; then
             echo "no changes"
           else
@@ -89,7 +92,7 @@ jobs:
             newHash="$(git rev-parse main)"
             echo "New hash: $newHash"
             #modify test.yml
-            sed -i "s/$parentHash/$newHash/g" .github/workflows/test.yml
+            sed -i "s/$oldHash/$newHash/g" .github/workflows/test.yml
           fi
       - uses: EndBug/add-and-commit@v9
         with:
