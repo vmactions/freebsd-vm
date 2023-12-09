@@ -187,9 +187,9 @@ rsyncBackFromVM() {
 
 installRsyncInVM() {
   ssh "$osname" sh <<EOF
-
+if ! command -v rsync; then
 $VM_INSTALL_CMD $VM_RSYNC_PKG
-
+fi
 EOF
 
 }
@@ -201,9 +201,9 @@ runSSHFSInVM() {
   elif [ "$VM_SSHFS_PKG" ]; then
     echo "Installing $VM_SSHFS_PKG"
     ssh "$osname" sh <<EOF
-
+if ! command -v sshfs ; then
 $VM_INSTALL_CMD $VM_SSHFS_PKG
-
+fi
 EOF
     echo "Run sshfs"
     ssh "$osname" sh <<EOF
