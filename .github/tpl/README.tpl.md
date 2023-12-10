@@ -172,7 +172,7 @@ It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by defa
 ...
 ```
 
-All the supported releases are here: [{{VM_NAME}}  {{ALL_RELEASES}}](conf)
+All the supported releases are here: {{VM_NAME}}  {{ALL_RELEASES}} [See all here](conf)
 
 
 # Under the hood
