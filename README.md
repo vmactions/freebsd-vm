@@ -176,7 +176,7 @@ It uses [the FreeBSD 14.0](conf/default.release.conf) by default, you can use `r
 ...
 ```
 
-All the supported releases are here: [FreeBSD  12.4, 13.2, 14.0](conf)
+All the supported releases are here: FreeBSD  12.4, 13.2, 14.0 [See all here](conf)
 
 
 # Under the hood
