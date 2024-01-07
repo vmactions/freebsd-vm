@@ -250,7 +250,10 @@ onBeforeStartVM() {
 showDebugInfo() {
   echo "==================Debug Info===================="
   pwd && ls -lah && sudo ps aux
-  bash -c 'pwd && ls -lah ~/.ssh/ && [ -e "~/.ssh/config" ] && cat ~/.ssh/config'
+  bash -c 'pwd && ls -lah ~/.ssh/'
+  if [ -e "$HOME/.ssh/config" ]; then
+    cat "$HOME/.ssh/config"
+  fi
   cat $_conf_filename
 
   echo "===================Debug Info in VM============="

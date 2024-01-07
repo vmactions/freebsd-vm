@@ -53,7 +53,6 @@ jobs:
         prepare: |
           pkg install -y curl
         mem: 2048
-        copyback: false
         release: ${{ matrix.release }}
         nat: |
           "10022": "22"
@@ -90,7 +89,6 @@ jobs:
         prepare: |
           pkg install -y curl
         mem: 2048
-        copyback: false
         release: ${{ matrix.release }}
         nat: |
           "10022": "22"
