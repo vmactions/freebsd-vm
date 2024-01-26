@@ -168,7 +168,7 @@ It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by defa
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
-        release: {{VM_SET_RELEASE}}
+        release: "{{VM_SET_RELEASE}}"
 ...
 ```
 
