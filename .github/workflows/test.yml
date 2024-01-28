@@ -62,8 +62,12 @@ jobs:
         usesh: true
         sync: sshfs
         run: |
-          tree .
+          ls -lah /root/work
           tree $HOME/work/
+          if [ -z "$(ls -A $HOME/work)" ]; then
+            echo "sshfs error."
+            exit 1
+          fi
     - name: Test NAT
       run: 
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
