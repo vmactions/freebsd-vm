@@ -68,7 +68,7 @@ So, you will have the same directory and same default env variables when you `ru
 
 The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
 
-The code is shared from the host to the VM via `rsync`, you can choose to use to `sshfs` share code instead.
+The code is shared from the host to the VM via `rsync` by default, you can choose to use to `sshfs` share code instead.
 
 
 ```
@@ -93,6 +93,8 @@ The code is shared from the host to the VM via `rsync`, you can choose to use to
 
 
 ```
+
+You can also set `sync: no`, so the files will not be synced to the  VM.
 
 
 When using `rsync`,  you can define `copyback: false` to not copy files back from the VM in to the host.
