@@ -173,7 +173,7 @@ startVM() {
 rsyncToVM() {
   _pwd="$PWD"
   cd "$_oldPWD"
-  rsync -avrtopg -e 'ssh -o MACs=umac-64-etm@openssh.com' --exclude _actions --exclude _PipelineMapping --exclude _temp  $HOME/work/  $osname:work
+  rsync -avrtopg -e 'ssh -o MACs=umac-64-etm@openssh.com' --exclude _actions --exclude _PipelineMapping  $HOME/work/  $osname:work
   cd "$_pwd"
 }
 
@@ -231,6 +231,8 @@ EOF
 #run in the vm, just as soon as the vm is up
 onStarted() {
   bash $vmsh addSSHHost $osname "$_idfile"
+  #just touch the file, so that the user can access this file in the VM
+  echo "" >>${GITHUB_ENV}
   if [ -e "hooks/onStarted.sh" ]; then
     ssh "$osname" sh <hooks/onStarted.sh
   fi
