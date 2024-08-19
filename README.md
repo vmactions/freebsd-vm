@@ -66,7 +66,7 @@ All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 
 So, you will have the same directory and same default env variables when you `run` the CI script.
 
-The default shell in FreeBSD is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
+The default shell in FreeBSD(before 14.0) is `csh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.
 
 The code is shared from the host to the VM via `rsync` by default, you can choose to use to `sshfs` share code instead.
 
