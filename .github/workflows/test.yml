@@ -47,7 +47,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@e318be6a9b43c311b54c8abf3d3067fa81d0c39d
+      uses: vmactions/freebsd-vm@8aaefcde38018ab102a8f0ed5474e86b30a541c2
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -90,7 +90,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@e318be6a9b43c311b54c8abf3d3067fa81d0c39d
+      uses: vmactions/freebsd-vm@8aaefcde38018ab102a8f0ed5474e86b30a541c2
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -110,6 +110,10 @@ jobs:
           whoami
           env
           freebsd-version
+          sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
     - name: Test NAT
       run:
         echo "TEST_ENV=$TEST_ENV"
