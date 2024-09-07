@@ -79,7 +79,11 @@ ovafile="$osname-$VM_RELEASE.qcow2.xz"
 
 _idfile='~/.ssh/host.id_rsa'
 
+
+
 importVM() {
+  _mem=$1
+  _cpu=$2
 
   bash $vmsh setup
 
@@ -107,7 +111,7 @@ importVM() {
   cat host.id_rsa >$HOME/.ssh/host.id_rsa
   chmod 600 $HOME/.ssh/host.id_rsa
 
-  bash $vmsh importVM $osname $ostype "$osname-$VM_RELEASE.qcow2"
+  bash $vmsh importVM $osname $ostype "$osname-$VM_RELEASE.qcow2"   ""    "$_mem"  "$_cpu"
 
   if [ "$DEBUG" ]; then
     bash $vmsh startWeb $osname
@@ -156,13 +160,6 @@ addNAT() {
 
 }
 
-setMemory() {
-  bash $vmsh setMemory "$osname" "$@"
-}
-
-setCPU() {
-  bash $vmsh setCPU "$osname" "$@"
-}
 
 startVM() {
   bash $vmsh startVM "$osname"

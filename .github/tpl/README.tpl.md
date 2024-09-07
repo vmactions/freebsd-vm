@@ -159,6 +159,21 @@ The default memory of the VM is 6144MB, you can use `mem` option to set the memo
 ```
 
 
+The VM is using all the cpu cores of the host by default, you can use `cpu` option to change the cpu cores:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        cpu: 3
+...
+```
 
 It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by default, you can use `release` option to use another version of {{VM_NAME}}:
 
