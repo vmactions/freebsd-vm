@@ -52,7 +52,6 @@ jobs:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
           pkg install -y curl
-        mem: 2048
         release: ${{ matrix.release }}
         nat: |
           "10022": "22"
@@ -95,7 +94,7 @@ jobs:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
           pkg install -y curl
-        mem: 2048
+        mem: 4096
         release: ${{ matrix.release }}
         nat: |
           "10022": "22"
