@@ -68,6 +68,16 @@ jobs:
             exit 1
           fi
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
     - name: Test NAT
       run:
         echo "TEST_ENV=$TEST_ENV"
