@@ -80,6 +80,16 @@ ovafile="$osname-$VM_RELEASE.qcow2.xz"
 _idfile='~/.ssh/host.id_rsa'
 
 
+check_url_exists() {
+  url=$1
+  http_status=$(curl -o /dev/null --silent --head --write-out '%{http_code}' "$url")
+  if [[ "$http_status" -ge 200 && "$http_status" -lt 400 ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 
 importVM() {
   _mem=$1
@@ -90,9 +100,24 @@ importVM() {
   if [ ! -e "$ovafile" ]; then
     echo "Downloading $OVA_LINK"
     axel -n 8 -o "$ovafile" -q "$OVA_LINK"
-    echo "Download finished, extract"
-    xz -d $ovafile
+    
+    for i in $(seq 1 9) ; do
+      _url="${OVA_LINK}.$i"
+      echo "Checking $_url"
+      if ! check_url_exists "$_url"; then
+        echo "break"
+        break
+      fi
+      axel -n 8 -o "${ovafile}.$i" -q "$_url"
+      ls -lah
+      cat "${ovafile}.$i" >>"$ovafile"
+      rm -f "${ovafile}.$i"
+    done
+    ls -lah
+    echo "Download finished, extracting"
+    xz -v -d $ovafile
     echo "Extract finished"
+    ls -lah
   fi
 
   if [ ! -e "id_rsa.pub" ]; then
