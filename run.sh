@@ -134,6 +134,7 @@ importVM() {
       xz -v -d $ovafile
     else
       zstd -d "$ovafile" -o "$qow2"
+      rm -f "$ovafile"
     fi
     echo "Extract finished"
     ls -lah
