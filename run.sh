@@ -69,13 +69,26 @@ if [ ! -e "$vmsh" ]; then
   wget -O $vmsh "${SEC_VBOX:-$VM_VBOX_LINK}"
 fi
 
-
+_endswith() {
+  _str="$1"
+  _sub="$2"
+  echo "$_str" | grep -- "$_sub\$" >/dev/null 2>&1
+}
 
 osname="$VM_OS_NAME"
 ostype="$VM_OS_TYPE"
 sshport=$VM_SSH_PORT
 
-ovafile="$osname-$VM_RELEASE.qcow2.xz"
+
+
+qow2="$osname-$VM_RELEASE.qcow2"
+
+if _endswith "$OVA_LINK" ".xz"; then
+  ovafile="$qow2.xz"
+else
+  ovafile="$qow2.zst"
+fi
+
 
 _idfile='~/.ssh/host.id_rsa'
 
@@ -97,7 +110,7 @@ importVM() {
 
   bash $vmsh setup
 
-  if [ ! -e "$ovafile" ]; then
+  if [ ! -e "$qow2" ]; then
     echo "Downloading $OVA_LINK"
     axel -n 8 -o "$ovafile" -q "$OVA_LINK"
     
@@ -114,8 +127,14 @@ importVM() {
       rm -f "${ovafile}.$i"
     done
     ls -lah
+
     echo "Download finished, extracting"
-    xz -v -d $ovafile
+    if _endswith "$OVA_LINK" ".xz"; then
+      #just to keep compatible with the old xz editions
+      xz -v -d $ovafile
+    else
+      zstd -d "$ovafile" -o "$qow2"
+    fi
     echo "Extract finished"
     ls -lah
   fi
