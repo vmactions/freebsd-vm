@@ -83,6 +83,22 @@ jobs:
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
+    - name: Test custom shell
+      shell: FreeBSD {0}
+      run: |
+        pwd
+        cd $GITHUB_WORKSPACE;
+        pwd
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
 
   test:
     strategy:
