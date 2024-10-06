@@ -200,6 +200,34 @@ It uses [the FreeBSD 14.1](conf/default.release.conf) by default, you can use `r
 All the supported releases are here: FreeBSD  12.4, 13.2, 13.3, 13.4, 14.0, 14.1, test.releases [See all here](conf)
 
 
+
+
+Support custom shell:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test
+      id: vm
+      uses: vmactions/freebsd-vm@v1
+    - name: Custom shell step 1
+	  shell: freebsd {0}
+	  run: |
+	    cd $GITHUB_WORKSPACE;
+        pwd
+        echo "this is step 1, running inside the VM"
+    - name: Custom shell step 2
+	  shell: freebsd {0}
+	  run: |
+	    cd $GITHUB_WORKSPACE;
+        pwd
+        echo "this is step 2, running inside the VM"
+...
+```
+
+
+
 # Under the hood
 
 We use Qemu and Libvirt to run the FreeBSD VM.
