@@ -47,7 +47,13 @@ if [ ! -e "$_conf_filename" ]; then
   wget -q "$CONF_LINK"
 fi
 
+#load the builder conf
 . $_conf_filename
+
+
+#reload the local vm conf again, in case the vm conf can override values in the builder conf
+. conf/$VM_RELEASE.conf
+
 
 export VM_ISO_LINK
 export VM_OS_NAME
