@@ -47,7 +47,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@b654ed1206e481fc866475243eebec1e918e82ad
+      uses: vmactions/freebsd-vm@b9c31db07884ec870b84219efba1355c0a2dcc14
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -84,7 +84,7 @@ jobs:
         [ "$TEST_ENV" = "abc" ]
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
     - name: Test custom shell
-      shell:  {0}
+      shell: ${{ toLower('FreeBSD') }} {0}
       run: |
         pwd
         cd $GITHUB_WORKSPACE;
@@ -115,7 +115,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@b654ed1206e481fc866475243eebec1e918e82ad
+      uses: vmactions/freebsd-vm@b9c31db07884ec870b84219efba1355c0a2dcc14
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
