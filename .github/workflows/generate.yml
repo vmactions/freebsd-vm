@@ -36,6 +36,7 @@ jobs:
           LATEST_TAG="${{ steps.get-latest-release.outputs.tag_name }}"
           echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
           echo "LATEST_VERSION_NUMBER=${LATEST_TAG:1}" >> $GITHUB_ENV
+          echo "VM_OS_NAME=${VM_OS_NAME}" >> $GITHUB_ENV
 
           oldHash="$(cat .github/workflows/test.yml | grep -i "uses: ${{ github.repository }}" | head -1 | cut -d @ -f 2)"
           echo "OLD_HASH=${oldHash}" >> $GITHUB_ENV
