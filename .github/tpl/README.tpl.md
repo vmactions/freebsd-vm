@@ -192,6 +192,34 @@ It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by defa
 All the supported releases are here: {{VM_NAME}}  {{ALL_RELEASES}} [See all here](conf)
 
 
+
+
+Support custom shell:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test
+      id: vm
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+    - name: Custom shell step 1
+	  shell: {{VM_OS_NAME}} {0}
+	  run: |
+	    cd $GITHUB_WORKSPACE;
+        pwd
+        echo "this is step 1, running inside the VM"
+    - name: Custom shell step 2
+	  shell: {{VM_OS_NAME}} {0}
+	  run: |
+	    cd $GITHUB_WORKSPACE;
+        pwd
+        echo "this is step 2, running inside the VM"
+...
+```
+
+
+
 # Under the hood
 
 We use Qemu and Libvirt to run the {{VM_NAME}} VM.
