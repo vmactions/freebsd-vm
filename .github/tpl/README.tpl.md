@@ -4,10 +4,10 @@ Use this action to run your CI in {{VM_NAME}}.
 
 The github workflow only supports Ubuntu, Windows and MacOS. But what if you need to use {{VM_NAME}}?
 
-This action is to support {{VM_NAME}}.
 
 
-Sample workflow `test.yml`:
+
+## 1. Example: `test.yml`:
 
 ```yml
 
@@ -63,6 +63,10 @@ All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 So, you will have the same directory and same default env variables when you `run` the CI script.
 
 {{VM_SHELL_COMMENTS}}
+
+
+
+## 2. Share code
 
 The code is shared from the host to the VM via `rsync` by default, you can choose to use to `sshfs` share code instead.
 
@@ -121,6 +125,7 @@ When using `rsync`,  you can define `copyback: false` to not copy files back fro
 ```
 
 
+## 3. NAT from host runner to the VM
 
 You can add NAT port between the host and the VM.
 
@@ -141,6 +146,8 @@ You can add NAT port between the host and the VM.
 ...
 ```
 
+
+## 4. Set memory and cpu
 
 The default memory of the VM is 6144MB, you can use `mem` option to set the memory size:
 
@@ -175,6 +182,9 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 ...
 ```
 
+
+## 5. Select release
+
 It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by default, you can use `release` option to use another version of {{VM_NAME}}:
 
 ```
@@ -193,6 +203,7 @@ All the supported releases are here: {{VM_NAME}}  {{ALL_RELEASES}} [See all here
 
 
 
+## 6. Custom shell
 
 Support custom shell:
 
