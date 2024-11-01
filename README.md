@@ -50,7 +50,7 @@ jobs:
 ```
 
 
-The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.1.4`)  
+The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.1.5`)  
 
 
 If you are migrating from the previous `v0`, please change the `runs-on: ` to `runs-on: ubuntu-latest`
@@ -207,7 +207,7 @@ It uses [the FreeBSD 14.1](conf/default.release.conf) by default, you can use `r
 ...
 ```
 
-All the supported releases are here: FreeBSD  12.4, 13.2, 13.3, 13.4, 14.0, 14.1, test.releases [See all here](conf)
+All the supported releases are here: FreeBSD  12.4, 13.2, 13.3, 13.4, 14.0, 14.1, 14.2-pre, 15.0, test.releases [See all here](conf)
 
 
 
