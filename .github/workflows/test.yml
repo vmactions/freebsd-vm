@@ -28,7 +28,7 @@ jobs:
     if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd') && !contains(github.repository, 'omnios')}}
     strategy:
       matrix:
-        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", ""]
+        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2-pre", "15.0", ""]
         runs: [ "ubuntu-22.04", "ubuntu-24.04", "ubuntu-latest"]
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
@@ -47,7 +47,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@65594c6d26120d494e7987d2b3d120c4a8241e57
+      uses: vmactions/freebsd-vm@b819bd58f64885d5eed5a12699f1455a5c493216
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -103,7 +103,7 @@ jobs:
   test:
     strategy:
       matrix:
-        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", ""]
+        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2-pre", "15.0", ""]
         runs: [ "ubuntu-22.04", "ubuntu-24.04", "ubuntu-latest"]
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
@@ -115,7 +115,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@65594c6d26120d494e7987d2b3d120c4a8241e57
+      uses: vmactions/freebsd-vm@b819bd58f64885d5eed5a12699f1455a5c493216
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
