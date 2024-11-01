@@ -219,9 +219,11 @@ Support custom shell:
 ...
     steps:
     - uses: actions/checkout@v4
-    - name: Test
+    - name: Start VM
       id: vm
       uses: vmactions/freebsd-vm@v1
+      with:
+        sync: sshfs
     - name: Custom shell step 1
       shell: freebsd {0}
       run: |
