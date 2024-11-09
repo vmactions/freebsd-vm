@@ -21,7 +21,7 @@ jobs:
           token: ${{ secrets.VM_TOKEN }}
       - name: Get latest release
         id: get-latest-release
-        uses: InsonusK/get-latest-release@v1.0.1
+        uses: InsonusK/get-latest-release@v1.1.0
         with:
           myToken: ${{ github.token }}
           view_top: 1
