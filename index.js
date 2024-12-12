@@ -196,7 +196,7 @@ async function main() {
       let sync = core.getInput("sync");
       if(sync == "no") {
         core.info("don't get back by rsync");
-      } else if (sync != "sshfs") {
+      } else if (sync != "sshfs" && sync != "nfs") {
         core.info("get back by rsync");
         await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
       }
