@@ -95,6 +95,9 @@ async function setup(nat, mem, cpu) {
     } else if (sync == "sshfs") {
       core.info("Setup sshfs");
       await shell("bash run.sh runSSHFSInVM");
+    } else if (sync == "nfs") {
+      core.info("Setup nfs");
+      await shell("bash run.sh setupNFSShare");
     } else {
       await shell("bash run.sh installRsyncInVM");
       await shell("bash run.sh rsyncToVM");
