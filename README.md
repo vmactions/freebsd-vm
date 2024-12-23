@@ -203,7 +203,7 @@ It uses [the FreeBSD 14.2](conf/default.release.conf) by default, you can use `r
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        release: "13.2"
+        release: "15.0"
 ...
 ```
 
