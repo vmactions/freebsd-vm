@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
-        runs: [ "ubuntu-22.04", "ubuntu-24.04"]
+        runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
     env:
@@ -103,7 +103,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
-        runs: [ "ubuntu-22.04", "ubuntu-24.04"]
+        runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
     env:
@@ -178,7 +178,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
-        runs: [ "ubuntu-22.04", "ubuntu-24.04"]
+        runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
     env:
