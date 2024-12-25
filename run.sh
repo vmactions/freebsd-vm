@@ -293,7 +293,12 @@ EOF
   else
     echo "Configuring NFS in VM with default command"
     ssh "$osname" sh <<EOF
+if [ -e "/sbin/mount" ]; then
+/sbin/mount 192.168.122.1:$HOME/work \$HOME/work
+else
 mount 192.168.122.1:$HOME/work \$HOME/work
+fi
+
 EOF
     echo "Done with NFS"
   fi
