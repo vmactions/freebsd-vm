@@ -95,6 +95,9 @@ async function setup(nat, mem, cpu) {
     } else if (sync == "sshfs") {
       core.info("Setup sshfs");
       await shell("bash run.sh runSSHFSInVM");
+    } else if (sync == "nfs") {
+      core.info("Setup nfs");
+      await shell("bash run.sh runNFSInVM");
     } else {
       await shell("bash run.sh installRsyncInVM");
       await shell("bash run.sh rsyncToVM");
@@ -193,7 +196,7 @@ async function main() {
       let sync = core.getInput("sync");
       if(sync == "no") {
         core.info("don't get back by rsync");
-      } else if (sync != "sshfs") {
+      } else if (sync != "sshfs" && sync != "nfs") {
         core.info("get back by rsync");
         await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
       }
