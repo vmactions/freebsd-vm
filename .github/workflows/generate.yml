@@ -46,7 +46,7 @@ jobs:
           cat base-vm/.github/tpl/README.tpl.md >.github/tpl/README.tpl.md
 
       - name: Generate files
-        uses: vmactions/render@v0.0.1
+        uses: vmactions/template-render@v0.0.1
         with:
           datafile: .github/data/datafile.ini
           files: |
