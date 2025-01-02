@@ -25,16 +25,12 @@ concurrency:
 
 jobs:
   testsshfs:
-    if: ${{ 
-      !contains(github.repository, 'solaris') &&
-      !contains(github.repository, 'dragonflybsd') &&
-      !contains(github.repository, 'omnios') &&
-      (
-        hashFiles('conf/${{ matrix.release }}-${{ matrix.arch }}.conf') != '' ||
-        matrix.release == '' ||
-        matrix.arch == ''
-      )
-    }}
+    if: ${{ !contains(github.repository, 'solaris') && 
+            !contains(github.repository, 'dragonflybsd') && 
+            !contains(github.repository, 'omnios') && 
+            hashFiles('conf/${{ matrix.release }}-${{ matrix.arch }}.conf') != '' || 
+             matrix.release == '' || 
+             matrix.arch == '') }}
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
