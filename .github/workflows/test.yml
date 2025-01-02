@@ -33,7 +33,7 @@ jobs:
              matrix.arch == '') }}
     strategy:
       matrix:
-        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
+        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
 
@@ -54,7 +54,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@58dc9bce8cd83e50811067752308d4cccb540431
+      uses: vmactions/freebsd-vm@f640eb41a888f0f81e06e4f072432a9bcb0b8989
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -110,7 +110,7 @@ jobs:
   testnfs:
     strategy:
       matrix:
-        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
+        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
     if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
@@ -131,7 +131,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@58dc9bce8cd83e50811067752308d4cccb540431
+      uses: vmactions/freebsd-vm@f640eb41a888f0f81e06e4f072432a9bcb0b8989
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -188,7 +188,7 @@ jobs:
   test:
     strategy:
       matrix:
-        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
+        release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
     if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
@@ -202,7 +202,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@58dc9bce8cd83e50811067752308d4cccb540431
+      uses: vmactions/freebsd-vm@f640eb41a888f0f81e06e4f072432a9bcb0b8989
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
