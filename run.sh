@@ -27,16 +27,23 @@ fi
 export VM_RELEASE
 
 
+confname=$VM_RELEASE
+
+if [ "$VM_ARCH" ]; then
+  confname=$VM_RELEASE-$VM_ARCH
+fi
+
+
 #load the release conf
-if [ ! -e "conf/$VM_RELEASE.conf" ]; then
-  echo "Can not find release conf: conf/$VM_RELEASE.conf"
+if [ ! -e "conf/$confname.conf" ]; then
+  echo "Can not find release conf: conf/$confname.conf"
   echo "The supported release conf: "
   ls conf/*
   exit 1
 fi
 
 
-. conf/$VM_RELEASE.conf
+. conf/$confname.conf
 
 
 #load the vm conf
@@ -52,7 +59,7 @@ fi
 
 
 #reload the local vm conf again, in case the vm conf can override values in the builder conf
-. conf/$VM_RELEASE.conf
+. conf/$confname.conf
 
 
 export VM_ISO_LINK
@@ -87,14 +94,8 @@ ostype="$VM_OS_TYPE"
 sshport=$VM_SSH_PORT
 
 
-
-qow2="$osname-$VM_RELEASE.qcow2"
-
-if _endswith "$OVA_LINK" ".xz"; then
-  ovafile="$qow2.xz"
-else
-  ovafile="$qow2.zst"
-fi
+ovafile="$(echo "$OVA_LINK" | rev  | cut -d / -f 1 | rev)"
+qow2="$(echo "$OVA_LINK" | rev  | cut -d / -f 1 | cut -d . -f 2- | rev)"
 
 
 _idfile='~/.ssh/host.id_rsa'
@@ -163,7 +164,7 @@ importVM() {
   cat host.id_rsa >$HOME/.ssh/host.id_rsa
   chmod 600 $HOME/.ssh/host.id_rsa
 
-  bash $vmsh importVM $osname $ostype "$osname-$VM_RELEASE.qcow2"   ""    "$_mem"  "$_cpu"
+  bash $vmsh importVM $osname $ostype "$qow2"   ""    "$_mem"  "$_cpu"
 
   if [ "$DEBUG" ]; then
     bash $vmsh startWeb $osname

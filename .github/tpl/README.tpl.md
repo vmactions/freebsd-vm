@@ -199,11 +199,33 @@ It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by defa
 ...
 ```
 
-All the supported releases are here: {{VM_NAME}}  {{ALL_RELEASES}} [See all here](conf)
+
+## 6. Select architecture
+
+The vm is using x86_64(AMD64) by default, but you can use `arch` option to change the architecture:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        release: "{{VM_SET_RELEASE}}"
+        arch: aarch64
+...
+```
+
+
+All the supported releases are here:
+
+{{RELEASE_TABLE}}
 
 
 
-## 6. Custom shell
+
+## 7. Custom shell
 
 Support custom shell:
 

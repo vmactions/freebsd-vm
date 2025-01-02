@@ -127,6 +127,11 @@ async function main() {
     process.env.VM_RELEASE=release;
   }
 
+  let arch = core.getInput("arch");
+  core.info("arch: " + release);
+  if(arch) {
+    process.env.VM_ARCH=arch;
+  }
 
   let nat = core.getInput("nat");
   core.info("nat: " + nat);
