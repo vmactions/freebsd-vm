@@ -207,11 +207,33 @@ It uses [the FreeBSD 14.2](conf/default.release.conf) by default, you can use `r
 ...
 ```
 
-All the supported releases are here: FreeBSD  12.4, 13.2, 13.3, 13.4, 14.0, 14.1, 14.2-pre, 14.2, 15.0, test.releases [See all here](conf)
+
+## 6. Select architecture
+
+The vm is using x86_64(AMD64) by default, but you can use `arch` option to change the architecture:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: "15.0"
+        arch: aarch64
+...
+```
+
+
+All the supported releases are here:
+
+{{RELEASE_TABLE}}
 
 
 
-## 6. Custom shell
+
+## 7. Custom shell
 
 Support custom shell:
 
