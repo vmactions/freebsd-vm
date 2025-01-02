@@ -25,12 +25,7 @@ concurrency:
 
 jobs:
   testsshfs:
-    if: ${{ !contains(github.repository, 'solaris') && 
-            !contains(github.repository, 'dragonflybsd') && 
-            !contains(github.repository, 'omnios') && 
-            hashFiles('conf/${{ matrix.release }}-${{ matrix.arch }}.conf') != '' || 
-             matrix.release == '' || 
-             matrix.arch == '') }}
+    if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd') && !contains(github.repository, 'omnios')}}
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
@@ -46,6 +41,18 @@ jobs:
       DEBUG: 1
     steps:
     - uses: actions/checkout@v4
+    - name: Check arch
+      run: |
+        if [ -z "${{ matrix.release }}" ]; then
+          #ok, go ahead
+        elif [ -z "${{ matrix.arch }}" ]; then
+          #ok, go ahead
+        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]
+          #ok, go ahead
+        else
+          echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
+          exit 0
+        fi
     - name: Creating Web console
       uses: vmactions/cf-tunnel@v0
       id: tunnel
@@ -107,13 +114,17 @@ jobs:
           sysctl hw.physmem
           sysctl hw.usermem
 
+
+
+
+
+
   testnfs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
-    if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
     env:
@@ -123,6 +134,18 @@ jobs:
       DEBUG: 1
     steps:
     - uses: actions/checkout@v4
+    - name: Check arch
+      run: |
+        if [ -z "${{ matrix.release }}" ]; then
+          #ok, go ahead
+        elif [ -z "${{ matrix.arch }}" ]; then
+          #ok, go ahead
+        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]
+          #ok, go ahead
+        else
+          echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
+          exit 0
+        fi
     - name: Creating Web console
       uses: vmactions/cf-tunnel@v0
       id: tunnel
@@ -185,13 +208,16 @@ jobs:
           sysctl hw.usermem
 
 
+
+
+
+
   test:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
-    if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
     env:
@@ -200,6 +226,18 @@ jobs:
       SEC_VBOX : ${{ secrets.SEC_VBOX }}
     steps:
     - uses: actions/checkout@v4
+    - name: Check arch
+      run: |
+        if [ -z "${{ matrix.release }}" ]; then
+          #ok, go ahead
+        elif [ -z "${{ matrix.arch }}" ]; then
+          #ok, go ahead
+        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]
+          #ok, go ahead
+        else
+          echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
+          exit 0
+        fi
     - name: Test in FreeBSD
       id: test
       uses: vmactions/freebsd-vm@99e4e3ee7fc691330c3f3b793e14d9330f7c5026
