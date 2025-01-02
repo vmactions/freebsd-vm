@@ -25,13 +25,22 @@ concurrency:
 
 jobs:
   testsshfs:
-    if: ${{ !contains(github.repository, 'solaris') && !contains(github.repository, 'dragonflybsd') && !contains(github.repository, 'omnios')}}
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
-    if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
+    if: ${{ 
+      !contains(github.repository, 'solaris') &&
+      !contains(github.repository, 'dragonflybsd') &&
+      !contains(github.repository, 'omnios') &&
+      (
+        exists('conf/${{ matrix.release }}-${{ matrix.arch }}.conf') ||
+        matrix.release == '' ||
+        matrix.arch == ''
+      )
+    }}
+
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
     env:
