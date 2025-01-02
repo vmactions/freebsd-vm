@@ -42,27 +42,33 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Check arch
+      id: check
       run: |
         if [ -z "${{ matrix.release }}" ]; then
           #ok, go ahead
           echo "release is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
           echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
         elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
           echo "conf exists: conf/${{ matrix.release }}-${{ matrix.arch }}.conf"
+          echo "run=true" >> $GITHUB_OUTPUT
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
-          exit 0
+          echo "run=false" >> $GITHUB_OUTPUT
         fi
     - name: Creating Web console
+      if: ${{ steps.check.outputs.run == 'true' }}
       uses: vmactions/cf-tunnel@v0
       id: tunnel
       with:
         protocol: http
         port: 8000
     - name: Test in FreeBSD
+      if: ${{ steps.check.outputs.run == 'true' }}
       id: test
       uses: vmactions/freebsd-vm@b1a32a85cece84e2e3fbbfe78f22377e619ad632
       with:
@@ -97,11 +103,13 @@ jobs:
           sysctl hw.usermem
 
     - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
       run:
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
     - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
       shell: freebsd {0}
       run: |
         pwd
@@ -138,27 +146,33 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Check arch
+      id: check
       run: |
         if [ -z "${{ matrix.release }}" ]; then
           #ok, go ahead
           echo "release is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
           echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
         elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
           echo "conf exists: conf/${{ matrix.release }}-${{ matrix.arch }}.conf"
+          echo "run=true" >> $GITHUB_OUTPUT
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
-          exit 0
+          echo "run=false" >> $GITHUB_OUTPUT
         fi
     - name: Creating Web console
+      if: ${{ steps.check.outputs.run == 'true' }}
       uses: vmactions/cf-tunnel@v0
       id: tunnel
       with:
         protocol: http
         port: 8000
     - name: Test in FreeBSD
+      if: ${{ steps.check.outputs.run == 'true' }}
       id: test
       uses: vmactions/freebsd-vm@b1a32a85cece84e2e3fbbfe78f22377e619ad632
       with:
@@ -193,11 +207,13 @@ jobs:
           sysctl hw.usermem
 
     - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
       run:
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
     - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
       shell: freebsd {0}
       run: |
         pwd
@@ -233,21 +249,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Check arch
+      id: check
       run: |
         if [ -z "${{ matrix.release }}" ]; then
           #ok, go ahead
           echo "release is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
           echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
         elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
           echo "conf exists: conf/${{ matrix.release }}-${{ matrix.arch }}.conf"
+          echo "run=true" >> $GITHUB_OUTPUT
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
-          exit 0
+          echo "run=false" >> $GITHUB_OUTPUT
         fi
     - name: Test in FreeBSD
+      if: ${{ steps.check.outputs.run == 'true' }}
       id: test
       uses: vmactions/freebsd-vm@b1a32a85cece84e2e3fbbfe78f22377e619ad632
       with:
@@ -275,12 +296,14 @@ jobs:
           sysctl hw.physmem
           sysctl hw.usermem
     - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
       run:
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
 
     - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
       shell: freebsd {0}
       run: |
         pwd
