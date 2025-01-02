@@ -141,10 +141,13 @@ jobs:
       run: |
         if [ -z "${{ matrix.release }}" ]; then
           #ok, go ahead
+          echo "release is empty"
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
+          echo "arch is empty"
         elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
+          echo "conf exists: conf/${{ matrix.release }}-${{ matrix.arch }}.conf"
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
           exit 0
@@ -233,10 +236,13 @@ jobs:
       run: |
         if [ -z "${{ matrix.release }}" ]; then
           #ok, go ahead
+          echo "release is empty"
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
+          echo "arch is empty"
         elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
+          echo "conf exists: conf/${{ matrix.release }}-${{ matrix.arch }}.conf"
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
           exit 0
