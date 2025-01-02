@@ -47,7 +47,7 @@ jobs:
           #ok, go ahead
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
-        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]
+        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
@@ -140,7 +140,7 @@ jobs:
           #ok, go ahead
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
-        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]
+        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
@@ -232,7 +232,7 @@ jobs:
           #ok, go ahead
         elif [ -z "${{ matrix.arch }}" ]; then
           #ok, go ahead
-        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]
+        elif [ -e "conf/${{ matrix.release }}-${{ matrix.arch }}.conf" ]; then
           #ok, go ahead
         else
           echo "The release ${{ matrix.release }} doesn't support ${{ matrix.arch }}, skip."
