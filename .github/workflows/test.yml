@@ -29,7 +29,9 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
+        arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
+    if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
     env:
@@ -53,6 +55,7 @@ jobs:
         prepare: |
           pkg install -y curl
         release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
         nat: |
           "10022": "22"
           "8080": "80"
@@ -103,7 +106,9 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
+        arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
+    if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
     env:
@@ -127,6 +132,7 @@ jobs:
         prepare: |
           pkg install -y curl
         release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
         nat: |
           "10022": "22"
           "8080": "80"
@@ -178,7 +184,9 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "14.2-aarch64", "15.0", ""]
+        arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
+    if: ${{ exists('conf/${{ matrix.release }}-${{ matrix.arch }}.txt') || "${{ matrix.release }}" == '' || "${{ matrix.arch }}"" == '' }}
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
     env:
@@ -196,6 +204,7 @@ jobs:
           pkg install -y curl
         mem: 4096
         release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
         nat: |
           "10022": "22"
           "8080": "80"

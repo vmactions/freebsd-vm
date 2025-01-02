@@ -128,7 +128,7 @@ async function main() {
   }
 
   let arch = core.getInput("arch");
-  core.info("arch: " + release);
+  core.info("arch: " + arch);
   if(arch) {
     process.env.VM_ARCH=arch;
   }

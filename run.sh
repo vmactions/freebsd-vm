@@ -29,6 +29,11 @@ export VM_RELEASE
 
 confname=$VM_RELEASE
 
+
+if [ "$VM_ARCH" = "x86_64" ]; then
+  VM_ARCH=""
+fi
+
 if [ "$VM_ARCH" ]; then
   confname=$VM_RELEASE-$VM_ARCH
 fi
