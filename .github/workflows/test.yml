@@ -54,7 +54,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@f640eb41a888f0f81e06e4f072432a9bcb0b8989
+      uses: vmactions/freebsd-vm@4fde9e483efe3219747d1f5ccc8c67c811827a93
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -131,7 +131,7 @@ jobs:
         port: 8000
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@f640eb41a888f0f81e06e4f072432a9bcb0b8989
+      uses: vmactions/freebsd-vm@4fde9e483efe3219747d1f5ccc8c67c811827a93
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -202,7 +202,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@f640eb41a888f0f81e06e4f072432a9bcb0b8989
+      uses: vmactions/freebsd-vm@4fde9e483efe3219747d1f5ccc8c67c811827a93
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
