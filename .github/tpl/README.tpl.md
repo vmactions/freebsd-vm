@@ -68,7 +68,7 @@ So, you will have the same directory and same default env variables when you `ru
 
 ## 2. Share code
 
-The code is shared from the host to the VM via `rsync` by default, you can choose to use `sshfs` or `nfs` share code instead.
+The code is shared from the host to the VM via `rsync` by default, you can choose to use `sshfs` or `nfs` to share code instead.
 
 
 ```
@@ -264,8 +264,10 @@ We use Qemu and Libvirt to run the {{VM_NAME}} VM.
 
 # Upcoming features:
 
-1. Runs on MacOS to use cpu accelaration.
-2. Support ARM and other architecture.
+1. Support other architectures.
+
+
+
 
 
 
