@@ -5,6 +5,24 @@ Use this action to run your CI in FreeBSD.
 The github workflow only supports Ubuntu, Windows and MacOS. But what if you need to use FreeBSD?
 
 
+All the supported releases are here:
+
+
+
+| Release | x86_64  | aarch64 |
+|---------|---------|---------|
+| 12.4    |  ✅   | ❌   |
+| 13.2    |  ✅   | ❌   |
+| 13.3    |  ✅   | ❌   |
+| 13.4   |  ✅   | ❌   |
+| 14.0   |  ✅   | ❌   |
+| 14.1    |  ✅   |  ✅   |
+| 14.2   |  ✅   |  ✅   |
+| 15.0   |  ✅   |  ✅   |
+
+
+
+
 
 
 ## 1. Example: `test.yml`:
@@ -224,24 +242,6 @@ The vm is using x86_64(AMD64) by default, but you can use `arch` option to chang
         arch: aarch64
 ...
 ```
-
-
-All the supported releases are here:
-
-
-
-| Release | x86_64  | aarch64 |
-|---------|---------|---------|
-| 12.4    |  ✅   | ❌   |
-| 13.2    |  ✅   | ❌   |
-| 13.3    |  ✅   | ❌   |
-| 13.4   |  ✅   | ❌   |
-| 14.0   |  ✅   | ❌   |
-| 14.1    |  ✅   |  ✅   |
-| 14.2   |  ✅   |  ✅   |
-| 15.0   |  ✅   |  ✅   |
-
-
 
 
 
