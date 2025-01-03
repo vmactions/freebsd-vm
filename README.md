@@ -76,7 +76,7 @@ The default shell in FreeBSD(before 14.0) is `csh`, if you want to use `sh` to e
 
 ## 2. Share code
 
-The code is shared from the host to the VM via `rsync` by default, you can choose to use `sshfs` or `nfs` share code instead.
+The code is shared from the host to the VM via `rsync` by default, you can choose to use `sshfs` or `nfs` to share code instead.
 
 
 ```
@@ -285,8 +285,10 @@ We use Qemu and Libvirt to run the FreeBSD VM.
 
 # Upcoming features:
 
-1. Runs on MacOS to use cpu accelaration.
-2. Support ARM and other architecture.
+1. Support other architectures.
+
+
+
 
 
 
