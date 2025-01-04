@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
-        arch: [ "aarch64", "", "x86_64"]
+        arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
 
     runs-on: ${{ matrix.runs }}
@@ -77,7 +77,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@68e1eb74b855e956a6ad023a07ae9b2bd5ba2df9
+      uses: vmactions/freebsd-vm@c204455d3d53d14246e5e81047544ad5fcea5828
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -141,7 +141,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
-        arch: [ "aarch64", "", "x86_64"]
+        arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
@@ -188,7 +188,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@68e1eb74b855e956a6ad023a07ae9b2bd5ba2df9
+      uses: vmactions/freebsd-vm@c204455d3d53d14246e5e81047544ad5fcea5828
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -252,7 +252,7 @@ jobs:
     strategy:
       matrix:
         release: [ "13.2", "13.3", "13.4", "14.0", "14.1", "14.2", "15.0", ""]
-        arch: [ "aarch64", "", "x86_64"]
+        arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
@@ -291,7 +291,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@68e1eb74b855e956a6ad023a07ae9b2bd5ba2df9
+      uses: vmactions/freebsd-vm@c204455d3d53d14246e5e81047544ad5fcea5828
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
