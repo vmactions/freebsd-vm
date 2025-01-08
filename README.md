@@ -68,7 +68,7 @@ jobs:
 ```
 
 
-The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.1.7`)  
+The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.1.8`)  
 
 
 If you are migrating from the previous `v0`, please change the `runs-on: ` to `runs-on: ubuntu-latest`
