@@ -258,7 +258,7 @@ Support custom shell:
       id: vm
       uses: vmactions/freebsd-vm@v1
       with:
-        sync: sshfs
+        sync: nfs
     - name: Custom shell step 1
       shell: freebsd {0}
       run: |
