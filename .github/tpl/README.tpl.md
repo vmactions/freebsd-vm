@@ -237,7 +237,7 @@ Support custom shell:
       id: vm
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
-        sync: sshfs
+        sync: nfs
     - name: Custom shell step 1
       shell: {{VM_OS_NAME}} {0}
       run: |
