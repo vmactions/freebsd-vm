@@ -30,8 +30,12 @@ export VM_RELEASE
 confname=$VM_RELEASE
 
 
-if [ "$VM_ARCH" = "x86_64" ]; then
+if [ "$VM_ARCH" = "x86_64" ] || [ "$VM_ARCH" = "amd64" ]; then
   VM_ARCH=""
+fi
+
+if [ "$VM_ARCH" = "arm64" ]; then
+  VM_ARCH="aarch64"
 fi
 
 if [ "$VM_ARCH" ]; then
@@ -315,7 +319,9 @@ EOF
 onStarted() {
   bash $vmsh addSSHHost $osname "$_idfile"
   #just touch the file, so that the user can access this file in the VM
-  echo "" >>${GITHUB_ENV}
+  if [ "${GITHUB_ENV}" ]; then
+    echo "" >>${GITHUB_ENV}
+  fi
   if [ -e "hooks/onStarted.sh" ]; then
     ssh "$osname" sh <hooks/onStarted.sh
   fi
