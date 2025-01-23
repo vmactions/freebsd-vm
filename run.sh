@@ -289,7 +289,7 @@ EOF
 runNFSInVM() {
   echo "Installing NFS on host"
   sudo apt-get install -y nfs-kernel-server
-  echo "$HOME/work *(rw,async,no_subtree_check,anonuid=$(id -u),anongid=$(id -g))" | sudo tee -a /etc/exports
+  echo "$HOME/work *(rw,insecure,async,no_subtree_check,anonuid=$(id -u),anongid=$(id -g))" | sudo tee -a /etc/exports
   sudo exportfs -a
 
   if [ -e "hooks/onRunNFS.sh" ] && ssh "$osname" env "RUNNER_HOME=$HOME" sh <hooks/onRunNFS.sh; then
