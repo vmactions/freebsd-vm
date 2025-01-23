@@ -302,7 +302,14 @@ We use Qemu and Libvirt to run the FreeBSD VM.
 
 # Upcoming features:
 
-1. Support other architectures.
+1. Support s390x, or other architectures.
+2. Support MacOS runner.
+3. Support Linux ARM runner.
+4. Get rid of Libvirt.
+
+
+
+
 
 
 
