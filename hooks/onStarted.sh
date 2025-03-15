@@ -10,7 +10,10 @@ freebsd-version
 
 date -u
 
-kldload  fusefs
+if ! kldload  fusefs ; then
+  #ok, kldload: can't load fusefs: module already loaded or in kernel 
+  echo ""
+fi
 
 
 
