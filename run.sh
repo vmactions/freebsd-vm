@@ -195,7 +195,7 @@ execSSH() {
 
 #using the sh 
 execSSHSH() {
-  exec ssh "$osname" sh
+  exec ssh "$osname" sh -e
 }
 
 
