@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "15.0", ""]
-        arch: [ "aarch64", ""]
+        arch: [ "aarch64", "riscv64", ""]
         runs: [ "ubuntu-24.04"]
 
     runs-on: ${{ matrix.runs }}
@@ -144,7 +144,7 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "15.0", ""]
-        arch: [ "aarch64", ""]
+        arch: [ "aarch64", "riscv64", ""]
         runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
@@ -257,7 +257,7 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "15.0", ""]
-        arch: [ "aarch64", ""]
+        arch: [ "aarch64", "riscv64", ""]
         runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
