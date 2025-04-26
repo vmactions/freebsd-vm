@@ -4,44 +4,19 @@ Use this action to run your CI in FreeBSD.
 
 The github workflow only supports Ubuntu, Windows and MacOS. But what if you need to use FreeBSD?
 
-
 All the supported releases are here:
 
-
-
-| Release | x86_64  | aarch64(arm64) |
-|---------|---------|---------|
-| 15.0    |  ✅     |  ✅    |
-| 14.2    |  ✅     |  ✅    |
-| 14.1    |  ✅     |  ✅    |
-| 14.0    |  ✅     |  ❌    |
-| 13.5    |  ✅     |  ✅    |
-| 13.4    |  ✅     |  ✅    |
-| 13.3    |  ✅     |  ✅    |
-| 13.2    |  ✅     |  ❌    |
-| 12.4    |  ✅     |  ❌    |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+| Release | x86_64  | aarch64(arm64) | riscv64 |
+|---------|---------|---------|---------|
+| 15.0    |  ✅     |  ✅    |  ✅    |
+| 14.2    |  ✅     |  ✅    |  ✅    |
+| 14.1    |  ✅     |  ✅    |  ❌    |
+| 14.0    |  ✅     |  ❌    |  ❌    |
+| 13.5    |  ✅     |  ✅    |  ❌    |
+| 13.4    |  ✅     |  ✅    |  ❌    |
+| 13.3    |  ✅     |  ✅    |  ❌    |
+| 13.2    |  ✅     |  ❌    |  ❌    |
+| 12.4    |  ✅     |  ❌    |  ❌    |
 
 ## 1. Example: `test.yml`:
 
