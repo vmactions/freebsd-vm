@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "15.0", ""]
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
 
@@ -78,7 +78,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5327a11ad7961d6e154beffed4c41db3950e1296
+      uses: vmactions/freebsd-vm@7ed9e507864c057f9317137c7538c96b70728482
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -143,7 +143,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "15.0", ""]
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
@@ -191,7 +191,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5327a11ad7961d6e154beffed4c41db3950e1296
+      uses: vmactions/freebsd-vm@7ed9e507864c057f9317137c7538c96b70728482
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -256,7 +256,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "15.0", ""]
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", ""]
         runs: [ "ubuntu-24.04"]
     runs-on: ${{ matrix.runs }}
@@ -296,7 +296,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5327a11ad7961d6e154beffed4c41db3950e1296
+      uses: vmactions/freebsd-vm@7ed9e507864c057f9317137c7538c96b70728482
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
