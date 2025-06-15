@@ -90,7 +90,7 @@ jobs:
             git config  user.name "Generate.yml"
             git add .
             git commit -m "Generated from base-vm"
-            git pull --rebase --autostash
+            git rebase -X ours origin/main
             newHash="$(git rev-parse main)"
             echo "New hash: $newHash"
             #modify test.yml
