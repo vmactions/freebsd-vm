@@ -90,12 +90,10 @@ jobs:
             git config  user.name "Generate.yml"
             git add .
             git commit -m "Generated from base-vm"
-            git rebase -X ours origin/main
             newHash="$(git rev-parse main)"
             echo "New hash: $newHash"
             #modify test.yml
             sed -i "s/$oldHash/$newHash/g" .github/workflows/test.yml
-            git checkout --ours .github/workflows/test.yml
           fi
       - uses: EndBug/add-and-commit@v9
         with:
