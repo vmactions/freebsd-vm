@@ -20,12 +20,6 @@ jobs:
         with: 
           token: ${{ secrets.VM_TOKEN }}
           fetch-depth: '2'
-      - name: Get latest release
-        id: get-latest-release
-        uses: InsonusK/get-latest-release@v1.1.0
-        with:
-          myToken: ${{ github.token }}
-          view_top: 1
 
       - name: Preparing env variables
         run: |
@@ -33,7 +27,7 @@ jobs:
           . conf/default.release.conf
           echo "DEFAULT_RELEASE=$DEFAULT_RELEASE" >> $GITHUB_ENV
           echo "ALL_RELEASES=\"$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed "s/,\$//" | sed 's/,/", "/g')\"" >> $GITHUB_ENV
-          LATEST_TAG="${{ steps.get-latest-release.outputs.tag_name }}"
+          LATEST_TAG="$(git tag --sort=-v:refname | head -n 1)"
           echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
           echo "LATEST_VERSION_NUMBER=${LATEST_TAG:1}" >> $GITHUB_ENV
 
