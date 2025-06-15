@@ -12,6 +12,7 @@ All the supported releases are here:
 | Release | x86_64  | aarch64(arm64) |
 |---------|---------|---------|
 | 15.0    |  ✅     |  ✅    |
+| 14.3    |  ✅     |  ✅    |
 | 14.2    |  ✅     |  ✅    |
 | 14.1    |  ✅     |  ✅    |
 | 14.0    |  ✅     |  ❌    |
@@ -229,7 +230,7 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 
 ## 5. Select release
 
-It uses [the FreeBSD 14.2](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
+It uses [the FreeBSD 14.3](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
 
 ```
 ...
