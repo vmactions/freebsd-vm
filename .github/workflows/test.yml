@@ -78,7 +78,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@505f374ad418c77d8f2bdfb2e613811fe00b1961
+      uses: vmactions/freebsd-vm@095f9739c72efde6fad1593b6ddb02c9df93c002
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -191,7 +191,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@505f374ad418c77d8f2bdfb2e613811fe00b1961
+      uses: vmactions/freebsd-vm@095f9739c72efde6fad1593b6ddb02c9df93c002
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -296,7 +296,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@505f374ad418c77d8f2bdfb2e613811fe00b1961
+      uses: vmactions/freebsd-vm@095f9739c72efde6fad1593b6ddb02c9df93c002
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
