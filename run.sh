@@ -184,7 +184,16 @@ importVM() {
 
 
 waitForVMReady() {
-  bash $vmsh waitForVMReady "$osname"
+  if ! bash $vmsh waitForVMReady "$osname"; then
+    echo "boot failed, let's shutdown vm, and retry once more after 10 seconds"
+    if ! bash $vmsh shutdownVM "$osname"; then
+      echo "shutdown error"
+    fi
+    sleep 10
+    echo "let's retry once more"
+    startVM
+    bash $vmsh waitForVMReady "$osname";
+  fi
 }
 
 
