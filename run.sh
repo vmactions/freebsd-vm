@@ -129,6 +129,8 @@ importVM() {
   _cpu=$2
 
   bash $vmsh setup
+  #for arm runner
+  sudo chmod 755 $HOME
 
   if [ ! -e "$qow2" ]; then
     echo "Downloading $OVA_LINK"

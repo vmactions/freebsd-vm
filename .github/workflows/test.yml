@@ -31,7 +31,10 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", ""]
-        runs: [ "ubuntu-24.04"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
 
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
@@ -145,7 +148,11 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", ""]
-        runs: [ "ubuntu-24.04"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
     env:
@@ -258,7 +265,11 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", ""]
-        runs: [ "ubuntu-24.04"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+
     runs-on: ${{ matrix.runs }}
     name: FreeBSD
     env:
