@@ -211,6 +211,11 @@ The vm is using x86_64(AMD64) by default, but you can use `arch` option to chang
 
 ```
 ...
+    runs-on: {{VM_RUNS_ON}}
+    name: A job to run test in {{VM_NAME}}
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
     steps:
     - uses: actions/checkout@v4
     - name: Test
@@ -222,7 +227,9 @@ The vm is using x86_64(AMD64) by default, but you can use `arch` option to chang
 ...
 ```
 
+When you run with `aarch64`, the host runner should still be the normal x86_64 runner: `runs-on: {{VM_RUNS_ON}}`
 
+It's not recommended to use 'ubuntu-24.04-arm' as runner, it's much more slower.
 
 
 ## 7. Custom shell
@@ -266,8 +273,8 @@ We use Qemu and Libvirt to run the {{VM_NAME}} VM.
 
 1. Support s390x, or other architectures.
 2. Support MacOS runner.
-3. Support Linux ARM runner.
-4. Get rid of Libvirt.
+
+
 
 
 
