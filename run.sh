@@ -270,7 +270,7 @@ EOF
 
 runSSHFSInVM() {
 
-  if [ -e "hooks/onRunSSHFS.sh" ] && ssh "$osname" sh <hooks/onRunSSHFS.sh; then
+  if [ -e "hooks/onRunSSHFS.sh" ] && ssh "$osname" env "RUNNER_HOME=$HOME" sh <hooks/onRunSSHFS.sh; then
     echo "OK";
   elif [ "$VM_SSHFS_PKG" ]; then
     echo "Installing $VM_SSHFS_PKG"

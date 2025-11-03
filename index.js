@@ -196,15 +196,10 @@ async function main() {
 
 
     let copyback = core.getInput("copyback");
-    if(copyback !== "false") {
-      core.startGroup("Copy files back from the VM");
-      let sync = core.getInput("sync");
-      if(sync == "no") {
-        core.info("don't get back by rsync");
-      } else if (sync != "sshfs" && sync != "nfs") {
-        core.info("get back by rsync");
-        await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
-      }
+    let sync = core.getInput("sync");
+    if(copyback !== "false" && sync != "sshfs" && sync != "nfs" && sync != "no") {
+      core.info("get back by rsync");
+      await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
       core.endGroup();
     }
     if(error) {
