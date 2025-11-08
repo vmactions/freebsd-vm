@@ -91,7 +91,7 @@ jobs:
           fi
       - uses: EndBug/add-and-commit@v9
         with:
-          message: "Update from base vm"
+          message: "Update ${{ github.repository }} from base vm"
           pull: '--rebase --autostash '
           add: |
             .github/workflows/readme.yml
