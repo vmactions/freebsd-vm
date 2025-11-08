@@ -83,11 +83,11 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e69f961010e43c5984853f43cf4d583a36b8ecc7
+      uses: vmactions/freebsd-vm@81a721564ec04d38e9f312af7b3aeb0902fbb7f0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
-          pkg install -y curl
+          
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
         nat: |
@@ -106,6 +106,7 @@ jobs:
           fi
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -115,6 +116,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
 
     - name: Test NAT
       if: ${{ steps.check.outputs.run == 'true' }}
@@ -129,6 +132,7 @@ jobs:
         pwd
         cd $GITHUB_WORKSPACE;
         pwd
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -138,6 +142,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
 
 
 
@@ -202,11 +208,11 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e69f961010e43c5984853f43cf4d583a36b8ecc7
+      uses: vmactions/freebsd-vm@81a721564ec04d38e9f312af7b3aeb0902fbb7f0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
-          pkg install -y curl
+          
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
         nat: |
@@ -225,6 +231,7 @@ jobs:
           fi
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -234,6 +241,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
 
     - name: Test NAT
       if: ${{ steps.check.outputs.run == 'true' }}
@@ -248,6 +257,7 @@ jobs:
         pwd
         cd $GITHUB_WORKSPACE;
         pwd
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -257,6 +267,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
 
 
 
@@ -313,11 +325,11 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e69f961010e43c5984853f43cf4d583a36b8ecc7
+      uses: vmactions/freebsd-vm@81a721564ec04d38e9f312af7b3aeb0902fbb7f0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
-          pkg install -y curl
+          
         mem: 4096
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
@@ -330,6 +342,7 @@ jobs:
         run: |
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -339,6 +352,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
     - name: Test NAT
       if: ${{ steps.check.outputs.run == 'true' }}
       run:
@@ -353,6 +368,7 @@ jobs:
         pwd
         cd $GITHUB_WORKSPACE;
         pwd
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -362,6 +378,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
 
 
 
