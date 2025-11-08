@@ -10,7 +10,7 @@ jobs:
       DEBUG: 1
       NGROK_TOKEN : ${{ secrets.NGROK_TOKEN }}
       VM_RELEASE: ${{ secrets.VM_RELEASE }}
-      SEC_VBOX : ${{ secrets.SEC_VBOX }}
+      SEC_VBOX : ${{ vars.SEC_VBOX }}
     steps:
     - uses: actions/checkout@v4
     - uses: vmactions/cf-tunnel@v0

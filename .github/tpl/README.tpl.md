@@ -271,7 +271,7 @@ We use Qemu and Libvirt to run the {{VM_NAME}} VM.
 
 # Upcoming features:
 
-1. Support s390x, or other architectures.
+1. Support other architectures, eg: sparc64 or powerpc64.
 2. Support MacOS runner.
 
 

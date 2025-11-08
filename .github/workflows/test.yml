@@ -41,7 +41,7 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ secrets.SEC_VBOX }}
+      SEC_VBOX : ${{ vars.SEC_VBOX }}
       DEBUG: 1
     steps:
     - uses: actions/checkout@v4
@@ -158,7 +158,7 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ secrets.SEC_VBOX }}
+      SEC_VBOX : ${{ vars.SEC_VBOX }}
       DEBUG: 1
     steps:
     - uses: actions/checkout@v4
@@ -275,7 +275,7 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ secrets.SEC_VBOX }}
+      SEC_VBOX : ${{ vars.SEC_VBOX }}
     steps:
     - uses: actions/checkout@v4
     - name: Check arch
