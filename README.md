@@ -75,7 +75,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
