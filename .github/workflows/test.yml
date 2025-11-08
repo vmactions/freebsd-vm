@@ -88,7 +88,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e21651134b4885dcd66125d16f2fa479e173787c
+      uses: vmactions/freebsd-vm@6131a42e6f2f9d2beb22bd0c33f0dc3d6295f2d1
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -117,7 +117,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -143,7 +144,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -218,7 +220,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e21651134b4885dcd66125d16f2fa479e173787c
+      uses: vmactions/freebsd-vm@6131a42e6f2f9d2beb22bd0c33f0dc3d6295f2d1
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -247,7 +249,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -273,7 +276,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -341,7 +345,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e21651134b4885dcd66125d16f2fa479e173787c
+      uses: vmactions/freebsd-vm@6131a42e6f2f9d2beb22bd0c33f0dc3d6295f2d1
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -371,7 +375,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -397,7 +402,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -463,7 +469,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@e21651134b4885dcd66125d16f2fa479e173787c
+      uses: vmactions/freebsd-vm@6131a42e6f2f9d2beb22bd0c33f0dc3d6295f2d1
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -486,7 +492,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
@@ -512,7 +519,8 @@ jobs:
           whoami
           env
           freebsd-version
-          sysctl hw.model
+          uname -a
+          #sysctl hw.model
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
