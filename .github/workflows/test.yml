@@ -66,9 +66,14 @@ jobs:
           echo "arch is empty"
           echo "run=true" >> $GITHUB_OUTPUT
         elif [ -e "conf/${_release}-${_arch}.conf" ]; then
-          #ok, go ahead
           echo "conf exists: conf/${_release}-${_arch}.conf"
-          echo "run=true" >> $GITHUB_OUTPUT
+          #ok, go ahead
+          if [[ "$(echo "FreeBSD" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The FreeBSD-${_arch} doesn't support sshfs, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
         else
           echo "The release ${_release} doesn't support ${_arch}, skip."
           echo "run=false" >> $GITHUB_OUTPUT
@@ -193,7 +198,12 @@ jobs:
         elif [ -e "conf/${_release}-${_arch}.conf" ]; then
           #ok, go ahead
           echo "conf exists: conf/${_release}-${_arch}.conf"
-          echo "run=true" >> $GITHUB_OUTPUT
+          if [[ "$(echo "FreeBSD" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The FreeBSD-${_arch} doesn't support nfs, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
         else
           echo "The release ${_release} doesn't support ${_arch}, skip."
           echo "run=false" >> $GITHUB_OUTPUT
@@ -273,6 +283,129 @@ jobs:
 
 
 
+  testscp:
+    strategy:
+      fail-fast: false
+      matrix:
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
+        arch: [ "aarch64", "", "riscv64"]
+        runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        exclude:
+          - runs: "ubuntu-24.04-arm"
+            arch: ""
+          - runs: "ubuntu-24.04-arm"
+            arch: "riscv64"
+
+    runs-on: ${{ matrix.runs }}
+    name: scp FreeBSD
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      SEC_VBOX : ${{ vars.SEC_VBOX }}
+      DEBUG: 1
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check arch
+      id: check
+      run: |
+        _release="${{ matrix.release }}"
+        if [ -z "$_release" ]; then
+          . conf/default.release.conf
+          _release="$DEFAULT_RELEASE"
+        fi
+
+        _arch="${{ matrix.arch }}"
+        if [ "${_arch}" = "x86_64" ]; then
+          _arch=""
+        fi
+
+        if [ -z "${_arch}" ]; then
+          #ok, go ahead
+          echo "arch is empty"
+          echo "run=true" >> $GITHUB_OUTPUT
+        elif [ -e "conf/${_release}-${_arch}.conf" ]; then
+          #ok, go ahead
+          echo "conf exists: conf/${_release}-${_arch}.conf"
+          echo "run=true" >> $GITHUB_OUTPUT
+        else
+          echo "The release ${_release} doesn't support ${_arch}, skip."
+          echo "run=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Creating Web console
+      if: ${{ steps.check.outputs.run == 'true' }}
+      uses: vmactions/cf-tunnel@v0
+      id: tunnel
+      with:
+        protocol: http
+        port: 8000
+    - name: Test in FreeBSD
+      if: ${{ steps.check.outputs.run == 'true' }}
+      id: test
+      uses: vmactions/freebsd-vm@a8074ab33928666b0a1411330fc9c32c5bef3da3
+      with:
+        envs: 'DEBUG MYTOKEN MYTOKEN2'
+        prepare: |
+          
+        release: ${{ matrix.release }}
+        arch: ${{ matrix.arch }}
+        nat: |
+          "10022": "22"
+          "8080": "80"
+          "8443": "443"
+          udp:"8081": "80"
+        usesh: true
+        sync: scp
+        run: |
+          ls -lah /root/work
+          #don't use tree here, freebsd riscv64 doesn't have a tree
+          #tree $HOME/work/
+          if [ -z "$(ls -A $HOME/work)" ]; then
+            echo "nfs error."
+            exit 1
+          fi
+          env
+          echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          #pkg install -y curl
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
+
+
+    - name: Test NAT
+      if: ${{ steps.check.outputs.run == 'true' }}
+      run:
+        echo "TEST_ENV=$TEST_ENV"
+        [ "$TEST_ENV" = "abc" ]
+        ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
+    - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
+      shell: freebsd {0}
+      run: |
+        pwd
+        cd $GITHUB_WORKSPACE;
+        pwd
+          #pkg install -y curl
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
+
+
+
+
 
 
   test:
@@ -317,7 +450,12 @@ jobs:
         elif [ -e "conf/${_release}-${_arch}.conf" ]; then
           #ok, go ahead
           echo "conf exists: conf/${_release}-${_arch}.conf"
-          echo "run=true" >> $GITHUB_OUTPUT
+          if [[ "$(echo "FreeBSD" | tr '[:upper:]' '[:lower:]')-${_arch}" == "freebsd-riscv64" ]]; then
+            echo "The FreeBSD-${_arch} doesn't support rsync, skip."
+            echo "run=false" >> $GITHUB_OUTPUT
+          else
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
         else
           echo "The release ${_release} doesn't support ${_arch}, skip."
           echo "run=false" >> $GITHUB_OUTPUT

@@ -98,6 +98,8 @@ async function setup(nat, mem, cpu) {
     } else if (sync == "nfs") {
       core.info("Setup nfs");
       await shell("bash run.sh runNFSInVM");
+    } else if(sync == "scp") {
+      await shell("bash run.sh scpToVM");
     } else {
       await shell("bash run.sh installRsyncInVM");
       await shell("bash run.sh rsyncToVM");
@@ -198,9 +200,13 @@ async function main() {
     let copyback = core.getInput("copyback");
     let sync = core.getInput("sync");
     if(copyback !== "false" && sync != "sshfs" && sync != "nfs" && sync != "no") {
-      core.info("get back by rsync");
-      await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
-      core.endGroup();
+      if(sync == "scp") {
+        core.info("get back by scp");
+        await exec.exec("bash " + workingDir + "/run.sh scpBackFromVM");
+      } else {
+        core.info("get back by rsync");
+        await exec.exec("bash " + workingDir + "/run.sh rsyncBackFromVM");
+      }
     }
     if(error) {
       core.setFailed(error.message);

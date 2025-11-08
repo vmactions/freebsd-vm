@@ -243,6 +243,51 @@ startVM() {
 
 
 
+scpToVM() {
+    local target_host="$osname"
+    local src_dir="$HOME/work"
+    local dest_dir="work"
+
+
+    echo "==> Ensuring $target_host:$dest_dir exists..."
+    ssh -o MACs=umac-64-etm@openssh.com "$target_host" "mkdir -p $dest_dir"
+
+    echo "==> Uploading files via scp (excluding _actions and _PipelineMapping)..."
+    find "$src_dir" -maxdepth 1 ! -name "_actions" ! -name "_PipelineMapping" | \
+    while read -r item; do
+        [[ "$item" == "$src_dir" ]] && continue
+        scp -r -p -o MACs=umac-64-etm@openssh.com "$item" "$target_host:$dest_dir"
+    done
+
+    echo "==> Done."
+}
+
+
+scpBackFromVM() {
+    local target_host="$osname"
+    local remote_dir="work"
+    local local_dir="$HOME/work"
+
+    echo "==> Ensuring local directory $local_dir exists..."
+    mkdir -p "$local_dir"
+
+    echo "==> Downloading files from $target_host:$remote_dir to $local_dir ..."
+
+    ssh -o MACs=umac-64-etm@openssh.com "$target_host" "find $remote_dir -mindepth 1" | \
+    while read -r item; do
+        relative_path="${item#$remote_dir/}"
+        local_target="$local_dir/$relative_path"
+
+        if ssh -o MACs=umac-64-etm@openssh.com "$target_host" "[ -d \"$item\" ]"; then
+            mkdir -p "$local_target"
+        else
+            scp -p -o MACs=umac-64-etm@openssh.com "$target_host:$item" "$local_target"
+        fi
+    done
+
+    echo "==> Done."
+}
+
 rsyncToVM() {
   _pwd="$PWD"
   cd "$_oldPWD"
