@@ -66,9 +66,10 @@ jobs:
         envs: 'MYTOKEN MYTOKEN2'
         usesh: true
         prepare: |
-          pkg install -y curl
+          
 
         run: |
+          #pkg install -y curl
           pwd
           ls -lah
           whoami
@@ -78,6 +79,8 @@ jobs:
           sysctl hw.ncpu
           sysctl hw.physmem
           sysctl hw.usermem
+
+
 
 
 
@@ -128,7 +131,7 @@ The code is shared from the host to the VM via `rsync` by default, you can choos
         usesh: true
         sync: sshfs  # or: nfs
         prepare: |
-          pkg install -y curl
+          
 
 
 
@@ -158,7 +161,7 @@ When using `rsync`,  you can define `copyback: false` to not copy files back fro
         sync: rsync
         copyback: false
         prepare: |
-          pkg install -y curl
+          
 
 
 
