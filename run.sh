@@ -250,7 +250,14 @@ scpToVM() {
 
 
     echo "==> Ensuring $target_host:$dest_dir exists..."
-    ssh -o MACs=umac-64-etm@openssh.com "$target_host" "mkdir -p $dest_dir"
+    ssh -o MACs=umac-64-etm@openssh.com "$target_host" /bin/sh <<EOF
+if [ -L "$dest_dir" ] || [ -d "$dest_dir" ]; then
+    # For OmniOS: mkdir -p fails when 'work' is an existing symlink
+    echo "$dest_dir exists (dir or symlink)"
+else
+    mkdir -p "$dest_dir"
+fi
+EOF
 
     echo "==> Uploading files via scp (excluding _actions and _PipelineMapping)..."
     find "$src_dir" -maxdepth 1 ! -name "_actions" ! -name "_PipelineMapping" | \

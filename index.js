@@ -86,7 +86,7 @@ async function setup(nat, mem, cpu) {
     core.endGroup();
 
     core.startGroup("Initialize files in VM");
-    let cmd1 = "mkdir -p " + process.env["HOME"] + "/work && ln -s " + process.env["HOME"] + "/work  work";
+    let cmd1 = "mkdir -p " + process.env["HOME"] + "/work && ln -s " + process.env["HOME"] + "/work/  work";
     await execSSH(cmd1, "Setting up VM");
 
     let sync = core.getInput("sync");

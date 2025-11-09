@@ -38,6 +38,7 @@ jobs:
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
 
+
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
     env:
@@ -170,6 +171,7 @@ jobs:
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
 
+
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
     env:
@@ -300,6 +302,7 @@ jobs:
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
 
+
     runs-on: ${{ matrix.runs }}
     name: scp FreeBSD
     env:
@@ -427,8 +430,10 @@ jobs:
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
 
+
+
     runs-on: ${{ matrix.runs }}
-    name: FreeBSD
+    name: rsync default FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
