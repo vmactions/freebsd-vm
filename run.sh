@@ -64,12 +64,14 @@ echo "CONF_LINK=$CONF_LINK"
 
 #load the vm conf
 _conf_filename="$(echo "$CONF_LINK" | rev  | cut -d / -f 1 | rev)"
-echo "Config file: $_conf_filename"
 
-echo "Builder conf=$_conf_filename"
+echo "Builder conf: $_conf_filename"
 
 if [ ! -e "$_conf_filename" ]; then
-  wget -q "$CONF_LINK"
+  if ! wget -q "$CONF_LINK"; then
+    echo "Can not download builder config: $CONF_LINK"
+    exit 1
+  fi
 fi
 
 #load the builder conf
