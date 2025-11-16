@@ -84,12 +84,12 @@ async function setup(nat, mem, cpu) {
 
     await shell("bash run.sh onStarted" );
     core.endGroup();
-
-    core.startGroup("Initialize files in VM");
-    let cmd1 = "mkdir -p " + process.env["HOME"] + "/work && ln -s " + process.env["HOME"] + "/work/  work";
-    await execSSH(cmd1, "Setting up VM");
-
     let sync = core.getInput("sync");
+    if(sync != "no") {
+      core.startGroup("Initialize files in VM");
+      let cmd1 = "mkdir -p " + process.env["HOME"] + "/work && ln -s " + process.env["HOME"] + "/work/  work";
+      await execSSH(cmd1, "Setting up VM");
+    }
     if(sync == "no") {
       core.info("Don't sync files, OK");
     } else if (sync == "sshfs") {
