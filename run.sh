@@ -68,7 +68,7 @@ _conf_filename="$(echo "$CONF_LINK" | rev  | cut -d / -f 1 | rev)"
 echo "Builder conf: $_conf_filename"
 
 if [ ! -e "$_conf_filename" ]; then
-  if ! wget -q "$CONF_LINK"; then
+  if ! wget -L -q "$CONF_LINK"; then
     echo "Can not download builder config: $CONF_LINK"
     exit 1
   fi
@@ -103,7 +103,7 @@ vmsh="$VM_VBOX"
 
 if [ ! -e "$vmsh" ]; then
   echo "Downloading vbox ${SEC_VBOX:-$VM_VBOX_LINK} to: $PWD"
-  wget -O $vmsh "${SEC_VBOX:-$VM_VBOX_LINK}"
+  wget -L -O $vmsh "${SEC_VBOX:-$VM_VBOX_LINK}"
 fi
 
 _endswith() {
@@ -126,7 +126,7 @@ _idfile='~/.ssh/host.id_rsa'
 
 check_url_exists() {
   url=$1
-  http_status=$(curl -o /dev/null --silent --head --write-out '%{http_code}' "$url")
+  http_status=$(curl -L -o /dev/null --silent --head --write-out '%{http_code}' "$url")
   if [[ "$http_status" -ge 200 && "$http_status" -lt 400 ]]; then
     return 0
   else
@@ -145,7 +145,7 @@ importVM() {
 
   if [ ! -e "$qow2" ]; then
     echo "Downloading $OVA_LINK"
-    axel -n 8 -o "$ovafile" -q "$OVA_LINK"
+    axel --max-redirect=8 -n 8 -o "$ovafile" -q "$OVA_LINK"
     
     for i in $(seq 1 9) ; do
       _url="${OVA_LINK}.$i"
@@ -154,7 +154,7 @@ importVM() {
         echo "break"
         break
       fi
-      axel -n 8 -o "${ovafile}.$i" -q "$_url"
+      axel --max-redirect=8 -n 8 -o "${ovafile}.$i" -q "$_url"
       ls -lah
       cat "${ovafile}.$i" >>"$ovafile"
       rm -f "${ovafile}.$i"
@@ -175,12 +175,12 @@ importVM() {
 
   if [ ! -e "id_rsa.pub" ]; then
     echo "Downloading $VM_PUBID_LINK"
-    wget -O "id_rsa.pub" -q "$VM_PUBID_LINK"
+    wget -L -O "id_rsa.pub" -q "$VM_PUBID_LINK"
   fi
 
   if [ ! -e "host.id_rsa" ]; then
     echo "Downloading $HOST_ID_LINK"
-    wget -O "host.id_rsa" -q "$HOST_ID_LINK"
+    wget -L -O "host.id_rsa" -q "$HOST_ID_LINK"
   fi
 
   ls -lah
