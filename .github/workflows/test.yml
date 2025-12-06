@@ -393,11 +393,12 @@ jobs:
       if: ${{ steps.check.outputs.run == 'true' }}
       run: |
         set -e
-        echo "TEST_ENV=$TEST_ENV";
-        [ "$TEST_ENV" = "abc" ];
         [ -e "$GITHUB_WORKSPACE/vm.txt" ];
         cat "$GITHUB_WORKSPACE/vm.txt";
         grep "textfromvm" $GITHUB_WORKSPACE/vm.txt;
+        cat ${GITHUB_ENV}
+        echo "TEST_ENV=$TEST_ENV";
+        [ "$TEST_ENV" = "abc" ];
         
 
 
