@@ -257,7 +257,7 @@ startVM() {
 scpToVM() {
     local target_host="$osname"
     local src_dir="$HOME/work"
-    local dest_dir="work"
+    local dest_dir="$HOME/work"
 
 
     echo "==> Ensuring $target_host:$dest_dir exists..."
@@ -285,7 +285,7 @@ EOF
 
 scpBackFromVM() {
     local target_host="$osname"
-    local remote_dir="work"
+    local remote_dir="$HOME/work"
     local local_dir="$HOME/work"
 
     echo "==> Ensuring local directory $local_dir exists..."
