@@ -298,7 +298,7 @@ scpBackFromVM() {
         relative_path="${item#$remote_dir/}"
         local_target="$local_dir/$relative_path"
 
-        if ssh -O "$target_host" "[ -d \"$item\" ]"; then
+        if ssh "$target_host" "[ -d \"$item\" ]"; then
             mkdir -p "$local_target"
         else
             scp -p -r -O "$target_host:$item" "$local_target"
