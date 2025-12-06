@@ -372,6 +372,7 @@ jobs:
           fi
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
           #pkg install -y curl
           pwd
           ls -lah
@@ -391,25 +392,10 @@ jobs:
       run:
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
-        ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
-    - name: Test custom shell
-      if: ${{ steps.check.outputs.run == 'true' }}
-      shell: freebsd {0}
-      run: |
-        pwd
-        cd $GITHUB_WORKSPACE;
-        pwd
-          #pkg install -y curl
-          pwd
-          ls -lah
-          whoami
-          env
-          freebsd-version
-          uname -a
-          #sysctl hw.model
-          sysctl hw.ncpu
-          sysctl hw.physmem
-          sysctl hw.usermem
+        [ -e "$GITHUB_WORKSPACE/vm.txt" ]
+        cat "$$GITHUB_WORKSPACE/vm.txt"
+        grep "textfromvm" $GITHUB_WORKSPACE/vm.txt
+        
 
 
 
