@@ -301,7 +301,7 @@ scpBackFromVM() {
         if ssh -o MACs=umac-64-etm@openssh.com -O "$target_host" "[ -d \"$item\" ]"; then
             mkdir -p "$local_target"
         else
-            scp -p -r -O -o MACs=umac-64-etm@openssh.com "$target_host:$item" "$local_target"
+            sudo scp -p -r -O -o MACs=umac-64-etm@openssh.com "$target_host:$item" "$local_target"
         fi
     done
 
