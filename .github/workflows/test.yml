@@ -387,14 +387,15 @@ jobs:
 
 
 
-    - name: Test NAT
+    - name: Test files
       if: ${{ steps.check.outputs.run == 'true' }}
       run:
-        echo "TEST_ENV=$TEST_ENV"
-        [ "$TEST_ENV" = "abc" ]
-        [ -e "$GITHUB_WORKSPACE/vm.txt" ]
-        cat "$$GITHUB_WORKSPACE/vm.txt"
-        grep "textfromvm" $GITHUB_WORKSPACE/vm.txt
+        set -e
+        echo "TEST_ENV=$TEST_ENV";
+        [ "$TEST_ENV" = "abc" ];
+        [ -e "$GITHUB_WORKSPACE/vm.txt" ];
+        cat "$GITHUB_WORKSPACE/vm.txt";
+        grep "textfromvm" $GITHUB_WORKSPACE/vm.txt;
         
 
 
