@@ -255,13 +255,13 @@ startVM() {
 
 
 scpToVM() {
-    local target_host="$osname"
-    local src_dir="$HOME/work"
-    local dest_dir="$HOME/work"
+    target_host="$osname"
+    src_dir="$HOME/work"
+    dest_dir="$HOME/work"
 
 
     echo "==> Ensuring $target_host:$dest_dir exists..."
-    ssh -o MACs=umac-64-etm@openssh.com "$target_host" /bin/sh <<EOF
+    ssh "$target_host" /bin/sh <<EOF
 if [ -L "$dest_dir" ] || [ -d "$dest_dir" ]; then
     # For OmniOS: mkdir -p fails when 'work' is an existing symlink
     echo "$dest_dir exists (dir or symlink)"
@@ -276,7 +276,7 @@ EOF
         [[ "$item" == "$src_dir" ]] && continue
         #use -O for compatible mode to use scp subsustem
         #just for netbsd 9.0/1/2/3
-        scp -r -p -O -o MACs=umac-64-etm@openssh.com "$item" "$target_host:$dest_dir"
+        scp -r -p -O "$item" "$target_host:$dest_dir"
     done
 
     echo "==> Done."
@@ -284,27 +284,15 @@ EOF
 
 
 scpBackFromVM() {
-    local target_host="$osname"
-    local remote_dir="$HOME/work"
-    local local_dir="$HOME/work"
+    target_host="$osname"
+    remote_dir="$HOME/work"
+    local_dir="$HOME/work"
 
     echo "==> Ensuring local directory $local_dir exists..."
     mkdir -p "$local_dir"
 
     echo "==> Downloading files from $target_host:$remote_dir to $local_dir ..."
-
-    ssh "$target_host" "find $remote_dir -mindepth 1 -name .git -prune -o -print" | \
-    while read -r item; do
-        relative_path="${item#$remote_dir/}"
-        local_target="$local_dir/$relative_path"
-
-        if ssh "$target_host" "[ -d \"$item\" ]"; then
-            mkdir -p "$local_target"
-        else
-            scp -p -r -O "$target_host:$item" "$local_target"
-        fi
-    done
-
+    scp -p -r -O "$target_host:$remote_dir/*" "$local_dir/"
     echo "==> Done."
 }
 
