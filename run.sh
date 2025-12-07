@@ -292,7 +292,7 @@ scpBackFromVM() {
     mkdir -p "$local_dir"
 
     echo "==> Downloading files from $target_host:$remote_dir to $local_dir ..."
-    scp -p -r -O "$target_host:$remote_dir/*" "$local_dir/"
+    ssh "$target_host" "tar -cf - -C \"$remote_dir\" --exclude .git ." | tar -xf - -C "$local_dir"
     echo "==> Done."
 }
 
