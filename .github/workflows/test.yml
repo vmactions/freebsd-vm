@@ -89,7 +89,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@328c2caf4a8cecd75fba828c92e1b9bcc3b02f1f
+      uses: vmactions/freebsd-vm@374a114d3899d2f2d9c3ff4be1bd69f011af26f0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -105,13 +105,13 @@ jobs:
         sync: sshfs
         run: |
           ls -lah /root/work
-          tree $HOME/work/
           if [ -z "$(ls -A $HOME/work)" ]; then
             echo "sshfs error."
             exit 1
           fi
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
           #pkg install -y curl
           pwd
           ls -lah
@@ -223,7 +223,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@328c2caf4a8cecd75fba828c92e1b9bcc3b02f1f
+      uses: vmactions/freebsd-vm@374a114d3899d2f2d9c3ff4be1bd69f011af26f0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -246,6 +246,7 @@ jobs:
           fi
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
+          echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
           #pkg install -y curl
           pwd
           ls -lah
@@ -264,6 +265,9 @@ jobs:
       if: ${{ steps.check.outputs.run == 'true' }}
       run: |
         set -e
+        [ -e "$GITHUB_WORKSPACE/vm.txt" ];
+        cat "$GITHUB_WORKSPACE/vm.txt";
+        grep "textfromvm" $GITHUB_WORKSPACE/vm.txt;
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
         ssh -vvv -p 10022 -i $HOME/.ssh/host.id_rsa root@localhost "uname -a;whoami;pwd"
@@ -350,7 +354,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@328c2caf4a8cecd75fba828c92e1b9bcc3b02f1f
+      uses: vmactions/freebsd-vm@374a114d3899d2f2d9c3ff4be1bd69f011af26f0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -464,7 +468,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@328c2caf4a8cecd75fba828c92e1b9bcc3b02f1f
+      uses: vmactions/freebsd-vm@374a114d3899d2f2d9c3ff4be1bd69f011af26f0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
