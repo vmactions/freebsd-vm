@@ -89,7 +89,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@d03c829860bdcaf49899d5492a3200c533b5f618
+      uses: vmactions/freebsd-vm@670398e4236735b8b65805c3da44b7a511fb8b27
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -104,12 +104,12 @@ jobs:
         usesh: true
         sync: sshfs
         run: |
+          set -e
           ls -lah /root/work
           if [ -z "$(ls -A $HOME/work)" ]; then
             echo "sshfs error."
             exit 1
           fi
-          env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
           echo "textfromvm" >$GITHUB_WORKSPACE/vm.txt
           #pkg install -y curl
@@ -223,7 +223,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@d03c829860bdcaf49899d5492a3200c533b5f618
+      uses: vmactions/freebsd-vm@670398e4236735b8b65805c3da44b7a511fb8b27
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -354,7 +354,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@d03c829860bdcaf49899d5492a3200c533b5f618
+      uses: vmactions/freebsd-vm@670398e4236735b8b65805c3da44b7a511fb8b27
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -468,7 +468,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@d03c829860bdcaf49899d5492a3200c533b5f618
+      uses: vmactions/freebsd-vm@670398e4236735b8b65805c3da44b7a511fb8b27
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |

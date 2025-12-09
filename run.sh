@@ -292,7 +292,17 @@ scpBackFromVM() {
     mkdir -p "$local_dir"
 
     echo "==> Downloading files from $target_host:$remote_dir to $local_dir ..."
-    ssh "$target_host" "tar -cf - -C \"$remote_dir\" --exclude .git ." | tar -xf - -C "$local_dir"
+    #use gtar for solaris, because tar in solaris does not support --exclude
+    #use find for openbsd
+    ssh "$target_host" "cd \"$remote_dir\" && { 
+        if command -v gtar >/dev/null 2>&1; then 
+            gtar -cf - --exclude .git .
+        elif tar --version >/dev/null 2>&1 && { tar --version 2>&1 | grep GNU >/dev/null || tar --version 2>&1 | grep bsdtar >/dev/null; }; then
+            tar -cf - --exclude .git .
+        else 
+            find . -name .git -prune -o -type f -print | tar -cf - -I -
+        fi
+    }" | tar -xf - -C "$local_dir"
     echo "==> Done."
 }
 
