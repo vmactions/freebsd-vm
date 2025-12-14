@@ -1,6 +1,10 @@
 name: 'FreeBSD-vm'
 description: 'Run CI in FreeBSD for GitHub Actions'
 inputs:
+  osname:
+    description: 'The OS name'
+    required: false
+    default: 'FreeBSD'
   prepare:
     description: 'Install some tools before CI runs'
     required: false

@@ -29,11 +29,6 @@ jobs:
         for i in $(seq 1 10) ; do echo $i; sleep 1; done
         touch /tmp/keepalive
         echo "====================================="
-        echo "please login the SSH below, and run: "
-        echo "export VM_ARCH=x86_64"
-        echo "bash run.sh importVM"
-        echo "bash run.sh onBeforeStartVM "
-        echo "bash run.sh startVM "
         echo "====================================="
 
     - uses: neilpang/debugger-action@master
