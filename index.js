@@ -110,7 +110,10 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false) {
   const host = sshConfig.host;
 
   try {
-    await exec.exec("ssh", [...args, host, cmd]);
+    // Pipe command to sh stdin to avoid escaping issues and support multi-line commands
+    await exec.exec("ssh", [...args, host, "sh"], {
+      input: Buffer.from(cmd)
+    });
   } catch (err) {
     if (!ignoreReturn) {
       throw err;
