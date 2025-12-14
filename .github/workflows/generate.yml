@@ -52,7 +52,6 @@ jobs:
             base-vm/package.json : package.json
             base-vm/index.js : index.js
             base-vm/action.yml : action.yml
-            base-vm/run.sh : run.sh
 
       - name: Update node_modules
         run: |
@@ -104,6 +103,5 @@ jobs:
             package-lock.json
             index.js
             action.yml
-            run.sh
             node_modules
 
