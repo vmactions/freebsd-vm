@@ -89,11 +89,12 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@387911314e77792160bf38f569790d14d392c500
+      uses: vmactions/freebsd-vm@64af023cb7184e98c8d17b690a27b6d37f8d48de
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
           
+        mem: 4096
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
         nat: |
@@ -133,7 +134,7 @@ jobs:
         set -e
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
-        ssh -vvv 20022  "uname -a;whoami;pwd"
+        ssh -vvv -p 20022 root@localhost  "uname -a;whoami;pwd"
     - name: Test custom shell
       if: ${{ steps.check.outputs.run == 'true' }}
       shell: freebsd {0}
@@ -224,11 +225,12 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@387911314e77792160bf38f569790d14d392c500
+      uses: vmactions/freebsd-vm@64af023cb7184e98c8d17b690a27b6d37f8d48de
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
           
+        mem: 4096
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
         nat: |
@@ -271,7 +273,7 @@ jobs:
         grep "textfromvm" $GITHUB_WORKSPACE/vm.txt;
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
-        ssh -vvv 20022 "uname -a;whoami;pwd"
+        ssh -vvv -p 20022 root@localhost "uname -a;whoami;pwd"
     - name: Test custom shell
       if: ${{ steps.check.outputs.run == 'true' }}
       shell: freebsd {0}
@@ -355,11 +357,12 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@387911314e77792160bf38f569790d14d392c500
+      uses: vmactions/freebsd-vm@64af023cb7184e98c8d17b690a27b6d37f8d48de
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
           
+        mem: 4096
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
         nat: |
@@ -469,7 +472,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@387911314e77792160bf38f569790d14d392c500
+      uses: vmactions/freebsd-vm@64af023cb7184e98c8d17b690a27b6d37f8d48de
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -483,6 +486,7 @@ jobs:
           "8443": "443"
           udp:"8081": "80"
         usesh: true
+        debug: true
         run: |
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
@@ -505,7 +509,7 @@ jobs:
         set -e
         echo "TEST_ENV=$TEST_ENV"
         [ "$TEST_ENV" = "abc" ]
-        ssh -vvv  20022  "uname -a;whoami;pwd"
+        ssh -vvv  -p 20022 root@localhost  "uname -a;whoami;pwd"
 
     - name: Test custom shell
       if: ${{ steps.check.outputs.run == 'true' }}
