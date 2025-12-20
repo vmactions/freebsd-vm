@@ -134,6 +134,7 @@ async function install() {
       , "zstd"
       , "ovmf"
       , "xz-utils"
+      , "openssh-server"
       , "qemu-utils"]);
     if (fs.existsSync('/dev/kvm')) {
       await exec.exec("sudo", ["chmod", "666", "/dev/kvm"]);
@@ -287,6 +288,17 @@ async function main() {
 
     let isScpOrRsync = false;
     if (sync) {
+      if (process.platform !== 'win32') {
+        const homeDir = process.env.HOME;
+        if (homeDir) {
+          try {
+            core.info(`Setting permissions for ${homeDir}...`);
+            fs.chmodSync(homeDir, '755');
+          } catch (err) {
+            core.warning(`Failed to chmod ${homeDir}: ${err.message}`);
+          }
+        }
+      }
       if (sync === 'scp' || sync === 'rsync') {
         //we will sync later
         isScpOrRsync = true;

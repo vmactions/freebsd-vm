@@ -86,6 +86,7 @@ jobs:
       with:
         protocol: http
         port: 8000
+
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
