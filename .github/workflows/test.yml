@@ -37,6 +37,10 @@ jobs:
             arch: ""
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
+          - release: "13.2"
+            arch: aarch64
+          - release: "13.2"
+            arch: aarch64
 
 
     runs-on: ${{ matrix.runs }}
@@ -91,7 +95,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5dff61a5eb20990b8f4543507cdaa859a68e9890
+      uses: vmactions/freebsd-vm@f604dfd928a3868a92da7c86595d1b9d9793bda3
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -175,6 +179,10 @@ jobs:
             arch: ""
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
+          - release: "13.2"
+            arch: aarch64
+          - release: "13.2"
+            arch: aarch64
 
 
     runs-on: ${{ matrix.runs }}
@@ -228,7 +236,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5dff61a5eb20990b8f4543507cdaa859a68e9890
+      uses: vmactions/freebsd-vm@f604dfd928a3868a92da7c86595d1b9d9793bda3
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -313,6 +321,10 @@ jobs:
             arch: ""
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
+          - release: "13.2"
+            arch: aarch64
+          - release: "13.2"
+            arch: aarch64
 
 
     runs-on: ${{ matrix.runs }}
@@ -361,7 +373,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5dff61a5eb20990b8f4543507cdaa859a68e9890
+      uses: vmactions/freebsd-vm@f604dfd928a3868a92da7c86595d1b9d9793bda3
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -431,6 +443,10 @@ jobs:
             arch: ""
           - runs: "ubuntu-24.04-arm"
             arch: "riscv64"
+          - release: "13.2"
+            arch: aarch64
+          - release: "13.2"
+            arch: aarch64
 
 
 
@@ -477,7 +493,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@5dff61a5eb20990b8f4543507cdaa859a68e9890
+      uses: vmactions/freebsd-vm@f604dfd928a3868a92da7c86595d1b9d9793bda3
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
