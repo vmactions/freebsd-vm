@@ -23,6 +23,7 @@ inputs:
   mem:
     description: 'Set the memory size of the vm'
     required: false
+    default: '6144'
   cpu:
     description: 'Set the cpu cores of the vm'
     required: false
