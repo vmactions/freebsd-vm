@@ -371,7 +371,6 @@ async function main() {
         }
       }
 
-      core.startGroup("Syncing source code to VM");
       await execSSH(`rm -rf ${vmWork}`, { host: sshHost });
       await execSSH(`mkdir -p ${vmWork}`, { host: sshHost });
       if (sync === 'scp') {
