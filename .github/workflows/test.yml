@@ -272,6 +272,7 @@ jobs:
           "8443": "443"
           udp:"8081": "80"
         usesh: true
+        debug: true
         sync: nfs
         run: |
           ls -lah /root/work
@@ -420,6 +421,7 @@ jobs:
           "8443": "443"
           udp:"8081": "80"
         usesh: true
+        debug: true
         sync: scp
         run: |
           ls -lah /root/work
