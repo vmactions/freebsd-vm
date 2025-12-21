@@ -41,7 +41,18 @@ jobs:
             arch: aarch64
           - release: "13.2"
             arch: riscv64
-
+          - release: "12.4"
+            arch: aarch64
+          - release: "12.4"
+            arch: riscv64
+          - release: "14.0"
+            arch: aarch64
+          - release: "14.0"
+            arch: riscv64
+          - release: "14.1"
+            arch: riscv64
+          - release: "13.3"
+            arch: riscv64
 
     runs-on: ${{ matrix.runs }}
     name: sshfs FreeBSD
@@ -95,7 +106,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@9ace7e5ab2e60906b116c6e9b87d550c0d3a531b
+      uses: vmactions/freebsd-vm@b81b4f01d694b644fa02ef14eb60ca107a9524a0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -183,7 +194,18 @@ jobs:
             arch: aarch64
           - release: "13.2"
             arch: riscv64
-
+          - release: "12.4"
+            arch: aarch64
+          - release: "12.4"
+            arch: riscv64
+          - release: "14.0"
+            arch: aarch64
+          - release: "14.0"
+            arch: riscv64
+          - release: "14.1"
+            arch: riscv64
+          - release: "13.3"
+            arch: riscv64
 
     runs-on: ${{ matrix.runs }}
     name: nfs FreeBSD
@@ -236,7 +258,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@9ace7e5ab2e60906b116c6e9b87d550c0d3a531b
+      uses: vmactions/freebsd-vm@b81b4f01d694b644fa02ef14eb60ca107a9524a0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -325,7 +347,18 @@ jobs:
             arch: aarch64
           - release: "13.2"
             arch: riscv64
-
+          - release: "12.4"
+            arch: aarch64
+          - release: "12.4"
+            arch: riscv64
+          - release: "14.0"
+            arch: aarch64
+          - release: "14.0"
+            arch: riscv64
+          - release: "14.1"
+            arch: riscv64
+          - release: "13.3"
+            arch: riscv64
 
     runs-on: ${{ matrix.runs }}
     name: scp FreeBSD
@@ -373,7 +406,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@9ace7e5ab2e60906b116c6e9b87d550c0d3a531b
+      uses: vmactions/freebsd-vm@b81b4f01d694b644fa02ef14eb60ca107a9524a0
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -447,7 +480,18 @@ jobs:
             arch: aarch64
           - release: "13.2"
             arch: riscv64
-
+          - release: "12.4"
+            arch: aarch64
+          - release: "12.4"
+            arch: riscv64
+          - release: "14.0"
+            arch: aarch64
+          - release: "14.0"
+            arch: riscv64
+          - release: "14.1"
+            arch: riscv64
+          - release: "13.3"
+            arch: riscv64
 
 
     runs-on: ${{ matrix.runs }}
@@ -493,7 +537,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@9ace7e5ab2e60906b116c6e9b87d550c0d3a531b
+      uses: vmactions/freebsd-vm@b81b4f01d694b644fa02ef14eb60ca107a9524a0
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
