@@ -1,0 +1,4 @@
+          - release: "13.2"
+            arch: aarch64
+          - release: "13.2"
+            arch: aarch64
