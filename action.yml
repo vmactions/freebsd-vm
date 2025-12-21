@@ -39,6 +39,9 @@ inputs:
   copyback:
     description: 'whether or not to copy the build result repo back from the VM to the host Mac OS, defalt is True'
     required: false
+  debug:
+    description: 'output debug message'
+    required: false
 branding:
   icon: 'activity'  
   color: 'green'

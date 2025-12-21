@@ -40,7 +40,7 @@ jobs:
           - release: "13.2"
             arch: aarch64
           - release: "13.2"
-            arch: aarch64
+            arch: riscv64
 
 
     runs-on: ${{ matrix.runs }}
@@ -95,7 +95,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@cbf6d339f7f0c146e0bdcf7111f2e0279f8ffc92
+      uses: vmactions/freebsd-vm@15aed983cb74e19e6c07b622853e56c1eb191e5e
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -182,7 +182,7 @@ jobs:
           - release: "13.2"
             arch: aarch64
           - release: "13.2"
-            arch: aarch64
+            arch: riscv64
 
 
     runs-on: ${{ matrix.runs }}
@@ -236,7 +236,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@cbf6d339f7f0c146e0bdcf7111f2e0279f8ffc92
+      uses: vmactions/freebsd-vm@15aed983cb74e19e6c07b622853e56c1eb191e5e
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -324,7 +324,7 @@ jobs:
           - release: "13.2"
             arch: aarch64
           - release: "13.2"
-            arch: aarch64
+            arch: riscv64
 
 
     runs-on: ${{ matrix.runs }}
@@ -373,7 +373,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@cbf6d339f7f0c146e0bdcf7111f2e0279f8ffc92
+      uses: vmactions/freebsd-vm@15aed983cb74e19e6c07b622853e56c1eb191e5e
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -446,7 +446,7 @@ jobs:
           - release: "13.2"
             arch: aarch64
           - release: "13.2"
-            arch: aarch64
+            arch: riscv64
 
 
 
@@ -493,7 +493,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@cbf6d339f7f0c146e0bdcf7111f2e0279f8ffc92
+      uses: vmactions/freebsd-vm@15aed983cb74e19e6c07b622853e56c1eb191e5e
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
