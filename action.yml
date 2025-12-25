@@ -42,6 +42,12 @@ inputs:
   debug:
     description: 'output debug message'
     required: false
+  data-dir:
+    description: 'Directory to store VM data/images. Use a stable path to enable GitHub Actions caching.'
+    required: false
+  cache-dir:
+    description: 'Directory to store anyvm cache. If set, overrides default temp cache path.'
+    required: false
 branding:
   icon: 'activity'  
   color: 'green'
