@@ -288,7 +288,7 @@ async function main() {
     const cacheDirInput = core.getInput("cache-dir") || '';
     let cacheDir;
     const archForKey = arch || (process.arch === 'x64' ? 'amd64' : process.arch);
-    const cacheKey = `${osName}-${builderVersion || 'default'}-${release}-${archForKey}`;
+    const cacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-v1`;
     const restoreKeys = [cacheKey];
     let restoredKey = null;
 
@@ -299,7 +299,10 @@ async function main() {
       }
 
       try {
+        const restoreStart = Date.now();
         restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
+        const restoreElapsed = Date.now() - restoreStart;
+        core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
         if (restoredKey) {
           core.info(`Cache restored: ${restoredKey}`);
         } else {
