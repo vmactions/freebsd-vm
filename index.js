@@ -140,7 +140,7 @@ async function install() {
   core.info("Installing dependencies...");
   if (process.platform === 'linux') {
     await exec.exec("sudo", ["apt-get", "update"]);
-    await exec.exec("sudo", ["apt-get", "install", "-y"
+    await exec.exec("sudo", ["apt-get", "install", "-y", "--no-install-recommends"
       , "qemu-system-x86"
       , "qemu-system-arm"
       , "qemu-efi-aarch64"
@@ -519,7 +519,7 @@ async function main() {
             tarProc.on('error', reject);
           });
         } else {
-          await exec.exec("rsync", ["-av", "--exclude", ".git", "--exclude", "node_modules", "--exclude", "target", "-e", "ssh", `${sshHost}:${vmWork}/`, `${work}/`]);
+          await exec.exec("rsync", ["-av", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmWork}/`, `${work}/`]);
         }
       }
     }
