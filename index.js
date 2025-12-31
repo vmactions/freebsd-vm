@@ -373,6 +373,9 @@ async function main() {
     let sshHost = osName;
     args.push("--ssh-name", sshHost);
 
+    args.push("--snapshot");
+    args.push("--vnc", "off");
+
     core.startGroup("Starting VM with anyvm.org");
     let output = "";
     const options = {
@@ -427,6 +430,7 @@ async function main() {
     if (sendEnvs.length > 0) {
       fs.appendFileSync(sshConfigPath, `Host ${sshHost}\n  SendEnv ${sendEnvs.join(" ")}\n`);
     }
+    fs.appendFileSync(sshConfigPath, "Host *\n  StrictHostKeyChecking no\n");
 
     //support Custom shell
     const localBinDir = path.join(process.env["HOME"], ".local", "bin");
