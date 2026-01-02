@@ -151,26 +151,13 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false) {
   }
 }
 
-async function install(arch, sync, builderVersion) {
+async function install(arch, sync, builderVersion, debug) {
+  const start = Date.now();
   core.info("Installing dependencies...");
   if (process.platform === 'linux') {
     const pkgs = [
-      "zstd",
       "qemu-utils"
     ];
-
-    let xzRequired = true;
-    if (builderVersion) {
-      const parts = builderVersion.split('.');
-      const major = parseInt(parts[0], 10) || 0;
-      if (major >= 2) {
-        xzRequired = false;
-      }
-    }
-
-    if (xzRequired) {
-      pkgs.push("xz-utils");
-    }
 
     if (!arch || arch === 'x86_64' || arch === 'amd64') {
       pkgs.push("qemu-system-x86", "ovmf");
@@ -184,7 +171,18 @@ async function install(arch, sync, builderVersion) {
       pkgs.push("nfs-kernel-server");
     }
     if (sync === 'rsync') {
-      pkgs.push("rsync");
+      let rsyncRequired = true;
+      if (builderVersion) {
+        const parts = builderVersion.split('.');
+        const major = parseInt(parts[0], 10) || 0;
+        if (major >= 2) {
+          rsyncRequired = false;
+        }
+      }
+
+      if (rsyncRequired) {
+        pkgs.push("rsync");
+      }
     }
 
     await exec.exec("sudo", ["apt-get", "update"]);
@@ -197,6 +195,11 @@ async function install(arch, sync, builderVersion) {
     await exec.exec("brew", ["install", "qemu"]);
   } else if (process.platform === 'win32') {
     await exec.exec("choco", ["install", "qemu", "-y"]);
+  }
+
+  if (debug === 'true') {
+    const elapsed = Date.now() - start;
+    core.info(`install() took ${elapsed}ms`);
   }
 }
 
@@ -303,7 +306,7 @@ async function main() {
     await downloadFile(anyvmUrl, anyvmPath);
 
     core.startGroup("Installing dependencies");
-    await install(arch, sync, builderVersion);
+    await install(arch, sync, builderVersion, debug);
     core.endGroup();
 
     // 4. Start VM
