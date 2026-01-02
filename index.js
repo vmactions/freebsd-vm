@@ -197,8 +197,9 @@ async function install(arch, sync, builderVersion, debug) {
       fs.mkdirSync(aptCacheDir, { recursive: true });
     }
 
+    const osVersion = process.env.ImageOS || os.release();
     const hash = crypto.createHash('md5').update(pkgs.sort().join(',')).digest('hex');
-    const aptCacheKey = `apt-pkgs-${process.platform}-${hash}`;
+    const aptCacheKey = `apt-pkgs-${process.platform}-${osVersion}-${hash}`;
     let restoredKey = null;
 
     try {
