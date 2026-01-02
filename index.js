@@ -175,9 +175,9 @@ async function install(arch, sync, builderVersion) {
     if (!arch || arch === 'x86_64' || arch === 'amd64') {
       pkgs.push("qemu-system-x86", "ovmf");
     } else if (arch === 'aarch64' || arch === 'arm64') {
-      pkgs.push("qemu-system-arm", "qemu-efi-aarch64");
+      pkgs.push("qemu-system-arm", "qemu-efi-aarch64", "ipxe-qemu");
     } else {
-      pkgs.push("qemu-system-misc", "u-boot-qemu");
+      pkgs.push("qemu-system-misc", "u-boot-qemu", "ipxe-qemu");
     }
 
     if (sync === 'nfs') {
