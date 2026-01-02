@@ -151,23 +151,45 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false) {
   }
 }
 
-async function install() {
+async function install(arch, sync, builderVersion) {
   core.info("Installing dependencies...");
   if (process.platform === 'linux') {
+    const pkgs = [
+      "zstd",
+      "qemu-utils"
+    ];
+
+    let xzRequired = true;
+    if (builderVersion) {
+      const parts = builderVersion.split('.');
+      const major = parseInt(parts[0], 10) || 0;
+      if (major >= 2) {
+        xzRequired = false;
+      }
+    }
+
+    if (xzRequired) {
+      pkgs.push("xz-utils");
+    }
+
+    if (!arch || arch === 'x86_64' || arch === 'amd64') {
+      pkgs.push("qemu-system-x86", "ovmf");
+    } else if (arch === 'aarch64' || arch === 'arm64') {
+      pkgs.push("qemu-system-arm", "qemu-efi-aarch64");
+    } else {
+      pkgs.push("qemu-system-misc", "u-boot-qemu");
+    }
+
+    if (sync === 'nfs') {
+      pkgs.push("nfs-kernel-server");
+    }
+    if (sync === 'rsync') {
+      pkgs.push("rsync");
+    }
+
     await exec.exec("sudo", ["apt-get", "update"]);
-    await exec.exec("sudo", ["apt-get", "install", "-y", "--no-install-recommends"
-      , "qemu-system-x86"
-      , "qemu-system-arm"
-      , "qemu-efi-aarch64"
-      , "qemu-system-misc"
-      , "u-boot-qemu"
-      , "nfs-kernel-server"
-      , "rsync"
-      , "zstd"
-      , "ovmf"
-      , "xz-utils"
-      , "openssh-server"
-      , "qemu-utils"]);
+    await exec.exec("sudo", ["apt-get", "install", "-y", "--no-install-recommends", ...pkgs]);
+
     if (fs.existsSync('/dev/kvm')) {
       await exec.exec("sudo", ["chmod", "666", "/dev/kvm"]);
     }
@@ -281,7 +303,7 @@ async function main() {
     await downloadFile(anyvmUrl, anyvmPath);
 
     core.startGroup("Installing dependencies");
-    await install();
+    await install(arch, sync, builderVersion);
     core.endGroup();
 
     // 4. Start VM
@@ -527,7 +549,19 @@ async function main() {
       if (workspace) {
         core.info("Copying back artifacts");
         if (sync === 'scp') {
-          const remoteTarCmd = `if command -v cpio > /dev/null 2>&1; then cd "${vmwork}" && find . -name .git -prune -o -print | cpio -o -H ustar; else cd "${vmwork}" && tar -cf - --exclude .git .; fi`;
+          let useCpio = true;
+          if (osName === 'haiku') {
+            try {
+              await execSSH("command -v cpio", sshConfig);
+            } catch (e) {
+              useCpio = false;
+            }
+          }
+
+          const remoteTarCmd = useCpio
+            ? `cd "${vmwork}" && find . -name .git -prune -o -print | cpio -o -H ustar`
+            : `cd "${vmwork}" && tar -cf - --exclude .git .`;
+
           core.info(`Exec SSH: ${remoteTarCmd}`);
 
           await new Promise((resolve, reject) => {
