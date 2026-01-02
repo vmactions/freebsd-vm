@@ -468,6 +468,7 @@ async function main() {
     if (osName === 'haiku') {
       args.push("--vga", "std");
     }
+    args.push("--vnc", "off");
 
     core.startGroup("Starting VM with anyvm.org");
     let output = "";
