@@ -7,6 +7,7 @@ const path = require('path');
 const os = require('os');
 const https = require('https');
 const { spawn } = require('child_process');
+const crypto = require('crypto');
 
 const workingDir = __dirname;
 
@@ -185,8 +186,50 @@ async function install(arch, sync, builderVersion, debug) {
       }
     }
 
-    await exec.exec("sudo", ["apt-get", "update"]);
-    await exec.exec("sudo", ["apt-get", "install", "-y", "--no-install-recommends", ...pkgs]);
+    const aptOpts = [
+      "-o", "Acquire::Retries=3",
+      "-o", "Dpkg::Options::=--force-confdef",
+      "-o", "Dpkg::Options::=--force-confold",
+    ];
+
+    const aptCacheDir = path.join(os.homedir(), ".apt-cache");
+    if (!fs.existsSync(aptCacheDir)) {
+      fs.mkdirSync(aptCacheDir, { recursive: true });
+    }
+
+    const hash = crypto.createHash('md5').update(pkgs.sort().join(',')).digest('hex');
+    const aptCacheKey = `apt-pkgs-${process.platform}-${hash}`;
+    let restoredKey = null;
+
+    try {
+      restoredKey = await cache.restoreCache([aptCacheDir], aptCacheKey);
+      if (restoredKey) {
+        core.info(`Restored apt packages from cache: ${restoredKey}`);
+        await exec.exec("sudo", ["cp", "-rp", `${aptCacheDir}/.`, "/var/cache/apt/archives/"], { silent: true });
+      }
+    } catch (e) {
+      core.warning(`Apt cache restore failed: ${e.message}`);
+    }
+
+    // 1. Update with quiet mode
+    await exec.exec("sudo", ["apt-get", "update", "-q"], { silent: true });
+
+    // 2. Install the packages
+    await exec.exec("sudo", ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs]);
+
+    // 3. Save cache
+    try {
+      if (!restoredKey) {
+        // Copy newly downloaded files back to our local cache dir
+        await exec.exec("sh", ["-c", `cp -rp /var/cache/apt/archives/*.deb ${aptCacheDir}/ || true`], { silent: true });
+        if (fs.readdirSync(aptCacheDir).length > 0) {
+          await cache.saveCache([aptCacheDir], aptCacheKey);
+          core.info(`Saved apt packages to cache: ${aptCacheKey}`);
+        }
+      }
+    } catch (e) {
+      core.warning(`Apt cache save failed: ${e.message}`);
+    }
 
     if (fs.existsSync('/dev/kvm')) {
       await exec.exec("sudo", ["chmod", "666", "/dev/kvm"]);
