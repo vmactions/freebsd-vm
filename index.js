@@ -198,8 +198,9 @@ async function install(arch, sync, builderVersion, debug) {
     }
 
     const osVersion = process.env.ImageOS || os.release();
+    const osArch = process.arch;
     const hash = crypto.createHash('md5').update(pkgs.sort().join(',')).digest('hex');
-    const aptCacheKey = `apt-pkgs-${process.platform}-${osVersion}-${hash}`;
+    const aptCacheKey = `apt-pkgs-${process.platform}-${osVersion}-${osArch}-${hash}`;
     let restoredKey = null;
 
     try {
