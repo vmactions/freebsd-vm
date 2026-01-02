@@ -190,6 +190,8 @@ async function install(arch, sync, builderVersion, debug) {
       "-o", "Acquire::Retries=3",
       "-o", "Dpkg::Options::=--force-confdef",
       "-o", "Dpkg::Options::=--force-confold",
+      "-o", "Dpkg::Options::=--force-unsafe-io",
+      "-o", "Acquire::Languages=none",
     ];
 
     const aptCacheDir = path.join(os.homedir(), ".apt-cache");
