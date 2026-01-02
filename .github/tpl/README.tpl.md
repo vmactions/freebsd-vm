@@ -267,6 +267,15 @@ Support custom shell:
 ```
 
 
+## 8. Debug locally
+
+You can use [AnyVM](https://github.com/anyvm-org/anyvm) to run the {{VM_NAME}} VM locally for debugging. It's the same environment as in the GitHub Actions.
+
+```bash
+python3 anyvm.py --os {{VM_OS_NAME}}
+```
+
+
 
 # Under the hood
 

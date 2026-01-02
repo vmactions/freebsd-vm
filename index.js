@@ -115,19 +115,34 @@ function downloadFile(url, dest) {
 async function execSSH(cmd, sshConfig, ignoreReturn = false) {
   core.info(`Exec SSH: ${cmd}`);
 
+  const sshHost = sshConfig.host;
+  const osName = sshConfig.osName;
+  const work = sshConfig.work;
+  const vmwork = sshConfig.vmwork;
+
   // Standard options for CI/CD
   const args = [
     "-o", "StrictHostKeyChecking=no",
     "-o", "UserKnownHostsFile=/dev/null",
   ];
 
-  // We assume the Host is the OS name (e.g. 'openbsd'), configured in ~/.ssh/config or by anyvm.py
-  const host = sshConfig.host;
+  let envExports = "";
+  if (osName === 'haiku' && work && vmwork) {
+    const workRegex = new RegExp(work.replace(/\\/g, '\\\\'), 'gi');
+    for (const key of Object.keys(process.env)) {
+      if (key.startsWith('GITHUB_') || key === 'CI' || key === 'MYTOKEN' || key === 'MYTOKEN2') {
+        const val = process.env[key] || "";
+        const newVal = val.replace(workRegex, vmwork);
+        envExports += `export ${key}="${newVal}"\n`;
+      }
+    }
+  }
 
   try {
-    // Pipe command to sh stdin to avoid escaping issues and support multi-line commands
-    await exec.exec("ssh", [...args, host, "sh"], {
-      input: Buffer.from(cmd)
+    // Pipe prefix exports + command to sh stdin
+    const fullCmd = envExports + cmd;
+    await exec.exec("ssh", [...args, sshHost, "sh"], {
+      input: Buffer.from(fullCmd)
     });
   } catch (err) {
     if (!ignoreReturn) {
@@ -164,15 +179,13 @@ async function install() {
 }
 
 
-async function scpToVM(sshHost) {
-  const destDir = path.join(process.env["HOME"], "work"); //$HOME/work
-
-  core.info(`==> Ensuring ${destDir} exists...`);
-  await execSSH(`mkdir -p ${destDir}`, { host: sshHost });
+async function scpToVM(sshHost, work, vmwork, osName) {
+  core.info(`==> Ensuring ${vmwork} exists...`);
+  await execSSH(`mkdir -p ${vmwork}`, { host: sshHost, osName, work, vmwork });
 
   core.info("==> Uploading files via scp (excluding _actions and _PipelineMapping)...");
 
-  const items = await fs.promises.readdir(destDir, { withFileTypes: true });
+  const items = await fs.promises.readdir(work, { withFileTypes: true });
 
   for (const item of items) {
     const itemName = item.name;
@@ -180,17 +193,17 @@ async function scpToVM(sshHost) {
       continue;
     }
 
-    const localPath = path.join(destDir, itemName);
+    const localPath = path.join(work, itemName);
     const scpArgs = [
       "-O",
       "-r",
       "-p",
       "-o", "StrictHostKeyChecking=no",
       localPath,
-      `${sshHost}:${destDir}/`
+      `${sshHost}:${vmwork}/`
     ];
 
-    core.info(`Uploading: ${localPath} to ${sshHost}:${destDir}/`);
+    core.info(`Uploading: ${localPath} to ${sshHost}:${vmwork}/`);
     await exec.exec("scp", scpArgs);
   }
 
@@ -212,6 +225,12 @@ async function main() {
     const run = core.getInput("run");
     const sync = core.getInput("sync").toLowerCase() || 'rsync';
     const copyback = core.getInput("copyback").toLowerCase();
+
+    const work = path.join(process.env["HOME"], "work");
+    let vmwork = path.join(process.env["HOME"], "work");
+    if (inputOsName === 'haiku') {
+      vmwork = `/boot/home/${os.userInfo().username}/work`;
+    }
 
     // 2. Load Config
     let env = {};
@@ -363,7 +382,7 @@ async function main() {
         isScpOrRsync = true;
       } else {
         args.push("--sync", sync);
-        args.push("-v", path.join(process.env["HOME"], "work") + ":" + path.join(process.env["HOME"], "work"));
+        args.push("-v", `${work}:${vmwork}`);
       }
     }
 
@@ -374,7 +393,9 @@ async function main() {
     args.push("--ssh-name", sshHost);
 
     args.push("--snapshot");
-    args.push("--vnc", "off");
+    if (osName === 'haiku') {
+      args.push("--vga", "std");
+    }
 
     core.startGroup("Starting VM with anyvm.org");
     let output = "";
@@ -412,7 +433,6 @@ async function main() {
       }
     }
 
-    // SSH Env Config
     const sshDir = path.join(process.env["HOME"], ".ssh");
     if (!fs.existsSync(sshDir)) {
       fs.mkdirSync(sshDir, { recursive: true });
@@ -423,14 +443,28 @@ async function main() {
     if (envs) {
       sendEnvs.push(envs);
     }
-    // Add GITHUB_* wildcard
-    sendEnvs.push("GITHUB_*");
+    // Only use wildcard GITHUB_* if not on Haiku (since we use injection on Haiku)
+    if (osName !== 'haiku') {
+      sendEnvs.push("GITHUB_*");
+    }
     sendEnvs.push("CI");
 
     if (sendEnvs.length > 0) {
       fs.appendFileSync(sshConfigPath, `Host ${sshHost}\n  SendEnv ${sendEnvs.join(" ")}\n`);
     }
+
     fs.appendFileSync(sshConfigPath, "Host *\n  StrictHostKeyChecking no\n");
+    if (debug) {
+      core.info("SSH config content:");
+      core.info(fs.readFileSync(sshConfigPath, "utf8"));
+    }
+
+    const sshConfig = {
+      host: sshHost,
+      osName: osName,
+      work: work,
+      vmwork: vmwork
+    };
 
     //support Custom shell
     const localBinDir = path.join(process.env["HOME"], ".local", "bin");
@@ -444,50 +478,46 @@ async function main() {
     fs.chmodSync(sshWrapperPath, '755');
 
 
-
-    const work = path.join(process.env["HOME"], "work");
-    const vmWork = path.join(process.env["HOME"], "work");
-
     if (isScpOrRsync) {
       core.startGroup("Syncing source code to VM");
       // Install rsync in VM if needed
       if (sync !== 'scp') {
         core.info("Installing rsync in VM...");
         if (osName.includes('netbsd')) {
-          await execSSH("/usr/sbin/pkg_add rsync", { host: sshHost }, true);
+          await execSSH("/usr/sbin/pkg_add rsync", { ...sshConfig }, true);
         }
       }
 
-      await execSSH(`rm -rf ${vmWork}`, { host: sshHost });
-      await execSSH(`mkdir -p ${vmWork}`, { host: sshHost });
+      await execSSH(`rm -rf ${vmwork}`, { ...sshConfig });
+      await execSSH(`mkdir -p ${vmwork}`, { ...sshConfig });
       if (sync === 'scp') {
         core.info("Syncing via SCP");
-        await scpToVM(sshHost);
+        await scpToVM(sshHost, work, vmwork, osName);
       } else {
         core.info("Syncing via Rsync");
-        await exec.exec("rsync", ["-avrtopg", "--exclude", "_actions", "--exclude", "_PipelineMapping", "-e", "ssh", work + "/", `${sshHost}:${vmWork}/`]);
+        await exec.exec("rsync", ["-avrtopg", "--exclude", "_actions", "--exclude", "_PipelineMapping", "-e", "ssh", work + "/", `${sshHost}:${vmwork}/`]);
         if (debug) {
           core.startGroup("Debug: Checking VM work directory content");
-          await execSSH(`tree -L 2 ${vmWork}`, { host: sshHost });
+          await execSSH(`tree -L 2 ${vmwork}`, { ...sshConfig });
           core.endGroup();
         }
       }
       core.endGroup();
     }
     if (sync !== 'no') {
-      await execSSH(`ln -s ${vmWork} $HOME/work`, { host: sshHost });
+      await execSSH(`ln -s ${vmwork} $HOME/work`, { ...sshConfig });
     }
     core.startGroup("Run 'prepare' in VM");
     if (prepare) {
       const prepareCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${prepare}` : prepare;
-      await execSSH(prepareCmd, { host: sshHost });
+      await execSSH(prepareCmd, { ...sshConfig });
     }
     core.endGroup();
 
     core.startGroup("Run 'run' in VM");
     if (run) {
       const runCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${run}` : run;
-      await execSSH(runCmd, { host: sshHost });
+      await execSSH(runCmd, { ...sshConfig });
     }
     core.endGroup();
 
@@ -497,7 +527,7 @@ async function main() {
       if (workspace) {
         core.info("Copying back artifacts");
         if (sync === 'scp') {
-          const remoteTarCmd = `cd "${work}" && find . -name .git -prune -o -print | cpio -o -H ustar`;
+          const remoteTarCmd = `if command -v cpio > /dev/null 2>&1; then cd "${vmwork}" && find . -name .git -prune -o -print | cpio -o -H ustar; else cd "${vmwork}" && tar -cf - --exclude .git .; fi`;
           core.info(`Exec SSH: ${remoteTarCmd}`);
 
           await new Promise((resolve, reject) => {
@@ -523,7 +553,7 @@ async function main() {
             tarProc.on('error', reject);
           });
         } else {
-          await exec.exec("rsync", ["-av", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmWork}/`, `${work}/`]);
+          await exec.exec("rsync", ["-av", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
         }
       }
     }
