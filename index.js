@@ -550,6 +550,12 @@ async function main() {
     fs.writeFileSync(sshWrapperPath, sshWrapperContent);
     fs.chmodSync(sshWrapperPath, '755');
 
+    const onStartedHook = path.join(__dirname, 'hooks', 'onStarted.sh');
+    if (fs.existsSync(onStartedHook)) {
+      core.info(`Running onStarted hook: ${onStartedHook}`);
+      const hookContent = fs.readFileSync(onStartedHook, 'utf8');
+      await execSSH(hookContent, sshConfig);
+    }
 
     if (isScpOrRsync) {
       core.startGroup("Syncing source code to VM");
