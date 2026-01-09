@@ -297,6 +297,7 @@ async function main() {
     const run = core.getInput("run");
     const sync = core.getInput("sync").toLowerCase() || 'rsync';
     const copyback = core.getInput("copyback").toLowerCase();
+    const syncTime = core.getInput("sync-time").toLowerCase();
 
     const work = path.join(process.env["HOME"], "work");
     let vmwork = path.join(process.env["HOME"], "work");
@@ -411,6 +412,12 @@ async function main() {
 
     if (builderVersion) {
       args.push("--builder", builderVersion);
+    }
+
+    if (syncTime === 'true') {
+      args.push("--sync-time");
+    } else if (syncTime === 'false') {
+      args.push("--sync-time", "off");
     }
 
     if (debug === 'true') {

@@ -48,6 +48,9 @@ inputs:
   cache-dir:
     description: 'Directory to store anyvm cache. If set, overrides default temp cache path.'
     required: false
+  sync-time:
+    description: 'Synchronize the VM time with the host time. If true, use --sync-time, if false, use --sync-time off'
+    required: false
 branding:
   icon: 'activity'  
   color: 'green'
