@@ -15,6 +15,12 @@ if ! kldload  fusefs ; then
   echo ""
 fi
 
+#switch to latest source
+#just for the old images, before 13.5, 14.3 and 15.0.
+if grep "quarterly" /etc/pkg/FreeBSD.conf; then
+  sed -i '' 's#/quarterly#/latest#g' /etc/pkg/FreeBSD.conf
+  rm -rf /var/db/pkg/repos/*
+fi
 
 
 
