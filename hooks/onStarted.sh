@@ -20,6 +20,7 @@ fi
 if grep "quarterly" /etc/pkg/FreeBSD.conf; then
   sed -i '' 's#/quarterly#/latest#g' /etc/pkg/FreeBSD.conf
   rm -rf /var/db/pkg/repos/*
+  cat /etc/pkg/FreeBSD.conf
 fi
 
 
