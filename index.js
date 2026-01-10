@@ -113,7 +113,7 @@ function downloadFile(url, dest) {
   });
 }
 
-async function execSSH(cmd, sshConfig, ignoreReturn = false) {
+async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false) {
   core.info(`Exec SSH: ${cmd}`);
 
   const sshHost = sshConfig.host;
@@ -143,7 +143,8 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false) {
     // Pipe prefix exports + command to sh stdin
     const fullCmd = envExports + cmd;
     await exec.exec("ssh", [...args, sshHost, "sh"], {
-      input: Buffer.from(fullCmd)
+      input: Buffer.from(fullCmd),
+      silent: silent
     });
   } catch (err) {
     if (!ignoreReturn) {
@@ -561,7 +562,7 @@ async function main() {
     if (fs.existsSync(onStartedHook)) {
       core.info(`Running onStarted hook: ${onStartedHook}`);
       const hookContent = fs.readFileSync(onStartedHook, 'utf8');
-      await execSSH(hookContent, sshConfig);
+      await execSSH(hookContent, sshConfig, false, debug !== 'true');
     }
 
     if (isScpOrRsync) {
