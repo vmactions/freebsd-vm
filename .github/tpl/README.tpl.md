@@ -267,7 +267,27 @@ Support custom shell:
 ```
 
 
-## 8. Debug locally
+## 8. Synchronize VM time
+
+If the time in VM is not correct, You can use `sync-time` option to synchronize the VM time with NTP:
+
+```
+...
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        sync-time: true
+...
+```
+
+
+
+
+
+## 9. Debug locally
 
 You can use [AnyVM](https://github.com/anyvm-org/anyvm) to run the {{VM_NAME}} VM locally for debugging. It's the same environment as in the GitHub Actions.
 
