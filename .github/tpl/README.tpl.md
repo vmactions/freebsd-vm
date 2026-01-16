@@ -30,7 +30,7 @@ jobs:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test in {{VM_NAME}}
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -83,7 +83,7 @@ The code is shared from the host to the VM via `rsync` by default, you can choos
 ...
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -112,7 +112,7 @@ When using `rsync` or `scp`,  you can define `copyback: false` to not copy files
 ...
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -142,7 +142,7 @@ You can add NAT port between the host and the VM.
 ```
 ...
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -164,7 +164,7 @@ The default memory of the VM is 6144MB, you can use `mem` option to set the memo
 ```
 ...
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -181,7 +181,7 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 ```
 ...
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -200,7 +200,7 @@ It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by defa
 ```
 ...
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -222,7 +222,7 @@ The vm is using x86_64(AMD64) by default, but you can use `arch` option to chang
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -245,7 +245,7 @@ Support custom shell:
 ```
 ...
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Start VM
       id: vm
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}

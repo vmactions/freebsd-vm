@@ -12,7 +12,7 @@ jobs:
       VM_RELEASE: ${{ secrets.VM_RELEASE }}
       SEC_VBOX : ${{ vars.SEC_VBOX }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: vmactions/cf-tunnel@v0
       id: tunnel
       with:
