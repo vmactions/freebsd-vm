@@ -476,6 +476,7 @@ jobs:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "15.0", ""]
         arch: [ "aarch64", "", "riscv64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
+        disableCache: [ "", "true"]
         exclude:
           - runs: "ubuntu-24.04-arm"
             arch: ""
@@ -557,6 +558,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
+        disable-cache: ${{ matrix.disableCache }}
         run: |
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}

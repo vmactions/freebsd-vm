@@ -153,7 +153,7 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false) {
   }
 }
 
-async function install(arch, sync, builderVersion, debug) {
+async function install(arch, sync, builderVersion, debug, disableCache) {
   const start = Date.now();
   core.info("Installing dependencies...");
   if (process.platform === 'linux') {
@@ -196,7 +196,7 @@ async function install(arch, sync, builderVersion, debug) {
     ];
 
     const aptCacheDir = path.join(os.homedir(), ".apt-cache");
-    if (!fs.existsSync(aptCacheDir)) {
+    if (!disableCache && !fs.existsSync(aptCacheDir)) {
       fs.mkdirSync(aptCacheDir, { recursive: true });
     }
 
@@ -206,14 +206,16 @@ async function install(arch, sync, builderVersion, debug) {
     const aptCacheKey = `apt-pkgs-${process.platform}-${osVersion}-${osArch}-${hash}`;
     let restoredKey = null;
 
-    try {
-      restoredKey = await cache.restoreCache([aptCacheDir], aptCacheKey);
-      if (restoredKey) {
-        core.info(`Restored apt packages from cache: ${restoredKey}`);
-        await exec.exec("sudo", ["cp", "-rp", `${aptCacheDir}/.`, "/var/cache/apt/archives/"], { silent: true });
+    if (!disableCache) {
+      try {
+        restoredKey = await cache.restoreCache([aptCacheDir], aptCacheKey);
+        if (restoredKey) {
+          core.info(`Restored apt packages from cache: ${restoredKey}`);
+          await exec.exec("sudo", ["cp", "-rp", `${aptCacheDir}/.`, "/var/cache/apt/archives/"], { silent: true });
+        }
+      } catch (e) {
+        core.warning(`Apt cache restore failed: ${e.message}`);
       }
-    } catch (e) {
-      core.warning(`Apt cache restore failed: ${e.message}`);
     }
 
     // 1. Update with quiet mode
@@ -223,17 +225,19 @@ async function install(arch, sync, builderVersion, debug) {
     await exec.exec("sudo", ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs]);
 
     // 3. Save cache
-    try {
-      if (!restoredKey) {
-        // Copy newly downloaded files back to our local cache dir
-        await exec.exec("sh", ["-c", `cp -rp /var/cache/apt/archives/*.deb ${aptCacheDir}/ || true`], { silent: true });
-        if (fs.readdirSync(aptCacheDir).length > 0) {
-          await cache.saveCache([aptCacheDir], aptCacheKey);
-          core.info(`Saved apt packages to cache: ${aptCacheKey}`);
+    if (!disableCache) {
+      try {
+        if (!restoredKey) {
+          // Copy newly downloaded files back to our local cache dir
+          await exec.exec("sh", ["-c", `cp -rp /var/cache/apt/archives/*.deb ${aptCacheDir}/ || true`], { silent: true });
+          if (fs.readdirSync(aptCacheDir).length > 0) {
+            await cache.saveCache([aptCacheDir], aptCacheKey);
+            core.info(`Saved apt packages to cache: ${aptCacheKey}`);
+          }
         }
+      } catch (e) {
+        core.warning(`Apt cache save failed: ${e.message}`);
       }
-    } catch (e) {
-      core.warning(`Apt cache save failed: ${e.message}`);
     }
 
     if (fs.existsSync('/dev/kvm')) {
@@ -299,6 +303,7 @@ async function main() {
     const sync = core.getInput("sync").toLowerCase() || 'rsync';
     const copyback = core.getInput("copyback").toLowerCase();
     const syncTime = core.getInput("sync-time").toLowerCase();
+    const disableCache = core.getInput("disable-cache").toLowerCase() === 'true';
 
     const work = path.join(process.env["HOME"], "work");
     let vmwork = path.join(process.env["HOME"], "work");
@@ -355,7 +360,7 @@ async function main() {
     await downloadFile(anyvmUrl, anyvmPath);
 
     core.startGroup("Installing dependencies");
-    await install(arch, sync, builderVersion, debug);
+    await install(arch, sync, builderVersion, debug, disableCache);
     core.endGroup();
 
     // 4. Start VM
@@ -385,7 +390,7 @@ async function main() {
     const restoreKeys = [cacheKey];
     let restoredKey = null;
 
-    if (cacheSupported) {
+    if (cacheSupported && !disableCache) {
       cacheDir = cacheDirInput ? expandVars(cacheDirInput, process.env) : path.join(os.tmpdir(), cacheKey);
       if (!fs.existsSync(cacheDir)) {
         fs.mkdirSync(cacheDir, { recursive: true });
@@ -408,7 +413,7 @@ async function main() {
       // Pass cache dir to anyvm
       args.push("--cache-dir", cacheDir);
     } else {
-      core.info(`anyvm cache-dir not supported for version ${anyvmVersion}, skip cache.`);
+      core.info(`anyvm cache-dir skip cache (cacheSupported: ${cacheSupported}, disableCache: ${disableCache}).`);
     }
 
     if (builderVersion) {
@@ -491,7 +496,7 @@ async function main() {
     core.endGroup();
 
     // Save cache for anyvm cache directory immediately after VM start/prepare
-    if (cacheSupported) {
+    if (cacheSupported && !disableCache) {
       if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
         core.startGroup('Cache dir preview (debug)');
         try {
@@ -560,9 +565,10 @@ async function main() {
 
     const onStartedHook = path.join(__dirname, 'hooks', 'onStarted.sh');
     if (fs.existsSync(onStartedHook)) {
-      core.info(`Running onStarted hook: ${onStartedHook}`);
+      core.startGroup(`Running onStarted hook: ${onStartedHook}`);
       const hookContent = fs.readFileSync(onStartedHook, 'utf8');
       await execSSH(hookContent, sshConfig, false, debug !== 'true');
+      core.endGroup();
     }
 
     if (isScpOrRsync) {
@@ -592,7 +598,9 @@ async function main() {
       core.endGroup();
     }
     if (sync !== 'no') {
+      core.startGroup('Creating workdir symlink');
       await execSSH(`ln -s ${vmwork} $HOME/work`, { ...sshConfig });
+      core.endGroup();
     }
     core.startGroup("Run 'prepare' in VM");
     if (prepare) {
@@ -612,7 +620,7 @@ async function main() {
     if (copyback !== 'false' && sync !== 'no' && sync !== 'sshfs' && sync !== 'nfs') {
       const workspace = process.env['GITHUB_WORKSPACE'];
       if (workspace) {
-        core.info("Copying back artifacts");
+        core.startGroup("Copyback artifacts");
         if (sync === 'scp') {
           let useCpio = true;
           if (osName === 'haiku') {
@@ -654,6 +662,7 @@ async function main() {
         } else {
           await exec.exec("rsync", ["-av", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
         }
+        core.endGroup();
       }
     }
 

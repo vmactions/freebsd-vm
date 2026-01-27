@@ -274,7 +274,7 @@ If the time in VM is not correct, You can use `sync-time` option to synchronize 
 ```
 ...
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
@@ -284,12 +284,26 @@ If the time in VM is not correct, You can use `sync-time` option to synchronize 
 ```
 
 
+## 9. Disable cache
+
+By default, the action caches `apt` packages on the host and VM images/artifacts. You can use the `disableCache` option to disable this:
+
+```yml
+...
+    steps:
+    - uses: actions/checkout@v6
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        disable-cache: true
+...
+```
 
 
+## 10. Debug locally
 
-## 9. Debug locally
-
-You can use [AnyVM](https://github.com/anyvm-org/anyvm) to run the {{VM_NAME}} VM locally for debugging. It's the same environment as in the GitHub Actions.
+You can use [AnyVM.org](https://github.com/anyvm-org/anyvm) to run the {{VM_NAME}} VM locally for debugging. It's the same environment as in the GitHub Actions.
 
 ```bash
 python3 anyvm.py --os {{VM_OS_NAME}}
