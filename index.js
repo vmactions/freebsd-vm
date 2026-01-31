@@ -507,14 +507,13 @@ async function main() {
     if (cacheSupported && !disableCache) {
       core.startGroup("Save Cache");
       if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
-        core.startGroup('Cache dir preview (debug)');
+        core.info('Cache dir preview (debug)');
         try {
           await exec.exec('du', ['-sh', cacheDir]);
           await exec.exec('find', [cacheDir, '-maxdepth', '5', '-type', 'f']);
         } catch (e) {
           core.warning(`Listing cache dir failed: ${e.message}`);
         }
-        core.endGroup();
       }
       try {
         if (!restoredKey && cacheDir && fs.existsSync(cacheDir)) {
