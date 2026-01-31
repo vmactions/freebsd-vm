@@ -390,7 +390,7 @@ async function main() {
     const cacheDirInput = core.getInput("cache-dir") || '';
     let cacheDir;
     const archForKey = arch || (process.arch === 'x64' ? 'amd64' : process.arch);
-    const cacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-v1`;
+    const cacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-v2`;
     const restoreKeys = [cacheKey];
     let restoredKey = null;
 
@@ -408,6 +408,14 @@ async function main() {
         core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
         if (restoredKey) {
           core.info(`Cache restored: ${restoredKey}`);
+          if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
+            core.info('Restored cache dir preview (debug)');
+            try {
+              await exec.exec('ls', ['-R', cacheDir]);
+            } catch (e) {
+              core.warning(`Listing restored cache dir failed: ${e.message}`);
+            }
+          }
         } else {
           core.info('No cache hit for VM cache directory');
         }
@@ -528,6 +536,7 @@ async function main() {
       core.endGroup();
     }
 
+    core.startGroup("SSH Config");
     const sshDir = path.join(process.env["HOME"], ".ssh");
     if (!fs.existsSync(sshDir)) {
       fs.mkdirSync(sshDir, { recursive: true });
@@ -553,6 +562,7 @@ async function main() {
       core.info("SSH config content:");
       core.info(fs.readFileSync(sshConfigPath, "utf8"));
     }
+    core.endGroup();
 
     const sshConfig = {
       host: sshHost,
