@@ -2,6 +2,7 @@
   "name": "vmactions-FreeBSD",
   "version": "",
   "description": "GitHub actions for FreeBSD",
+  "type": "module",
   "main": "index.js",
   "repository": {
     "type": "git",

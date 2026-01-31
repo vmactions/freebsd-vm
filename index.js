@@ -1,13 +1,17 @@
 
-const core = require('@actions/core');
-const exec = require('@actions/exec');
-const cache = require('@actions/cache');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const https = require('https');
-const { spawn } = require('child_process');
-const crypto = require('crypto');
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import * as cache from '@actions/cache';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import * as https from 'https';
+import { spawn } from 'child_process';
+import * as crypto from 'crypto';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const workingDir = __dirname;
 
