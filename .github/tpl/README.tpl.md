@@ -316,10 +316,7 @@ When a failure occurs, the action will enable a remote VNC link and wait for you
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         debug-on-error: true
-        prepare: |
-          pkg install -y curl
-        run: |
-          ./test.sh
+
 ...
 ```
 
