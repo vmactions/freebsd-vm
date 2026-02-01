@@ -429,49 +429,73 @@ async function main() {
         fs.mkdirSync(cacheDir, { recursive: true });
       }
 
-      const maxRetries = 2;
-      for (let i = 0; i <= maxRetries; i++) {
-        try {
-          if (i > 0) {
-            core.info(`Retry ${i}/${maxRetries}: Cleaning cache directory...`);
-            try {
-              if (fs.existsSync(cacheDir)) {
-                fs.readdirSync(cacheDir).forEach(file => {
-                  fs.rmSync(path.join(cacheDir, file), { recursive: true, force: true });
-                });
-              }
-            } catch (err) {
-              core.warning(`Clean cache directory failed: ${err.message}`);
-            }
-          }
-
-          const restoreStart = Date.now();
-          restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
-          const restoreElapsed = Date.now() - restoreStart;
-          core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
-          if (restoredKey) {
-            core.info(`Cache restored: ${restoredKey}`);
-            if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
-              core.info('Restored cache dir preview (debug)');
-              try {
-                await exec.exec('ls', ['-R', cacheDir]);
-              } catch (e) {
-                core.warning(`Listing restored cache dir failed: ${e.message}`);
-              }
-            }
-            break;
-          } else {
-            core.info('No cache hit for VM cache directory');
-            break;
-          }
-        } catch (e) {
-          if (i < maxRetries) {
-            core.warning(`Cache restore attempt ${i + 1} failed: ${e.message}. Retrying...`);
-            continue;
-          }
-          core.warning(`Cache restore failed after ${maxRetries + 1} attempts: ${e.message}`);
+      const originalWrite = process.stdout.write;
+      let cacheRestoreFailed = false;
+      process.stdout.write = function (chunk) {
+        const msg = Buffer.isBuffer(chunk) ? chunk.toString() : (typeof chunk === 'string' ? chunk : '');
+        if (msg.includes('::warning::') && (msg.includes('Failed to restore') || msg.includes('Failed to download'))) {
+          cacheRestoreFailed = true;
         }
+        return originalWrite.apply(process.stdout, arguments);
+      };
+
+      try {
+        const maxRetries = 2;
+        for (let i = 0; i <= maxRetries; i++) {
+          cacheRestoreFailed = false; // Reset flag for each attempt
+          try {
+            if (i > 0) {
+              core.info(`Retry ${i}/${maxRetries}: Cleaning cache directory...`);
+              try {
+                if (fs.existsSync(cacheDir)) {
+                  fs.readdirSync(cacheDir).forEach(file => {
+                    fs.rmSync(path.join(cacheDir, file), { recursive: true, force: true });
+                  });
+                }
+              } catch (err) {
+                core.warning(`Clean cache directory failed: ${err.message}`);
+              }
+            }
+
+            const restoreStart = Date.now();
+            restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
+            const restoreElapsed = Date.now() - restoreStart;
+            core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
+
+            if (restoredKey) {
+              core.info(`Cache restored: ${restoredKey}`);
+              if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
+                core.info('Restored cache dir preview (debug)');
+                try {
+                  await exec.exec('ls', ['-R', cacheDir]);
+                } catch (e) {
+                  core.warning(`Listing restored cache dir failed: ${e.message}`);
+                }
+              }
+              break;
+            } else if (!cacheRestoreFailed) {
+              core.info('No cache hit for VM cache directory (Not found on server)');
+              break;
+            } else {
+              // restoredKey is undefined AND cacheRestoreFailed is true -> hit but error
+              if (i < maxRetries) {
+                core.warning(`Cache restore failed (hit but error during extraction), retrying...`);
+                continue;
+              }
+              core.info('Cache restore failed after multiple attempts.');
+            }
+          } catch (e) {
+            if (i < maxRetries) {
+              core.warning(`Cache restore attempt ${i + 1} failed with exception: ${e.message}. Retrying...`);
+              continue;
+            }
+            core.warning(`Cache restore failed after ${maxRetries + 1} attempts: ${e.message}`);
+          }
+        }
+      } finally {
+        process.stdout.write = originalWrite;
       }
+
       if (!restoredKey) {
         core.info(`Cleaning cache directory one last time for a fresh start...`);
         try {
