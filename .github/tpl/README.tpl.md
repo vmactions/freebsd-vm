@@ -301,12 +301,26 @@ By default, the action caches `apt` packages on the host and VM images/artifacts
 ```
 
 
-## 10. Debug locally
+## 10. Debug on error
 
-You can use [AnyVM.org](https://github.com/anyvm-org/anyvm) to run the {{VM_NAME}} VM locally for debugging. It's the same environment as in the GitHub Actions.
+If you want to debug the VM when the `prepare` or `run` step fails, you can set `debug-on-error: true`.
 
-```bash
-python3 anyvm.py --os {{VM_OS_NAME}}
+When a failure occurs, the action will enable a remote VNC link and wait for your interaction. You can then access the VM via VNC to debug. To continue or finish the action, you can run `touch ~/continue` inside the VM.
+
+```yaml
+...
+    steps:
+    - uses: actions/checkout@v6
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        debug-on-error: true
+        prepare: |
+          pkg install -y curl
+        run: |
+          ./test.sh
+...
 ```
 
 
