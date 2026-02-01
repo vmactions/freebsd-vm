@@ -262,56 +262,11 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
       "-o", "Acquire::Languages=none",
     ];
 
-    const aptCacheDir = path.join(os.homedir(), ".apt-cache");
-    if (!disableCache && !fs.existsSync(aptCacheDir)) {
-      fs.mkdirSync(aptCacheDir, { recursive: true });
-    }
-
-    const osVersion = process.env.ImageOS || os.release();
-    const osArch = process.arch;
-    const hash = crypto.createHash('md5').update(pkgs.sort().join(',')).digest('hex');
-    const aptCacheKey = `apt-pkgs-${process.platform}-${osVersion}-${osArch}-${hash}`;
-    let restoredKey = null;
-
-    if (!disableCache) {
-      try {
-        restoredKey = await cache.restoreCache([aptCacheDir], aptCacheKey);
-        if (restoredKey) {
-          core.info(`Restored apt packages from cache: ${restoredKey}`);
-          await exec.exec("sudo", ["cp", "-rp", `${aptCacheDir}/.`, "/var/cache/apt/archives/"], { silent: true });
-        }
-      } catch (e) {
-        core.warning(`Apt cache restore failed: ${e.message}`);
-      }
-    }
-
     // 1. Update with quiet mode
     await exec.exec("sudo", ["apt-get", "update", "-q"], { silent: true });
 
     // 2. Install the packages
     await exec.exec("sudo", ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs]);
-
-    // 3. Save cache
-    if (!disableCache) {
-      const saveAptCache = async () => {
-        activeBackgroundTasks++;
-        try {
-          if (!restoredKey) {
-            // Copy newly downloaded files back to our local cache dir
-            await exec.exec("sh", ["-c", `cp -rp /var/cache/apt/archives/*.deb ${aptCacheDir}/ || true`], { silent: true });
-            if (fs.readdirSync(aptCacheDir).length > 0) {
-              await cache.saveCache([aptCacheDir], aptCacheKey);
-              core.info(`Saved apt packages to cache: ${aptCacheKey}`);
-            }
-          }
-        } catch (e) {
-          core.warning(`Apt cache save failed: ${e.message}`);
-        } finally {
-          activeBackgroundTasks--;
-        }
-      };
-      backgroundPromises.push(saveAptCache());
-    }
 
     if (fs.existsSync('/dev/kvm')) {
       await exec.exec("sudo", ["chmod", "666", "/dev/kvm"]);
