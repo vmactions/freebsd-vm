@@ -461,11 +461,8 @@ async function main() {
             }
             break;
           } else {
-            if (i < maxRetries) {
-              core.info(`Cache restore no hit or failed, retrying...`);
-              continue;
-            }
             core.info('No cache hit for VM cache directory');
+            break;
           }
         } catch (e) {
           if (i < maxRetries) {
