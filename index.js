@@ -329,7 +329,7 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
 }
 
 
-async function scpToVM(sshHost, work, vmwork, osName) {
+async function scpToVM(sshHost, work, vmwork, osName, debug) {
   core.info(`==> Ensuring ${vmwork} exists...`);
   await execSSH(`mkdir -p ${vmwork}`, { host: sshHost, osName, work, vmwork });
 
@@ -353,8 +353,10 @@ async function scpToVM(sshHost, work, vmwork, osName) {
       `${sshHost}:${vmwork}/`
     ];
 
-    core.info(`Uploading: ${localPath} to ${sshHost}:${vmwork}/`);
-    await exec.exec("scp", scpArgs);
+    if (debug === 'true') {
+      core.info(`Uploading: ${localPath} to ${sshHost}:${vmwork}/`);
+    }
+    await exec.exec("scp", scpArgs, { silent: debug !== 'true' });
   }
 
   core.info("==> Done.");
@@ -688,10 +690,11 @@ async function main() {
       await execSSH(`mkdir -p ${vmwork}`, { ...sshConfig });
       if (sync === 'scp') {
         core.info("Syncing via SCP");
-        await scpToVM(sshHost, work, vmwork, osName);
+        await scpToVM(sshHost, work, vmwork, osName, debug);
       } else {
         core.info("Syncing via Rsync");
-        await exec.exec("rsync", ["-avrtopg", "--exclude", "_actions", "--exclude", "_PipelineMapping", "-e", "ssh", work + "/", `${sshHost}:${vmwork}/`]);
+        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", "--exclude", "_actions", "--exclude", "_PipelineMapping", "-e", "ssh", work + "/", `${sshHost}:${vmwork}/`];
+        await exec.exec("rsync", rsyncArgs);
         if (debug) {
           core.startGroup("Debug: Checking VM work directory content");
           await execSSH(`tree -L 2 ${vmwork}`, { ...sshConfig });
@@ -785,7 +788,7 @@ async function main() {
             tarProc.on('error', reject);
           });
         } else {
-          await exec.exec("rsync", ["-av", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
+          await exec.exec("rsync", [debug === 'true' ? "-av" : "-a", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
         }
         core.endGroup();
       }
