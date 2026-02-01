@@ -31,10 +31,10 @@ inputs:
     description: 'The NAT ports to FreeBSD vm'
     required: false
   usesh:
-    description: 'Use sh instead of the default shell: csh'
+    description: 'Use sh instead of the default shell. Default is false.'
     required: false
   sync:
-    description: 'How to synchronize the source code to/from the VM, Values can be:  rsync(default), and sshfs'
+    description: 'How to synchronize the source code to/from the VM. Default is rsync.'
     required: false
   copyback:
     description: 'whether or not to copy the build result repo back from the VM to the host Mac OS, defalt is True'
@@ -43,20 +43,20 @@ inputs:
     description: 'output debug message'
     required: false
   data-dir:
-    description: 'Directory to store VM data/images. Use a stable path to enable GitHub Actions caching.'
+    description: 'Directory to store VM data/images.'
     required: false
   cache-dir:
     description: 'Directory to store anyvm cache. If set, overrides default temp cache path.'
     required: false
   sync-time:
-    description: 'Synchronize the VM time with the ntp. If true, use --sync-time, if false, use --sync-time off'
+    description: 'Synchronize the VM time with the ntp. Default is false.'
     required: false
   disable-cache:
     description: 'Disable caching for apt packages and VM images. Default is false.'
     required: false
     default: 'false'
   debug-on-error:
-    description: 'If true, enable remote VNC and wait for SSH connection on error. Default is empty.'
+    description: 'If true, enable remote VNC and you can connect to the VM via web VNC page to debug. Default is false.'
     required: false
     default: ''
 branding:
