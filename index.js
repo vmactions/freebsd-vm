@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const workingDir = __dirname;
+const backgroundPromises = [];
 
 // Check if anyvm.py supports --cache-dir (>=0.1.4)
 function isAnyvmCacheSupported(version) {
@@ -291,18 +292,21 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
 
     // 3. Save cache
     if (!disableCache) {
-      try {
-        if (!restoredKey) {
-          // Copy newly downloaded files back to our local cache dir
-          await exec.exec("sh", ["-c", `cp -rp /var/cache/apt/archives/*.deb ${aptCacheDir}/ || true`], { silent: true });
-          if (fs.readdirSync(aptCacheDir).length > 0) {
-            await cache.saveCache([aptCacheDir], aptCacheKey);
-            core.info(`Saved apt packages to cache: ${aptCacheKey}`);
+      const saveAptCache = async () => {
+        try {
+          if (!restoredKey) {
+            // Copy newly downloaded files back to our local cache dir
+            await exec.exec("sh", ["-c", `cp -rp /var/cache/apt/archives/*.deb ${aptCacheDir}/ || true`], { silent: true });
+            if (fs.readdirSync(aptCacheDir).length > 0) {
+              await cache.saveCache([aptCacheDir], aptCacheKey);
+              core.info(`Saved apt packages to cache: ${aptCacheKey}`);
+            }
           }
+        } catch (e) {
+          core.warning(`Apt cache save failed: ${e.message}`);
         }
-      } catch (e) {
-        core.warning(`Apt cache save failed: ${e.message}`);
-      }
+      };
+      backgroundPromises.push(saveAptCache());
     }
 
     if (fs.existsSync('/dev/kvm')) {
@@ -584,27 +588,29 @@ async function main() {
 
     // Save cache for anyvm cache directory immediately after VM start/prepare
     if (cacheSupported && !disableCache) {
-      core.startGroup("Save Cache");
-      if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
-        core.info('Cache dir preview (debug)');
+      const saveVmCache = async () => {
+        core.info("Save Cache (Background)");
+        if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
+          core.info('Cache dir preview (debug)');
+          try {
+            await exec.exec('du', ['-sh', cacheDir]);
+            await exec.exec('find', [cacheDir, '-maxdepth', '5', '-type', 'f']);
+          } catch (e) {
+            core.warning(`Listing cache dir failed: ${e.message}`);
+          }
+        }
         try {
-          await exec.exec('du', ['-sh', cacheDir]);
-          await exec.exec('find', [cacheDir, '-maxdepth', '5', '-type', 'f']);
+          if (!restoredKey && cacheDir && fs.existsSync(cacheDir)) {
+            await cache.saveCache([cacheDir], cacheKey);
+            core.info(`Cache saved: ${cacheKey}`);
+          } else {
+            core.info('Skip cache save (cache was restored or directory missing)');
+          }
         } catch (e) {
-          core.warning(`Listing cache dir failed: ${e.message}`);
+          core.warning(`Cache save skipped: ${e.message}`);
         }
-      }
-      try {
-        if (!restoredKey && cacheDir && fs.existsSync(cacheDir)) {
-          await cache.saveCache([cacheDir], cacheKey);
-          core.info(`Cache saved: ${cacheKey}`);
-        } else {
-          core.info('Skip cache save (cache was restored or directory missing)');
-        }
-      } catch (e) {
-        core.warning(`Cache save skipped: ${e.message}`);
-      }
-      core.endGroup();
+      };
+      backgroundPromises.push(saveVmCache());
     }
 
     core.startGroup("SSH Config");
@@ -776,6 +782,11 @@ async function main() {
         }
         core.endGroup();
       }
+    }
+
+    if (backgroundPromises.length > 0) {
+      core.info(`Waiting for ${backgroundPromises.length} background tasks to complete...`);
+      await Promise.allSettled(backgroundPromises);
     }
 
   } catch (error) {
