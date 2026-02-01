@@ -429,26 +429,51 @@ async function main() {
         fs.mkdirSync(cacheDir, { recursive: true });
       }
 
-      try {
-        const restoreStart = Date.now();
-        restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
-        const restoreElapsed = Date.now() - restoreStart;
-        core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
-        if (restoredKey) {
-          core.info(`Cache restored: ${restoredKey}`);
-          if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
-            core.info('Restored cache dir preview (debug)');
+      const maxRetries = 2;
+      for (let i = 0; i <= maxRetries; i++) {
+        try {
+          if (i > 0) {
+            core.info(`Retry ${i}/${maxRetries}: Cleaning cache directory...`);
             try {
-              await exec.exec('ls', ['-R', cacheDir]);
-            } catch (e) {
-              core.warning(`Listing restored cache dir failed: ${e.message}`);
+              if (fs.existsSync(cacheDir)) {
+                fs.readdirSync(cacheDir).forEach(file => {
+                  fs.rmSync(path.join(cacheDir, file), { recursive: true, force: true });
+                });
+              }
+            } catch (err) {
+              core.warning(`Clean cache directory failed: ${err.message}`);
             }
           }
-        } else {
-          core.info('No cache hit for VM cache directory');
+
+          const restoreStart = Date.now();
+          restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
+          const restoreElapsed = Date.now() - restoreStart;
+          core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
+          if (restoredKey) {
+            core.info(`Cache restored: ${restoredKey}`);
+            if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
+              core.info('Restored cache dir preview (debug)');
+              try {
+                await exec.exec('ls', ['-R', cacheDir]);
+              } catch (e) {
+                core.warning(`Listing restored cache dir failed: ${e.message}`);
+              }
+            }
+            break;
+          } else {
+            if (i < maxRetries) {
+              core.info(`Cache restore no hit or failed, retrying...`);
+              continue;
+            }
+            core.info('No cache hit for VM cache directory');
+          }
+        } catch (e) {
+          if (i < maxRetries) {
+            core.warning(`Cache restore attempt ${i + 1} failed: ${e.message}. Retrying...`);
+            continue;
+          }
+          core.warning(`Cache restore failed after ${maxRetries + 1} attempts: ${e.message}`);
         }
-      } catch (e) {
-        core.warning(`Cache restore failed: ${e.message}`);
       }
 
       // Pass cache dir to anyvm
