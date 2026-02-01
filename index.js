@@ -15,6 +15,7 @@ const __dirname = path.dirname(__filename);
 
 const workingDir = __dirname;
 const backgroundPromises = [];
+let activeBackgroundTasks = 0;
 
 // Check if anyvm.py supports --cache-dir (>=0.1.4)
 function isAnyvmCacheSupported(version) {
@@ -293,6 +294,7 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
     // 3. Save cache
     if (!disableCache) {
       const saveAptCache = async () => {
+        activeBackgroundTasks++;
         try {
           if (!restoredKey) {
             // Copy newly downloaded files back to our local cache dir
@@ -304,6 +306,8 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
           }
         } catch (e) {
           core.warning(`Apt cache save failed: ${e.message}`);
+        } finally {
+          activeBackgroundTasks--;
         }
       };
       backgroundPromises.push(saveAptCache());
@@ -589,6 +593,7 @@ async function main() {
     // Save cache for anyvm cache directory immediately after VM start/prepare
     if (cacheSupported && !disableCache) {
       const saveVmCache = async () => {
+        activeBackgroundTasks++;
         core.info("Save Cache (Background)");
         if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
           core.info('Cache dir preview (debug)');
@@ -608,6 +613,8 @@ async function main() {
           }
         } catch (e) {
           core.warning(`Cache save skipped: ${e.message}`);
+        } finally {
+          activeBackgroundTasks--;
         }
       };
       backgroundPromises.push(saveVmCache());
@@ -785,7 +792,9 @@ async function main() {
     }
 
     if (backgroundPromises.length > 0) {
-      core.info(`Waiting for ${backgroundPromises.length} background tasks to complete...`);
+      if (activeBackgroundTasks > 0) {
+        core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete...`);
+      }
       await Promise.allSettled(backgroundPromises);
     }
 
