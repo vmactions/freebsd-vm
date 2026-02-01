@@ -475,6 +475,18 @@ async function main() {
           core.warning(`Cache restore failed after ${maxRetries + 1} attempts: ${e.message}`);
         }
       }
+      if (!restoredKey) {
+        core.info(`Cleaning cache directory one last time for a fresh start...`);
+        try {
+          if (fs.existsSync(cacheDir)) {
+            fs.readdirSync(cacheDir).forEach(file => {
+              fs.rmSync(path.join(cacheDir, file), { recursive: true, force: true });
+            });
+          }
+        } catch (err) {
+          core.warning(`Final clean cache directory failed: ${err.message}`);
+        }
+      }
 
       // Pass cache dir to anyvm
       args.push("--cache-dir", cacheDir);
