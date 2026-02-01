@@ -324,6 +324,10 @@ When a failure occurs, the action will enable a remote VNC link and wait for you
 
 
 
+See more: [debug on error](https://github.com/vmactions/.github/wiki/debug%E2%80%90on%E2%80%90error)
+
+
+
 # Under the hood
 
 We use Qemu to run the {{VM_NAME}} VM.
