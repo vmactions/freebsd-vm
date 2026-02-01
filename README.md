@@ -245,7 +245,7 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 
 ## 5. Select release
 
-It uses [the FreeBSD 15.0](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
+It uses [the FreeBSD 15.0](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
 
 ```
 ...
@@ -366,10 +366,7 @@ When a failure occurs, the action will enable a remote VNC link and wait for you
       uses: vmactions/freebsd-vm@v1
       with:
         debug-on-error: true
-        prepare: |
-          pkg install -y curl
-        run: |
-          ./test.sh
+
 ...
 ```
 
