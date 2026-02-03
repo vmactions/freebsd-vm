@@ -578,7 +578,15 @@ async function main() {
             core.info('Skip cache save (cache was restored or directory missing)');
           }
         } catch (e) {
-          core.warning(`Cache save skipped: ${e.message}`);
+          // Ignore "cache already exists" or "cache entry not found" errors
+          // These are common and non-fatal (e.g., race conditions, cache already saved)
+          if (e.message && (e.message.includes('cache entry not found') ||
+            e.message.includes('already exists') ||
+            e.message.includes('Cache already exists'))) {
+            core.info(`Cache save skipped (benign): ${e.message}`);
+          } else {
+            core.warning(`Cache save failed: ${e.message}`);
+          }
         } finally {
           activeBackgroundTasks--;
         }
