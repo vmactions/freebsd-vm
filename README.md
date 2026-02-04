@@ -91,7 +91,7 @@ jobs:
 ```
 
 
-The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.3.8`)  
+The latest major version is: `v1`, which is the most recommended to use. (You can also use the latest full version: `v1.3.9`)  
 
 
 If you are migrating from the previous `v0`, please change the `runs-on: ` to `runs-on: ubuntu-latest`
@@ -247,7 +247,7 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 
 ## 5. Select release
 
-It uses [the FreeBSD 15.0](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
+It uses [the FreeBSD 15.0](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
 
 ```yaml
 ...
