@@ -612,6 +612,43 @@ jobs:
 
 
 
+  testerr:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-24.04
+    name: test default FreeBSD
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+      MYTOKEN2: "value2"
+      SEC_VBOX : ${{ vars.SEC_VBOX }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Test in FreeBSD
+      id: testerr
+      continue-on-error: true 
+      uses: vmactions/freebsd-vm@d0b1feb5803e1c3fbb94c504b5f84da2a957b41e
+      with:
+        envs: 'MYTOKEN MYTOKEN2'
+        prepare: |
+          
+        mem: 4096
+        usesh: true
+        debug: true
+        run: |
+          echo "this is an error"
+          exit 1
+    - name: Verify that the previous step failed
+      if: steps.testerr.outcome != 'failure'
+      run: |
+        echo "The step was expected to fail, but it succeeded!"
+        exit 1
+
+
+
+
+
+
 
 
 

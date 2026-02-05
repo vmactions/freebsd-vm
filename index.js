@@ -598,8 +598,6 @@ async function main() {
             core.info('Skip cache save (cache was restored or directory missing)');
           }
         } catch (e) {
-          // Ignore "cache already exists" or "cache entry not found" errors
-          // These are common and non-fatal (e.g., race conditions, cache already saved)
           if (e.message && (e.message.includes('cache entry not found') ||
             e.message.includes('already exists') ||
             e.message.includes('Cache already exists'))) {
@@ -715,6 +713,8 @@ async function main() {
           vncLink = fs.readFileSync(remoteVncLinkFile, 'utf8').split('\n')[0].trim();
         }
         await handleErrorWithDebug(sshHost, vncLink, debug);
+      } else {
+        throw err;
       }
     }
 
@@ -733,6 +733,8 @@ async function main() {
           vncLink = fs.readFileSync(remoteVncLinkFile, 'utf8').split('\n')[0].trim();
         }
         await handleErrorWithDebug(sshHost, vncLink, debug);
+      } else {
+        throw err;
       }
     }
 
