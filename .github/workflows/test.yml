@@ -60,7 +60,6 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ vars.SEC_VBOX }}
       DEBUG: 1
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
@@ -107,7 +106,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@2fc5a8f7d0aaf09e30dfd4a391db27be4b86f785
+      uses: vmactions/freebsd-vm@f674f993e17ee7a71c14726b5d96599e59cda724
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -215,7 +214,6 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ vars.SEC_VBOX }}
       DEBUG: 1
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
@@ -261,7 +259,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@2fc5a8f7d0aaf09e30dfd4a391db27be4b86f785
+      uses: vmactions/freebsd-vm@f674f993e17ee7a71c14726b5d96599e59cda724
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -370,7 +368,6 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ vars.SEC_VBOX }}
       DEBUG: 1
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
@@ -411,7 +408,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@2fc5a8f7d0aaf09e30dfd4a391db27be4b86f785
+      uses: vmactions/freebsd-vm@f674f993e17ee7a71c14726b5d96599e59cda724
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -509,7 +506,6 @@ jobs:
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
-      SEC_VBOX : ${{ vars.SEC_VBOX }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
     - uses: actions/checkout@v6
@@ -547,7 +543,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@2fc5a8f7d0aaf09e30dfd4a391db27be4b86f785
+      uses: vmactions/freebsd-vm@f674f993e17ee7a71c14726b5d96599e59cda724
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -617,22 +613,13 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-24.04
     name: test default error FreeBSD
-    env:
-      MYTOKEN : ${{ secrets.MYTOKEN }}
-      MYTOKEN2: "value2"
-      SEC_VBOX : ${{ vars.SEC_VBOX }}
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
     - uses: actions/checkout@v6
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@2fc5a8f7d0aaf09e30dfd4a391db27be4b86f785
+      uses: vmactions/freebsd-vm@f674f993e17ee7a71c14726b5d96599e59cda724
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        prepare: |
-          
-        mem: 4096
         usesh: true
         debug: true
         run: |
@@ -643,28 +630,24 @@ jobs:
       run: |
         echo "The step was expected to fail, but it succeeded!"
         exit 1
+    - name: Verify that the previous step succeeded
+      if: steps.testerr.outcome == 'failure'
+      run: |
+        echo "The step was expected to fail, and it failed!"
+        exit 0
 
   testpass:
     strategy:
       fail-fast: false
     runs-on: ubuntu-24.04
     name: test default success FreeBSD
-    env:
-      MYTOKEN : ${{ secrets.MYTOKEN }}
-      MYTOKEN2: "value2"
-      SEC_VBOX : ${{ vars.SEC_VBOX }}
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
     - uses: actions/checkout@v6
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@2fc5a8f7d0aaf09e30dfd4a391db27be4b86f785
+      uses: vmactions/freebsd-vm@f674f993e17ee7a71c14726b5d96599e59cda724
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        prepare: |
-          
-        mem: 4096
         usesh: true
         debug: true
         run: |
@@ -675,6 +658,11 @@ jobs:
       run: |
         echo "The step was expected to succeed, but it failed!"
         exit 1
+    - name: Verify that the previous step failed
+      if: steps.testpass.outcome == 'success'
+      run: |
+        echo "The step was expected to succeed, and it succeeded!"
+        exit 0
 
 
 
