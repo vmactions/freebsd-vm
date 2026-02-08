@@ -38,7 +38,7 @@ jobs:
           echo "ALL_RELEASES=$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed "s/,\$//" | sed 's/,/, /g')" >> $GITHUB_ENV
 
       - name: Update the readme.md
-        uses: vmactions/render@v0.0.2
+        uses: vmactions/render@v0.0.3
         with:
           datafile: .github/data/datafile.ini
           files: |
