@@ -794,9 +794,15 @@ async function main() {
 
     if (backgroundPromises.length > 0) {
       if (activeBackgroundTasks > 0) {
-        core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete...`);
+        core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete (max 60s)...`);
       }
-      await Promise.allSettled(backgroundPromises);
+      const timeoutPromise = new Promise((resolve) => setTimeout(() => {
+        if (activeBackgroundTasks > 0) {
+          core.warning(`Background tasks timed out after 60s. Continuing...`);
+        }
+        resolve();
+      }, 60000));
+      await Promise.race([Promise.allSettled(backgroundPromises), timeoutPromise]);
     }
 
   } catch (error) {
