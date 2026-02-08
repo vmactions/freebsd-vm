@@ -59,6 +59,10 @@ inputs:
     description: 'If true, enable remote VNC and you can connect to the VM via web VNC page to debug. Default is false.'
     required: false
     default: ''
+  vnc-password:
+    description: 'The VNC password. Default is empty.'
+    required: false
+    default: ''
 branding:
   icon: 'activity'  
   color: 'green'
@@ -66,3 +70,4 @@ branding:
 runs:
   using: 'node20'
   main: 'index.js'
+
