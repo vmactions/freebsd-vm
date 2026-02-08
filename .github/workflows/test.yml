@@ -624,7 +624,7 @@ jobs:
         debug: true
         run: |
           echo "this is an error"
-          exit 1
+          false
     - name: Verify that the previous step failed
       if: steps.testerr.outcome != 'failure'
       run: |
@@ -652,7 +652,7 @@ jobs:
         debug: true
         run: |
           echo "this is a normal command"
-          exit 0
+          true
     - name: Verify that the previous step succeeded
       if: steps.testpass.outcome != 'success'
       run: |
