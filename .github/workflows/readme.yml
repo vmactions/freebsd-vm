@@ -24,7 +24,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)
+          tag=$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name 2>/dev/null) || tag="v0.0.0"
           echo "tag_name=$tag" >> $GITHUB_OUTPUT
           echo "tag_name=$tag"
 
