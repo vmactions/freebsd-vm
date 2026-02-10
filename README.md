@@ -127,18 +127,11 @@ The code is shared from the host to the VM via `rsync` by default, you can choos
 
 ...
 
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
         sync: sshfs  # or: nfs
-        prepare: |
-          
-
 
 
 ...
@@ -156,19 +149,12 @@ When using `rsync` or `scp`,  you can define `copyback: false` to not copy files
 
 ...
 
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
         sync: rsync
         copyback: false
-        prepare: |
-          
-
 
 
 ...
@@ -194,14 +180,10 @@ You can add NAT port between the host and the VM.
 
 ```yaml
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
         nat: |
           "8080": "80"
           "8443": "443"
@@ -217,14 +199,10 @@ The default memory of the VM is 6144MB, you can use `mem` option to set the memo
 ```yaml
 
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
         mem: 4096
 ...
 ```
@@ -235,14 +213,10 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 ```yaml
 
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
         cpu: 3
 ...
 ```
@@ -254,8 +228,6 @@ It uses [the FreeBSD 15.0](conf/default.release.conf) by default, you can use `r
 
 ```yaml
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
@@ -271,18 +243,10 @@ The vm is using x86_64(AMD64) by default, but you can use `arch` option to chang
 
 ```yaml
 ...
-    runs-on: ubuntu-latest
-    name: A job to run test in FreeBSD
-    env:
-      MYTOKEN : ${{ secrets.MYTOKEN }}
-      MYTOKEN2: "value2"
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        release: "15.0"
         arch: aarch64
 ...
 ```
@@ -328,8 +292,6 @@ If the time in VM is not correct, You can use `sync-time` option to synchronize 
 
 ```yaml
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
@@ -345,8 +307,6 @@ By default, the action caches `apt` packages on the host and VM images/artifacts
 
 ```yml
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
@@ -364,8 +324,6 @@ When a failure occurs, the action will enable a remote VNC link and wait for you
 
 ```yaml
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
@@ -379,8 +337,6 @@ You can also set the `vnc-password` parameter to set a custom password to protec
 
 ```yaml
 ...
-    steps:
-    - uses: actions/checkout@v6
     - name: Test
       id: test
       uses: vmactions/freebsd-vm@v1
