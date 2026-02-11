@@ -311,6 +311,8 @@ We use Qemu to run the {{VM_NAME}} VM.
 # Upcoming features:
 
 1. Support other architectures, eg: sparc64 or powerpc64.
+2. Support MacOS runner and Windows runner.
+
 
 
 

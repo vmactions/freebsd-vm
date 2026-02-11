@@ -744,6 +744,18 @@ async function main() {
 
     // 7. Copyback
     if (copyback !== 'false' && sync !== 'no' && sync !== 'sshfs' && sync !== 'nfs') {
+      // Wait for background tasks to finish before copyback to avoid file conflicts
+      if (backgroundPromises.length > 0 && activeBackgroundTasks > 0) {
+        core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete before copyback (max 60s)...`);
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => {
+          if (activeBackgroundTasks > 0) {
+            core.warning(`Background tasks timed out after 60s. Continuing with copyback...`);
+          }
+          resolve();
+        }, 60000));
+        await Promise.race([Promise.allSettled(backgroundPromises), timeoutPromise]);
+      }
+
       const workspace = process.env['GITHUB_WORKSPACE'];
       if (workspace) {
         core.startGroup("Copyback artifacts");
