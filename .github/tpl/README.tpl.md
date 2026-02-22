@@ -269,13 +269,17 @@ If you want to debug the VM when the `prepare` or `run` step fails, you can set 
 
 When a failure occurs, the action will enable a remote VNC link and wait for your interaction. You can then access the VM via VNC to debug. To continue or finish the action, you can run `touch ~/continue` inside the VM.
 
+[First create a variable `DEBUG_ON_ERROR` with value being "true"](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-variables),
+
+Then use it in the workflow:
+
 ```yaml
 ...
     - name: Test
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
-        debug-on-error: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
 
 ...
 ```
@@ -288,7 +292,7 @@ You can also set the `vnc-password` parameter to set a custom password to protec
       id: test
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
-        debug-on-error: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
         vnc-password: ${{ secrets.VNC_PASSWORD }}
 
 ...
