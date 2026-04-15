@@ -106,7 +106,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -259,7 +259,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -408,7 +408,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -543,7 +543,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -685,7 +685,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -727,9 +727,27 @@ jobs:
         [ "$TEST_ENV" = "abc" ]
         ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
 
-    - name: Test custom shell
-      if: ${{ steps.check.outputs.run == 'true' }}
-      shell: ${{ matrix.customshell && matrix.customshell || 'freebsd' }} {0}
+    - name: Test custom shell (default)
+      if: ${{ steps.check.outputs.run == 'true' && !matrix.customshell }}
+      shell: freebsd {0}
+      run: |
+        pwd
+          #pkg install -y curl
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          uname -a
+          #sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
+
+    - name: Test custom shell (custom)
+      if: ${{ steps.check.outputs.run == 'true' && matrix.customshell }}
+      shell: ${{ matrix.customshell }} {0}
       run: |
         pwd
           #pkg install -y curl
@@ -761,7 +779,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         usesh: true
         debug: true
@@ -789,7 +807,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@7aeb6e105369dd8e3d18522e312fe93620c61303
+      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
       with:
         usesh: true
         debug: true
