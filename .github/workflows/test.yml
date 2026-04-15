@@ -619,7 +619,6 @@ jobs:
 , ""]
         arch: [ "aarch64", "", "riscv64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
-        customshell: [ "", "vmsh"]
         exclude:
           - runs: "ubuntu-24.04-arm"
             arch: ""
@@ -644,7 +643,7 @@ jobs:
 
 
     runs-on: ${{ matrix.runs }}
-    name: default FreeBSD
+    name: customshell FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
       MYTOKEN2: "value2"
@@ -700,7 +699,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
-        custom-shell-name: ${{ matrix.customshell }}
+        custom-shell-name: vmsh
         run: |
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
@@ -727,27 +726,9 @@ jobs:
         [ "$TEST_ENV" = "abc" ]
         ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
 
-    - name: Test custom shell (default)
-      if: ${{ steps.check.outputs.run == 'true' && !matrix.customshell }}
-      shell: freebsd {0}
-      run: |
-        pwd
-          #pkg install -y curl
-          pwd
-          ls -lah
-          whoami
-          env
-          freebsd-version
-          uname -a
-          #sysctl hw.model
-          sysctl hw.ncpu
-          sysctl hw.physmem
-          sysctl hw.usermem
-
-
-    - name: Test custom shell (custom)
-      if: ${{ steps.check.outputs.run == 'true' && matrix.customshell }}
-      shell: ${{ matrix.customshell }} {0}
+    - name: Test custom shell
+      if: ${{ steps.check.outputs.run == 'true' }}
+      shell: vmsh {0}
       run: |
         pwd
           #pkg install -y curl
