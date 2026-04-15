@@ -44,10 +44,16 @@ jobs:
           files: |
             .github/tpl/README.tpl.md : README.md
 
-      - uses: EndBug/add-and-commit@v9
-        with:
-          message: "Update version to ${{ steps.get-latest-release.outputs.tag_name }}"
-          pull: '--rebase --autostash '
-          add: |
-            README.md
+      - name: Commit and push
+        run: |
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git pull --rebase --autostash
+            git commit -m "Update version to ${{ steps.get-latest-release.outputs.tag_name }}"
+            git push
+          fi
 
