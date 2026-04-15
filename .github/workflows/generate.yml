@@ -129,9 +129,11 @@ jobs:
             echo "Nothing to commit, skipping push"
           else
             BASEVM_LOG="$(cat /tmp/basevm-log.txt)"
-            git commit -m "Update ${{ github.repository }} from base-vm
+            git commit -F- <<EOF
+Update ${{ github.repository }} from base-vm
 
-${BASEVM_LOG}"
+${BASEVM_LOG}
+EOF
             git pull --rebase --autostash
             git push
           fi
