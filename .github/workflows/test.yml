@@ -106,7 +106,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -259,7 +259,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -408,7 +408,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -543,7 +543,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -685,7 +685,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -779,7 +779,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         usesh: true
         debug: true
@@ -807,7 +807,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@fc3a2d629d16e70bc49fdd07a8b81ad73de5a24a
+      uses: vmactions/freebsd-vm@d050b5d07492318f1408f50514ce57fd080a4213
       with:
         usesh: true
         debug: true
