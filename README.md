@@ -274,13 +274,38 @@ Support custom shell:
     - name: Custom shell step 1
       shell: freebsd {0}
       run: |
-        cd $GITHUB_WORKSPACE;
         pwd
         echo "this is step 1, running inside the VM"
     - name: Custom shell step 2
       shell: freebsd {0}
       run: |
-        cd $GITHUB_WORKSPACE;
+        pwd
+        echo "this is step 2, running inside the VM"
+...
+```
+
+The custom shell will automatically `cd` into `$GITHUB_WORKSPACE` if it exists before running your commands.
+
+You can also use `custom-shell-name` to set a custom name for the shell wrapper:
+
+```yaml
+...
+    steps:
+    - uses: actions/checkout@v6
+    - name: Start VM
+      id: vm
+      uses: vmactions/freebsd-vm@v1
+      with:
+        sync: nfs
+        custom-shell-name: vmsh
+    - name: Custom shell step 1
+      shell: vmsh {0}
+      run: |
+        pwd
+        echo "this is step 1, running inside the VM"
+    - name: Custom shell step 2
+      shell: vmsh {0}
+      run: |
         pwd
         echo "this is step 2, running inside the VM"
 ...
