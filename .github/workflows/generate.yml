@@ -128,12 +128,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit, skipping push"
           else
-            BASEVM_LOG="$(cat /tmp/basevm-log.txt)"
-            git commit -F- <<EOF
-Update ${{ github.repository }} from base-vm
-
-${BASEVM_LOG}
-EOF
+            printf "Update ${{ github.repository }} from base-vm\n\n%s\n" "$(cat /tmp/basevm-log.txt)" > /tmp/commit-msg.txt
+            git commit -F /tmp/commit-msg.txt
             git pull --rebase --autostash
             git push
           fi
