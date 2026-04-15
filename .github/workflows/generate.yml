@@ -37,7 +37,7 @@ jobs:
           git clone https://github.com/vmactions/base-vm.git
 
           # Collect base-vm commit messages since last generate
-          BASEVM_HASH_FILE=".github/data/base-vm-hash"
+          BASEVM_HASH_FILE=".github/data/base-vm-hash.txt"
           BASEVM_NEW_HASH="$(git -C base-vm rev-parse HEAD)"
           if [ -f "$BASEVM_HASH_FILE" ]; then
             BASEVM_OLD_HASH="$(cat "$BASEVM_HASH_FILE")"
