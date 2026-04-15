@@ -119,7 +119,7 @@ jobs:
             .github/workflows/test.yml \
             .github/tpl/README.tpl.md \
             .github/FUNDING.yml \
-            .github/data/base-vm-hash \
+            .github/data/base-vm-hash.txt \
             package.json \
             package-lock.json \
             index.js \
