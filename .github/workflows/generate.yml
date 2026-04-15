@@ -36,6 +36,20 @@ jobs:
 
           git clone https://github.com/vmactions/base-vm.git
 
+          # Collect base-vm commit messages since last generate
+          BASEVM_HASH_FILE=".github/data/base-vm-hash"
+          BASEVM_NEW_HASH="$(git -C base-vm rev-parse HEAD)"
+          if [ -f "$BASEVM_HASH_FILE" ]; then
+            BASEVM_OLD_HASH="$(cat "$BASEVM_HASH_FILE")"
+            BASEVM_LOG="$(git -C base-vm log --oneline "${BASEVM_OLD_HASH}..${BASEVM_NEW_HASH}" 2>/dev/null || git -C base-vm log --oneline -20)"
+          else
+            BASEVM_LOG="$(git -C base-vm log --oneline -1)"
+          fi
+          echo "$BASEVM_NEW_HASH" > "$BASEVM_HASH_FILE"
+
+          # Save log for later commit message
+          echo "$BASEVM_LOG" > /tmp/basevm-log.txt
+
           mkdir -p .github/tpl
           cat base-vm/.github/tpl/README.tpl.md >.github/tpl/README.tpl.md
 
@@ -105,6 +119,7 @@ jobs:
             .github/workflows/test.yml \
             .github/tpl/README.tpl.md \
             .github/FUNDING.yml \
+            .github/data/base-vm-hash \
             package.json \
             package-lock.json \
             index.js \
@@ -113,7 +128,10 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit, skipping push"
           else
-            git commit -m "Update ${{ github.repository }} from base vm"
+            BASEVM_LOG="$(cat /tmp/basevm-log.txt)"
+            git commit -m "Update ${{ github.repository }} from base-vm
+
+${BASEVM_LOG}"
             git pull --rebase --autostash
             git push
           fi
