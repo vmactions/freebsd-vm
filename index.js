@@ -652,13 +652,14 @@ async function main() {
     };
 
     //support Custom shell
+    const customShellName = core.getInput("custom-shell-name") || sshHost;
     const localBinDir = path.join(process.env["HOME"], ".local", "bin");
     if (!fs.existsSync(localBinDir)) {
       fs.mkdirSync(localBinDir, { recursive: true });
     }
 
-    const sshWrapperPath = path.join(localBinDir, sshHost);
-    const sshWrapperContent = `#!/usr/bin/env sh\n\nssh ${sshHost} sh<$1\n`;
+    const sshWrapperPath = path.join(localBinDir, customShellName);
+    const sshWrapperContent = `#!/usr/bin/env sh\n\n{ echo 'if [ -d "$GITHUB_WORKSPACE" ]; then cd "$GITHUB_WORKSPACE"; fi'; cat "$1"; } | ssh ${sshHost} sh\n`;
     fs.writeFileSync(sshWrapperPath, sshWrapperContent);
     fs.chmodSync(sshWrapperPath, '755');
 

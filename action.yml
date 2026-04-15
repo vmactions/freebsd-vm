@@ -63,6 +63,9 @@ inputs:
     description: 'The VNC password. Default is empty.'
     required: false
     default: ''
+  custom-shell-name:
+    description: 'Custom shell name for the VM shell wrapper script.'
+    required: false
 branding:
   icon: 'activity'  
   color: 'green'
