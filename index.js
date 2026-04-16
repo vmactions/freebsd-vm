@@ -7,13 +7,11 @@ import * as path from 'path';
 import * as os from 'os';
 import * as https from 'https';
 import { spawn } from 'child_process';
-import * as crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const workingDir = __dirname;
 const backgroundPromises = [];
 let activeBackgroundTasks = 0;
 
@@ -136,11 +134,12 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false) {
   let envExports = "";
   if (osName === 'haiku' && work && vmwork) {
     const workRegex = new RegExp(work.replace(/\\/g, '\\\\'), 'gi');
+    const envNames = (sshConfig.envs || '').split(/\s+/).filter(Boolean);
     for (const key of Object.keys(process.env)) {
-      if (key.startsWith('GITHUB_') || key === 'CI' || key === 'MYTOKEN' || key === 'MYTOKEN2') {
+      if (key.startsWith('GITHUB_') || key === 'CI' || envNames.includes(key)) {
         const val = process.env[key] || "";
-        const newVal = val.replace(workRegex, vmwork);
-        envExports += `export ${key}="${newVal}"\n`;
+        const newVal = val.replace(workRegex, vmwork).replace(/'/g, "'\\''");
+        envExports += `export ${key}='${newVal}'\n`;
       }
     }
   }
@@ -648,7 +647,8 @@ async function main() {
       host: sshHost,
       osName: osName,
       work: work,
-      vmwork: vmwork
+      vmwork: vmwork,
+      envs: envs
     };
 
     //support Custom shell
