@@ -283,11 +283,69 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
 }
 
 
-async function scpToVM(sshHost, work, vmwork, osName, debug) {
-  core.info(`==> Ensuring ${vmwork} exists...`);
-  await execSSH(`mkdir -p ${vmwork}`, { host: sshHost, osName, work, vmwork });
+// Recursively check whether any file named `name` exists under `dir`.
+// Used to decide between fast-path `scp -r` and slow-path file-by-file scp.
+async function treeContainsFile(dir, name) {
+  let entries;
+  try {
+    entries = await fs.promises.readdir(dir, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  for (const entry of entries) {
+    if (entry.name === name) return true;
+    if (entry.isDirectory()) {
+      if (await treeContainsFile(path.join(dir, entry.name), name)) return true;
+    }
+  }
+  return false;
+}
 
-  core.info("==> Uploading files via scp (excluding _actions and _PipelineMapping)...");
+// Recursively scp `localPath` into `remoteDir` on `sshHost`, skipping any entry
+// whose basename is in `excludeNames`. Preserves directory structure.
+async function scpTreeExcluding(sshHost, localPath, remoteDir, excludeNames, debug, sshConfig) {
+  const name = path.basename(localPath);
+  if (excludeNames.includes(name)) return;
+
+  let stat;
+  try {
+    stat = await fs.promises.stat(localPath);
+  } catch {
+    return;
+  }
+
+  if (stat.isFile()) {
+    const scpArgs = [
+      "-O", "-p",
+      "-o", "StrictHostKeyChecking=no",
+      localPath,
+      `${sshHost}:${remoteDir}/`,
+    ];
+    if (debug === 'true') {
+      core.info(`Uploading: ${localPath} to ${sshHost}:${remoteDir}/`);
+    }
+    await exec.exec("scp", scpArgs, { silent: debug !== 'true' });
+    return;
+  }
+
+  if (!stat.isDirectory()) return;
+
+  const remoteSubdir = `${remoteDir}/${name}`;
+  await execSSH(`mkdir -p '${remoteSubdir}'`, sshConfig, false, debug !== 'true');
+
+  const entries = await fs.promises.readdir(localPath, { withFileTypes: true });
+  for (const entry of entries) {
+    await scpTreeExcluding(sshHost, path.join(localPath, entry.name), remoteSubdir, excludeNames, debug, sshConfig);
+  }
+}
+
+async function scpToVM(sshHost, work, vmwork, osName, debug, disableCache) {
+  const sshConfig = { host: sshHost, osName, work, vmwork };
+  core.info(`==> Ensuring ${vmwork} exists...`);
+  await execSSH(`mkdir -p ${vmwork}`, sshConfig);
+
+  const excludeNote = disableCache ? "" : ", cache.tzst";
+  core.info(`==> Uploading files via scp (excluding _actions, _PipelineMapping${excludeNote})...`);
 
   const items = await fs.promises.readdir(work, { withFileTypes: true });
 
@@ -298,6 +356,15 @@ async function scpToVM(sshHost, work, vmwork, osName, debug) {
     }
 
     const localPath = path.join(work, itemName);
+
+    // `cache.tzst` is written by the background Save-Cache task and may vanish
+    // mid-transfer, which would fail `scp -r`. If the tree contains one, fall
+    // back to per-file scp that skips it. Skipped entirely when cache is disabled.
+    if (!disableCache && item.isDirectory() && await treeContainsFile(localPath, "cache.tzst")) {
+      await scpTreeExcluding(sshHost, localPath, vmwork, ["cache.tzst"], debug, sshConfig);
+      continue;
+    }
+
     const scpArgs = [
       "-O",
       "-r",
@@ -659,7 +726,14 @@ async function main() {
     }
 
     const sshWrapperPath = path.join(localBinDir, customShellName);
-    const sshWrapperContent = `#!/usr/bin/env sh\n\n{ echo 'if [ -d "$GITHUB_WORKSPACE" ]; then cd "$GITHUB_WORKSPACE"; fi'; cat "$1"; } | ssh ${sshHost} sh\n`;
+    const sshWrapperContent = `\
+#!/usr/bin/env sh
+
+{
+  echo 'if [ -d "$GITHUB_WORKSPACE" ]; then cd "$GITHUB_WORKSPACE"; fi'
+  cat "$1"
+} | ssh ${sshHost} sh
+`;
     fs.writeFileSync(sshWrapperPath, sshWrapperContent);
     fs.chmodSync(sshWrapperPath, '755');
 
@@ -685,10 +759,14 @@ async function main() {
       await execSSH(`mkdir -p ${vmwork}`, { ...sshConfig });
       if (sync === 'scp') {
         core.info("Syncing via SCP");
-        await scpToVM(sshHost, work, vmwork, osName, debug);
+        await scpToVM(sshHost, work, vmwork, osName, debug, disableCache);
       } else {
         core.info("Syncing via Rsync");
-        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", "--exclude", "_actions", "--exclude", "_PipelineMapping", "-e", "ssh", work + "/", `${sshHost}:${vmwork}/`];
+        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", "--exclude", "_actions", "--exclude", "_PipelineMapping"];
+        if (!disableCache) {
+          rsyncArgs.push("--exclude", "cache.tzst");
+        }
+        rsyncArgs.push("-e", "ssh", work + "/", `${sshHost}:${vmwork}/`);
         await exec.exec("rsync", rsyncArgs);
         if (debug) {
           core.startGroup("Debug: Checking VM work directory content");
