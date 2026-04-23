@@ -770,7 +770,7 @@ async function main() {
         await exec.exec("rsync", rsyncArgs);
         if (debug) {
           core.startGroup("Debug: Checking VM work directory content");
-          await execSSH(`tree -L 2 ${vmwork}`, { ...sshConfig });
+          await execSSH(`ls -lah ${vmwork}`, { ...sshConfig });
           core.endGroup();
         }
       }
