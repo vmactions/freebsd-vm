@@ -1,5 +1,7 @@
 # Run GitHub CI in {{VM_NAME}} ![Test](https://github.com/{{GITHUB_REPOSITORY}}/workflows/Test/badge.svg)
 
+See all the supported VMs: [VMActions.org](https://vmactions.org)
+
 Powered by [AnyVM.org](https://anyvm.org)
 
 Use this action to run your CI in {{VM_NAME}}.
