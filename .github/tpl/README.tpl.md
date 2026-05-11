@@ -1,4 +1,9 @@
-# Run GitHub CI in {{VM_NAME}} ![Test](https://github.com/{{GITHUB_REPOSITORY}}/workflows/Test/badge.svg)
+# Run GitHub CI in {{VM_NAME}} 
+
+![Test](https://github.com/{{GITHUB_REPOSITORY}}/workflows/Test/badge.svg)
+[![Release](https://img.shields.io/github/v/release/{{GITHUB_REPOSITORY}}?include_prereleases&sort=semver&display_name=tag)](https://github.com/{{GITHUB_REPOSITORY}}/releases)
+
+
 
 See all the supported VMs: [VMActions.org](https://vmactions.org)
 
