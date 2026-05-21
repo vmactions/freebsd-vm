@@ -762,7 +762,7 @@ async function main() {
         await scpToVM(sshHost, work, vmwork, osName, debug, disableCache);
       } else {
         core.info("Syncing via Rsync");
-        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", "--exclude", "_actions", "--exclude", "_PipelineMapping"];
+        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", "--rsync-path=PATH=$PATH:/usr/local/bin:/usr/pkg/bin rsync", "--exclude", "_actions", "--exclude", "_PipelineMapping"];
         if (!disableCache) {
           rsyncArgs.push("--exclude", "cache.tzst");
         }
@@ -877,7 +877,7 @@ async function main() {
             tarProc.on('error', reject);
           });
         } else {
-          await exec.exec("rsync", [debug === 'true' ? "-av" : "-a", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
+          await exec.exec("rsync", [debug === 'true' ? "-av" : "-a", "--rsync-path=PATH=$PATH:/usr/local/bin:/usr/pkg/bin rsync", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
         }
         core.endGroup();
       }
