@@ -158,6 +158,15 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false) {
   }
 }
 
+// Value for rsync's --rsync-path on the remote.
+// We wrap with `sh -c '...'` so the remote login shell (which may be csh on
+// FreeBSD/DragonFly root) only sees `sh -c <script> rsync ...` and just exec's
+// sh — the script itself is interpreted by sh (POSIX), so we can safely use
+// `PATH=$PATH:... rsync` syntax and let $PATH expand at remote runtime.
+// The appended dirs cover BSD pkg (/usr/local/{bin,sbin}), NetBSD pkgsrc
+// (/usr/pkg/{bin,sbin}) and Tribblix/MacPorts (/opt/local/{bin,sbin}).
+const REMOTE_RSYNC_PATH = `sh -c 'PATH=$PATH:/usr/local/bin:/usr/local/sbin:/usr/pkg/bin:/usr/pkg/sbin:/opt/local/bin:/opt/local/sbin exec rsync "$@"' rsync`;
+
 async function handleErrorWithDebug(sshHost, vncLink, debug) {
   const message = vncLink
     ? `Please open the remote vnc link for debugging: ${vncLink} . To finish debugging, you can run \`touch ~/continue\` in the VM. In the VM, you can use \`ssh host\` to access the host.`
@@ -762,7 +771,7 @@ async function main() {
         await scpToVM(sshHost, work, vmwork, osName, debug, disableCache);
       } else {
         core.info("Syncing via Rsync");
-        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", "--rsync-path=PATH=$PATH:/usr/local/bin:/usr/pkg/bin rsync", "--exclude", "_actions", "--exclude", "_PipelineMapping"];
+        const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", `--rsync-path=${REMOTE_RSYNC_PATH}`, "--exclude", "_actions", "--exclude", "_PipelineMapping"];
         if (!disableCache) {
           rsyncArgs.push("--exclude", "cache.tzst");
         }
@@ -877,7 +886,7 @@ async function main() {
             tarProc.on('error', reject);
           });
         } else {
-          await exec.exec("rsync", [debug === 'true' ? "-av" : "-a", "--rsync-path=PATH=$PATH:/usr/local/bin:/usr/pkg/bin rsync", "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
+          await exec.exec("rsync", [debug === 'true' ? "-av" : "-a", `--rsync-path=${REMOTE_RSYNC_PATH}`, "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
         }
         core.endGroup();
       }
