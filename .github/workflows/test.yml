@@ -106,7 +106,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -121,6 +121,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
         sync: sshfs
         run: |
           set -e
@@ -253,7 +254,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -268,6 +269,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
         sync: nfs
         run: |
           ls -lah $HOME/work
@@ -401,7 +403,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -416,6 +418,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
         sync: scp
         run: |
           ls -lah $HOME/work
@@ -536,7 +539,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -551,6 +554,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
         disable-cache: ${{ matrix.disableCache }}
         run: |
           env
@@ -677,7 +681,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ steps.check.outputs.run == 'true' }}
       id: test
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -692,6 +696,7 @@ jobs:
           udp:"8081": "80"
         usesh: true
         debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
         custom-shell-name: vmsh
         run: |
           env
@@ -753,7 +758,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         usesh: true
         debug: true
@@ -781,7 +786,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true 
-      uses: vmactions/freebsd-vm@a13bf633a50437b4d8316f804a32a1102866a8db
+      uses: vmactions/freebsd-vm@e595e321d7b3c9231f1f219865792c92a158e247
       with:
         usesh: true
         debug: true
