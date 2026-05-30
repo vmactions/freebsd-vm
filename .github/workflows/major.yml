@@ -1,4 +1,5 @@
 name: Update Major Release Tag
+run-name: Update major tag for ${{ github.ref_name }}
 
 on:
   workflow_dispatch:
