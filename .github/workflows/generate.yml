@@ -130,8 +130,32 @@ jobs:
           else
             printf "Update ${{ github.repository }} from base-vm\n\n%s\n" "$(cat /tmp/basevm-log.txt)" > /tmp/commit-msg.txt
             git commit -F /tmp/commit-msg.txt
-            git pull --rebase --autostash
-            git push
+            # test.yml pins the action to the "Generated from base-vm" commit (HEAD~1).
+            # The git pull --rebase below can rewrite that commit when Step 1 / Update
+            # Readme push to main at the same time, which would leave test.yml pointing
+            # at a SHA that no longer exists ("unable to resolve action"). So pin the
+            # hash AFTER each rebase and retry until the push lands cleanly.
+            REPO="${{ github.repository }}"
+            for attempt in 1 2 3 4 5; do
+              git pull --rebase --autostash
+              parent="$(git rev-parse HEAD~1)"
+              if [ -n "$parent" ]; then
+                sed -i "s#\(uses: ${REPO}@\)[0-9a-fA-F]\{7,40\}#\1${parent}#g" .github/workflows/test.yml
+              fi
+              if ! git diff --quiet -- .github/workflows/test.yml; then
+                git add .github/workflows/test.yml
+                git commit --amend --no-edit
+              fi
+              if git push; then
+                echo "Pushed on attempt ${attempt}; test.yml pinned to ${parent}"
+                break
+              fi
+              if [ "${attempt}" -eq 5 ]; then
+                echo "Failed to push after ${attempt} attempts"
+                exit 1
+              fi
+              echo "Push was contended, retrying (${attempt})..."
+            done
           fi
 
 
