@@ -117,13 +117,76 @@ function downloadFile(url, dest) {
   });
 }
 
-async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false) {
+// Run `ssh ... sh` once, piping `input` to its stdin. Returns the exit code.
+// If timeoutMs > 0 and the ssh process has not exited by then, it is killed
+// (SIGTERM, then SIGKILL after a short grace) and the promise rejects with a
+// timeout error. We spawn directly instead of using exec.exec() because
+// @actions/exec 1.1.1 silently ignores the AbortSignal option, so it cannot
+// interrupt a wedged ssh session (observed: Haiku ssh occasionally prints its
+// output but never tears down the channel, hanging the job for the GHA 6h max;
+// see haiku-vm run 71585652274).
+function runSSHOnce(args, sshHost, input, silent, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const child = spawn("ssh", [...args, sshHost, "sh"], { stdio: ["pipe", "pipe", "pipe"] });
+    let settled = false;
+    let timedOut = false;
+    let overallTimer = null;
+    let killTimer = null;
+
+    const cleanup = () => {
+      if (overallTimer) clearTimeout(overallTimer);
+      if (killTimer) clearTimeout(killTimer);
+    };
+
+    if (timeoutMs > 0) {
+      overallTimer = setTimeout(() => {
+        timedOut = true;
+        try { child.kill("SIGTERM"); } catch (e) { /* already gone */ }
+        // Escalate if ssh does not die promptly.
+        killTimer = setTimeout(() => { try { child.kill("SIGKILL"); } catch (e) { /* already gone */ } }, 5000);
+      }, timeoutMs);
+    }
+
+    child.stdout.on("data", (d) => { if (!silent) process.stdout.write(d); });
+    child.stderr.on("data", (d) => { if (!silent) process.stderr.write(d); });
+
+    child.on("error", (err) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(err);
+    });
+    child.on("close", (code) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (timedOut) {
+        reject(new Error(`ssh timed out after ${timeoutMs}ms`));
+      } else {
+        resolve(code == null ? 1 : code);
+      }
+    });
+
+    // Feed the command script to ssh stdin and close it so the remote sh sees EOF.
+    child.stdin.on("error", () => { /* ignore EPIPE if ssh already exited */ });
+    child.stdin.write(input);
+    child.stdin.end();
+  });
+}
+
+async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false, options = {}) {
   core.info(`Exec SSH: ${cmd}`);
 
   const sshHost = sshConfig.host;
   const osName = sshConfig.osName;
   const work = sshConfig.work;
   const vmwork = sshConfig.vmwork;
+  // timeoutMs: kill the ssh child if it has not finished after this many ms (0 = no timeout).
+  // retries:   number of additional attempts on timeout / failure (0 = no retry).
+  // Use these only for internal/idempotent commands -- user-supplied run/prepare scripts
+  // can legitimately run for hours, so leave them at the defaults (unbounded, no retry).
+  const timeoutMs = options.timeoutMs || 0;
+  const retries = Math.max(0, options.retries || 0);
 
   // Standard options for CI/CD
   const args = [
@@ -144,17 +207,26 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false) {
     }
   }
 
-  try {
-    // Pipe prefix exports + command to sh stdin
-    const fullCmd = "set -eu\n" + envExports + cmd;
-    await exec.exec("ssh", [...args, sshHost, "sh"], {
-      input: Buffer.from(fullCmd),
-      silent: silent
-    });
-  } catch (err) {
-    if (!ignoreReturn) {
-      throw err;
+  // Pipe prefix exports + command to sh stdin
+  const fullCmd = "set -eu\n" + envExports + cmd;
+  const input = Buffer.from(fullCmd);
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const code = await runSSHOnce(args, sshHost, input, silent, timeoutMs);
+      if (code === 0) {
+        return;
+      }
+      lastErr = new Error(`ssh exited with code ${code}`);
+    } catch (err) {
+      lastErr = err;
     }
+    if (attempt < retries) {
+      core.warning(`SSH ${lastErr && lastErr.message}, retrying (${attempt + 1}/${retries})...`);
+    }
+  }
+  if (!ignoreReturn) {
+    throw lastErr;
   }
 }
 
@@ -764,8 +836,12 @@ async function main() {
         }
       }
 
-      await execSSH(`rm -rf ${vmwork}`, { ...sshConfig });
-      await execSSH(`mkdir -p ${vmwork}`, { ...sshConfig });
+      // Short, idempotent housekeeping commands -- wrap in timeout+retry so a
+      // wedged ssh session does not hang the whole job for the GHA 6-hour max.
+      // (Observed: ssh produced its output but never disconnected; see haiku-vm
+      // run 26416580769.) User-supplied prepare/run scripts stay unbounded.
+      await execSSH(`rm -rf ${vmwork}`, { ...sshConfig }, false, false, { timeoutMs: 120000, retries: 2 });
+      await execSSH(`mkdir -p ${vmwork}`, { ...sshConfig }, false, false, { timeoutMs: 60000, retries: 2 });
       if (sync === 'scp') {
         core.info("Syncing via SCP");
         await scpToVM(sshHost, work, vmwork, osName, debug, disableCache);
@@ -779,7 +855,7 @@ async function main() {
         await exec.exec("rsync", rsyncArgs);
         if (debug) {
           core.startGroup("Debug: Checking VM work directory content");
-          await execSSH(`ls -lah ${vmwork}`, { ...sshConfig });
+          await execSSH(`ls -lah ${vmwork}`, { ...sshConfig }, false, false, { timeoutMs: 60000, retries: 2 });
           core.endGroup();
         }
       }
@@ -787,7 +863,11 @@ async function main() {
     }
     if (sync !== 'no') {
       core.startGroup('Creating workdir symlink');
-      await execSSH(`ln -s ${vmwork} $HOME/work`, { ...sshConfig });
+      // Make the ln retry-safe without deleting $HOME/work: if a prior attempt
+      // already created the symlink but the ssh channel hung, just skip re-linking
+      // instead of erroring on "File exists". The work tree itself is cleaned
+      // earlier by `rm -rf ${vmwork}`.
+      await execSSH(`[ -L "$HOME/work" ] || ln -s ${vmwork} $HOME/work`, { ...sshConfig }, false, false, { timeoutMs: 60000, retries: 2 });
       core.endGroup();
     }
     try {
