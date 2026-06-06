@@ -84,7 +84,9 @@ jobs:
           #if only hash id in test.yml changes, skip
           currentHash="$(cat .github/workflows/test.yml | grep -i "uses: ${{ github.repository }}" | head -1 | cut -d @ -f 2)"
           echo "Current hash: $currentHash"
-          lastHash="$(git rev-parse 'HEAD~1')"
+          # On a brand-new repo with a single commit, HEAD~1 does not exist.
+          # Under `bash -e` that aborts the step (exit 128), so fall back to HEAD.
+          lastHash="$(git rev-parse 'HEAD~1' 2>/dev/null || git rev-parse HEAD)"
           echo "Last hash: $lastHash"
           oldHash="$lastHash"
           echo "OLD_HASH: $OLD_HASH"
