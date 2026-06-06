@@ -12,6 +12,10 @@ on:
       - '.github/workflows/generate.yml'
 
     
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   generate:
     runs-on: ubuntu-latest
@@ -139,7 +143,16 @@ jobs:
             # hash AFTER each rebase and retry until the push lands cleanly.
             REPO="${{ github.repository }}"
             for attempt in 1 2 3 4 5; do
-              git pull --rebase --autostash
+              if ! git pull --rebase --autostash; then
+                # A concurrent generate run already pushed a regenerated tree;
+                # the only conflict is the self-referencing pin in test.yml and
+                # that run's result is equivalent. Defer to it instead of
+                # letting the rebase conflict fail this step under `bash -e`.
+                git rebase --abort || true
+                git reset --hard origin/main
+                echo "Concurrent generate detected; deferring to origin/main"
+                break
+              fi
               parent="$(git rev-parse HEAD~1)"
               if [ -n "$parent" ]; then
                 sed -i "s#\(uses: ${REPO}@\)[0-9a-fA-F]\{7,40\}#\1${parent}#g" .github/workflows/test.yml
