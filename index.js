@@ -233,7 +233,7 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false, opt
 // Value for rsync's --rsync-path on the remote.
 // We wrap with `sh -c '...'` so the remote login shell (which may be csh on
 // FreeBSD/DragonFly root) only sees `sh -c <script> rsync ...` and just exec's
-// sh — the script itself is interpreted by sh (POSIX), so we can safely use
+// sh -- the script itself is interpreted by sh (POSIX), so we can safely use
 // `PATH=$PATH:... rsync` syntax and let $PATH expand at remote runtime.
 // The appended dirs cover BSD pkg (/usr/local/{bin,sbin}), NetBSD pkgsrc
 // (/usr/pkg/{bin,sbin}) and Tribblix/MacPorts (/opt/local/{bin,sbin}).
@@ -477,12 +477,19 @@ async function main() {
     const envs = core.getInput("envs");
     const prepare = core.getInput("prepare");
     const run = core.getInput("run");
-    const sync = core.getInput("sync").toLowerCase() || 'rsync';
+    let sync = core.getInput("sync").toLowerCase() || 'rsync';
     const copyback = core.getInput("copyback").toLowerCase();
     const syncTime = core.getInput("sync-time").toLowerCase();
     const disableCache = core.getInput("disable-cache").toLowerCase() === 'true';
     const debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
     const vncPassword = core.getInput("vnc-password");
+
+    // BlissOS (Android) guests ship no rsync and have no package manager to
+    // install one over ssh; scp (baked into the image) is the only file-copy
+    // channel, so the rsync default silently degrades to scp there.
+    if (!core.getInput("sync") && inputOsName.includes('blissos')) {
+      sync = 'scp';
+    }
 
     const work = path.join(process.env["HOME"], "work");
     let vmwork = path.join(process.env["HOME"], "work");
