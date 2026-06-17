@@ -195,7 +195,7 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false, opt
   ];
 
   let envExports = "";
-  if (osName === 'haiku' && work && vmwork) {
+  if ((osName === 'haiku' || osName === 'blissos') && work && vmwork) {
     const workRegex = new RegExp(work.replace(/\\/g, '\\\\'), 'gi');
     const envNames = (sshConfig.envs || '').split(/\s+/).filter(Boolean);
     for (const key of Object.keys(process.env)) {
@@ -495,6 +495,13 @@ async function main() {
     let vmwork = path.join(process.env["HOME"], "work");
     if (inputOsName === 'haiku') {
       vmwork = `/boot/home/${os.userInfo().username}/work`;
+    } else if (inputOsName === 'blissos') {
+      // BlissOS (Android) logs in as root via dropbear with HOME=/data/dropbear.
+      // The system partition is read-only at runtime, so /data/dropbear is the
+      // only writable, persistent path; the runner's $HOME/work does not exist
+      // in the guest. (Same situation as Haiku: env paths are rewritten to this
+      // vmwork by the injection block in execSSH.)
+      vmwork = `/data/dropbear/work`;
     }
 
     // 2. Load Config
@@ -781,8 +788,10 @@ async function main() {
     if (envs) {
       sendEnvs.push(envs);
     }
-    // Only use wildcard GITHUB_* if not on Haiku (since we use injection on Haiku)
-    if (osName !== 'haiku') {
+    // Only use wildcard GITHUB_* if not on Haiku/BlissOS. On those we inject the
+    // GITHUB_* vars over the sh stdin instead, rewriting the runner work path to
+    // the guest vmwork path (see the injection block in execSSH).
+    if (osName !== 'haiku' && osName !== 'blissos') {
       sendEnvs.push("GITHUB_*");
     }
     sendEnvs.push("CI");
@@ -936,7 +945,13 @@ async function main() {
         core.startGroup("Copyback artifacts");
         if (sync === 'scp') {
           let useCpio = true;
-          if (osName === 'haiku') {
+          if (osName === 'blissos') {
+            // Toybox cpio ignores `-H ustar` and emits a newc cpio stream that
+            // the host `tar -xf` rejects ("This does not look like a tar
+            // archive"). Toybox tar writes a standard, host-readable archive,
+            // so copy back with tar directly instead of cpio.
+            useCpio = false;
+          } else if (osName === 'haiku') {
             try {
               await execSSH("command -v cpio", sshConfig);
             } catch (e) {
