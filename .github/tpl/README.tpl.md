@@ -1,7 +1,6 @@
 # Run GitHub CI in {{VM_NAME}} 
 
 ![Test](https://github.com/{{GITHUB_REPOSITORY}}/workflows/Test/badge.svg)
-[![Release](https://img.shields.io/github/v/release/{{GITHUB_REPOSITORY}}?include_prereleases&sort=semver&display_name=tag)](https://github.com/{{GITHUB_REPOSITORY}}/releases)
 
 
 
@@ -346,8 +345,7 @@ We use Qemu to run the {{VM_NAME}} VM.
 
 # Upcoming features:
 
-1. Support other architectures, eg: sparc64 or powerpc64.
-2. Support MacOS runner and Windows runner.
+1. Support MacOS runner and Windows runner.
 
 
 
