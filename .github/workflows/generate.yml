@@ -1,7 +1,7 @@
 name: "Step 2, Generate the project from BaseVM"
 on:
   schedule:
-    - cron: '10 1 * * *'
+    - cron: '20 22 * * *'
   workflow_dispatch:
   push:
     branches:
