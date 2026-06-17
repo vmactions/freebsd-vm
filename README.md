@@ -1,7 +1,6 @@
 # Run GitHub CI in FreeBSD 
 
 ![Test](https://github.com/vmactions/freebsd-vm/workflows/Test/badge.svg)
-[![Release](https://img.shields.io/github/v/release/vmactions/freebsd-vm?include_prereleases&sort=semver&display_name=tag)](https://github.com/vmactions/freebsd-vm/releases)
 
 
 
@@ -20,7 +19,10 @@ All the supported releases are here:
 
 | Release | x86_64  | aarch64(arm64) | riscv64  | powerpc64 |
 |---------|---------|---------|-----------------|-----------|
-| 15.1 (RC3)   |  ✅     |  ✅    |           ✅    |     ✅    |
+| 15.1    |  ✅     |  ✅    |           ✅    |     ✅    |
+| 15.1-xfce    |  ✅     |  —    |           —    |     —    |
+| 15.1-gnome    |  ✅     |  —    |           —    |     —    |
+| 15.1-kde6    |  ✅     |  —    |           —    |     —    |
 | 15.0    |  ✅     |  ✅    |           ✅    |     ✅    |
 | 15.0-xfce    |  ✅     |  —    |           —    |     —    |
 | 15.0-gnome    |  ✅     |  —    |           —    |     —    |
@@ -233,7 +235,7 @@ The VM is using all the cpu cores of the host by default, you can use `cpu` opti
 
 ## 5. Select release
 
-It uses [the FreeBSD 15.0](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
+It uses [the FreeBSD 15.1](conf/default.release.conf) by default, you can use `release` option to use another version of FreeBSD:
 
 ```yaml
 ...
@@ -401,8 +403,7 @@ We use Qemu to run the FreeBSD VM.
 
 # Upcoming features:
 
-1. Support other architectures, eg: sparc64 or powerpc64.
-2. Support MacOS runner and Windows runner.
+1. Support MacOS runner and Windows runner.
 
 
 
