@@ -477,19 +477,15 @@ async function main() {
     const envs = core.getInput("envs");
     const prepare = core.getInput("prepare");
     const run = core.getInput("run");
-    let sync = core.getInput("sync").toLowerCase() || 'rsync';
+    // The effective default is resolved against the conf's VM_SYNC_METHODS
+    // once the config is loaded (see below); empty here means "use the conf
+    // default".
+    let sync = core.getInput("sync").toLowerCase();
     const copyback = core.getInput("copyback").toLowerCase();
     const syncTime = core.getInput("sync-time").toLowerCase();
     const disableCache = core.getInput("disable-cache").toLowerCase() === 'true';
     const debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
     const vncPassword = core.getInput("vnc-password");
-
-    // BlissOS (Android) guests ship no rsync and have no package manager to
-    // install one over ssh; scp (baked into the image) is the only file-copy
-    // channel, so the rsync default silently degrades to scp there.
-    if (!core.getInput("sync") && inputOsName.includes('blissos')) {
-      sync = 'scp';
-    }
 
     const work = path.join(process.env["HOME"], "work");
     let vmwork = path.join(process.env["HOME"], "work");
@@ -537,6 +533,21 @@ async function main() {
     const anyvmVersion = env['ANYVM_VERSION'];
     const builderVersion = env['BUILDER_VERSION'];
     const osName = inputOsName;
+
+    // Which sync methods this release/arch supports is declared in the builder
+    // conf and baked into this conf as VM_SYNC_METHODS (comma separated; the
+    // first entry is the default method). Resolve the effective sync here.
+    const syncMethods = (env['VM_SYNC_METHODS'] || 'rsync')
+      .split(',').map((m) => m.trim()).filter(Boolean);
+    if (!sync) {
+      sync = syncMethods[0] || 'rsync';
+    } else if (sync !== 'no' && !syncMethods.includes(sync)) {
+      // 'no' is the sentinel for "do not sync", not a transport the image
+      // has to support, so it is always allowed.
+      throw new Error(
+        `sync method '${sync}' is not supported by ${osName} ${confName}. ` +
+        `Supported methods: ${syncMethods.join(', ')}`);
+    }
 
     core.startGroup("Configuration AnyVM.org");
     core.info(`Using ANYVM_VERSION: ${anyvmVersion}`);
