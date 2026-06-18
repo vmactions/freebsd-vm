@@ -1,16 +1,1 @@
-          - release: "13.2"
-            arch: aarch64
-          - release: "13.2"
-            arch: riscv64
-          - release: "12.4"
-            arch: aarch64
-          - release: "12.4"
-            arch: riscv64
-          - release: "14.0"
-            arch: aarch64
-          - release: "14.0"
-            arch: riscv64
-          - release: "14.1"
-            arch: riscv64
-          - release: "13.3"
-            arch: riscv64
+          # Manual matrix excludes only; combos with no conf are auto-excluded.
