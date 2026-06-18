@@ -57,6 +57,100 @@ jobs:
           mkdir -p .github/tpl
           cat base-vm/.github/tpl/README.tpl.md >.github/tpl/README.tpl.md
 
+      - name: Bake sync methods from builder confs
+        run: |
+          # Each conf/<release>[-<arch>].conf pins a BUILDER_VERSION. The
+          # matching builder conf declares VM_SYNC_METHODS (comma separated;
+          # first = default). Copy that value into the local conf so the action
+          # and test workflow can read it without a network call at run time.
+          os="freebsd"
+          for f in conf/*.conf; do
+            base="$(basename "$f" .conf)"
+            case "$base" in
+              default.release) continue ;;
+            esac
+            bv="$( . "$f"; printf '%s' "$BUILDER_VERSION" )"
+            if [ -z "$bv" ]; then
+              echo "${base}: no BUILDER_VERSION, skip"
+              continue
+            fi
+            url="https://raw.githubusercontent.com/anyvm-org/${os}-builder/v${bv}/conf/${os}-${base}.conf"
+            methods="$(curl -fsSL "$url" 2>/dev/null | sed -n 's/^[[:space:]]*VM_SYNC_METHODS=//p' | tr -d '"' | tail -n 1)"
+            if [ -z "$methods" ]; then
+              echo "${base}: no VM_SYNC_METHODS in ${url}, leaving conf as-is"
+              continue
+            fi
+            if grep -q '^VM_SYNC_METHODS=' "$f"; then
+              sed -i "s|^VM_SYNC_METHODS=.*|VM_SYNC_METHODS=\"${methods}\"|" "$f"
+            else
+              printf '\nVM_SYNC_METHODS="%s"\n' "${methods}" >> "$f"
+            fi
+            echo "${base}: VM_SYNC_METHODS=\"${methods}\""
+          done
+
+      - name: Compute sync method map and missing-arch excludes
+        run: |
+          # Turn the per-conf VM_SYNC_METHODS into two values for the renderer:
+          #   VM_SYNC_METHODS_MAP    - {"<arch>":["method",...]} keyed by matrix.arch,
+          #                            so test.yml gates each sync job with `if:`.
+          #   VM_TEST_EXCLUDE_MISSING - matrix excludes for release/arch combos
+          #                            that have no conf (so they never spawn).
+          . conf/default.release.conf
+          def="$DEFAULT_RELEASE"
+
+          # non-x86_64 arches the test matrix covers (keep in sync with test.tpl.yml)
+          ARCHES="aarch64 riscv64 powerpc64 sparc64 ppc64le s390x"
+
+          # methods (comma list) for an arch suffix, from the default release
+          # conf; fall back to any release that has that arch.
+          methods_for() {
+            a="$1"
+            if [ -n "$a" ]; then cf="conf/${def}-${a}.conf"; else cf="conf/${def}.conf"; fi
+            if [ -n "$a" ] && [ ! -e "$cf" ]; then
+              cf="$(ls conf/*-"$a".conf 2>/dev/null | head -n 1)"
+            fi
+            [ -n "$cf" ] && [ -e "$cf" ] && ( . "$cf"; printf '%s' "$VM_SYNC_METHODS" )
+          }
+
+          # comma list -> JSON array: rsync,scp -> ["rsync","scp"] (empty -> [])
+          to_json() {
+            printf '['
+            _first=1
+            _old_ifs="$IFS"; IFS=','
+            for _m in $1; do
+              _m="$(printf '%s' "$_m" | tr -d ' ')"
+              [ -z "$_m" ] && continue
+              [ "$_first" = 1 ] || printf ','
+              printf '"%s"' "$_m"
+              _first=0
+            done
+            IFS="$_old_ifs"
+            printf ']'
+          }
+
+          map="{\"x86_64\":$(to_json "$(methods_for '')")"
+          for a in $ARCHES; do
+            map="${map},\"${a}\":$(to_json "$(methods_for "$a")")"
+          done
+          printf '%s}' "$map" > .github/data/sync-map.json
+          echo "sync-map: $(cat .github/data/sync-map.json)"
+
+          : > .github/data/exclude-missing.txt
+          for r in $(sed 's/[",]/ /g' conf/test.releases) ""; do
+            rc="$r"; [ -z "$rc" ] && rc="$def"
+            for a in $ARCHES; do
+              if [ ! -e "conf/${rc}-${a}.conf" ]; then
+                printf '          - release: "%s"\n            arch: %s\n' "$r" "$a" >> .github/data/exclude-missing.txt
+              fi
+            done
+          done
+          echo "exclude-missing:"; cat .github/data/exclude-missing.txt
+
+          # expose both to template-render via the datafile (idempotent)
+          df=".github/data/datafile.ini"
+          grep -q '^VM_SYNC_METHODS_MAP=' "$df" || printf '\nVM_SYNC_METHODS_MAP=@.github/data/sync-map.json\n' >> "$df"
+          grep -q '^VM_TEST_EXCLUDE_MISSING=' "$df" || printf '\nVM_TEST_EXCLUDE_MISSING=@.github/data/exclude-missing.txt\n' >> "$df"
+
       - name: Generate files
         uses: anyvm-org/template-render@v0.0.4
         with:
@@ -126,6 +220,10 @@ jobs:
             .github/tpl/README.tpl.md \
             .github/FUNDING.yml \
             .github/data/base-vm-hash.txt \
+            .github/data/datafile.ini \
+            .github/data/sync-map.json \
+            .github/data/exclude-missing.txt \
+            conf \
             package.json \
             package-lock.json \
             index.js \
