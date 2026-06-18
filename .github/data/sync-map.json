@@ -1,0 +1,1 @@
+{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["scp"],"powerpc64":["rsync","scp","sshfs","nfs"],"sparc64":[],"ppc64le":[],"s390x":[]}
