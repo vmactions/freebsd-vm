@@ -314,8 +314,12 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
       pkgs.push("qemu-system-arm", "qemu-efi-aarch64", "ipxe-qemu");
     } else {
       // qemu-system-misc covers riscv64 (and the other "misc" targets), but
-      // ppc64 / sparc64 / s390x ship in their own packages on Ubuntu.
-      pkgs.push("qemu-system-misc", "u-boot-qemu", "ipxe-qemu");
+      // ppc64 / sparc64 / s390x ship in their own packages on Ubuntu. These
+      // only *recommend* seabios (which --no-install-recommends skips), unlike
+      // qemu-system-x86 which depends on it; install it explicitly so the VGA
+      // romfiles (e.g. vgabios-stdvga.bin, used by the pseries default display)
+      // are present.
+      pkgs.push("qemu-system-misc", "u-boot-qemu", "ipxe-qemu", "seabios");
       if (arch === 'powerpc64' || arch === 'ppc64' || arch === 'ppc64le') {
         pkgs.push("qemu-system-ppc");
       } else if (arch === 'sparc64' || arch === 'sparc') {
