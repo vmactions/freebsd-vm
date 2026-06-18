@@ -313,7 +313,16 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
     } else if (arch === 'aarch64' || arch === 'arm64') {
       pkgs.push("qemu-system-arm", "qemu-efi-aarch64", "ipxe-qemu");
     } else {
+      // qemu-system-misc covers riscv64 (and the other "misc" targets), but
+      // ppc64 / sparc64 / s390x ship in their own packages on Ubuntu.
       pkgs.push("qemu-system-misc", "u-boot-qemu", "ipxe-qemu");
+      if (arch === 'powerpc64' || arch === 'ppc64' || arch === 'ppc64le') {
+        pkgs.push("qemu-system-ppc");
+      } else if (arch === 'sparc64' || arch === 'sparc') {
+        pkgs.push("qemu-system-sparc");
+      } else if (arch === 's390x') {
+        pkgs.push("qemu-system-s390x");
+      }
     }
 
     if (sync === 'nfs') {
@@ -534,16 +543,18 @@ async function main() {
     const builderVersion = env['BUILDER_VERSION'];
     const osName = inputOsName;
 
-    // Which sync methods this release/arch supports is declared in the builder
-    // conf and baked into this conf as VM_SYNC_METHODS (comma separated; the
-    // first entry is the default method). Resolve the effective sync here.
-    const syncMethods = (env['VM_SYNC_METHODS'] || 'rsync')
+    // VM_SYNC_METHODS is the builder's declared support list for this
+    // release/arch (comma separated, first = default), baked into the conf.
+    // When the conf doesn't declare it (e.g. an older builder version that
+    // predates this field), keep the legacy behavior: default to rsync and
+    // don't reject anything.
+    const syncMethods = (env['VM_SYNC_METHODS'] || '')
       .split(',').map((m) => m.trim()).filter(Boolean);
     if (!sync) {
       sync = syncMethods[0] || 'rsync';
-    } else if (sync !== 'no' && !syncMethods.includes(sync)) {
-      // 'no' is the sentinel for "do not sync", not a transport the image
-      // has to support, so it is always allowed.
+    } else if (sync !== 'no' && syncMethods.length && !syncMethods.includes(sync)) {
+      // Only reject when the conf actually declares a list and this method is
+      // not in it. 'no' (do-not-sync) is always allowed.
       throw new Error(
         `sync method '${sync}' is not supported by ${osName} ${confName}. ` +
         `Supported methods: ${syncMethods.join(', ')}`);
