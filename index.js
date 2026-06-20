@@ -239,6 +239,27 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false, opt
 // (/usr/pkg/{bin,sbin}) and Tribblix/MacPorts (/opt/local/{bin,sbin}).
 const REMOTE_RSYNC_PATH = `sh -c 'PATH=$PATH:/usr/local/bin:/usr/local/sbin:/usr/pkg/bin:/usr/pkg/sbin:/opt/local/bin:/opt/local/sbin exec rsync "$@"' rsync`;
 
+// On GitHub's x86_64 runners only an x86_64/amd64 guest gets KVM acceleration;
+// every other guest arch runs under full TCG emulation and is dramatically
+// slower (sparc64, riscv64, powerpc64, s390x, aarch64-on-x64, ...). Writing a
+// large source tree (e.g. a big node_modules) into such a VM can stall long
+// enough that ssh's keepalive declares the server dead mid-transfer
+// ("Timeout, server 127.0.0.1 not responding"), killing rsync with a broken
+// pipe (exit 255). `arch` is already normalized here: '' means x86_64/amd64.
+function isSlowEmulatedArch(arch) {
+  return !!arch && arch !== 'x86_64' && arch !== 'amd64';
+}
+
+// ssh transport handed to rsync for slow emulated guests: stay connected
+// through long stalls instead of giving up after the default keepalive window.
+// 30s interval x 60 unanswered probes = ~30 min of grace before disconnecting.
+const RSYNC_SSH_SLOW = "ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=60 -o ConnectTimeout=120";
+// rsync's own I/O timeout (seconds) for slow guests: a defined upper bound
+// matching the ssh grace above, so a genuinely wedged sync still fails while a
+// slow-but-progressing one is not aborted. Fast (KVM) arches keep rsync's
+// default of no --timeout.
+const RSYNC_SLOW_TIMEOUT = "1800";
+
 async function handleErrorWithDebug(sshHost, vncLink, debug) {
   const message = vncLink
     ? `Please open the remote vnc link for debugging: ${vncLink} . To finish debugging, you can run \`touch ~/continue\` in the VM. In the VM, you can use \`ssh host\` to access the host.`
@@ -889,11 +910,15 @@ async function main() {
         await scpToVM(sshHost, work, vmwork, osName, debug, disableCache);
       } else {
         core.info("Syncing via Rsync");
+        const slowArch = isSlowEmulatedArch(arch);
         const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", `--rsync-path=${REMOTE_RSYNC_PATH}`, "--exclude", "_actions", "--exclude", "_PipelineMapping"];
         if (!disableCache) {
           rsyncArgs.push("--exclude", "cache.tzst");
         }
-        rsyncArgs.push("-e", "ssh", work + "/", `${sshHost}:${vmwork}/`);
+        if (slowArch) {
+          rsyncArgs.push("--timeout", RSYNC_SLOW_TIMEOUT);
+        }
+        rsyncArgs.push("-e", slowArch ? RSYNC_SSH_SLOW : "ssh", work + "/", `${sshHost}:${vmwork}/`);
         await exec.exec("rsync", rsyncArgs);
         if (debug) {
           core.startGroup("Debug: Checking VM work directory content");
@@ -1014,7 +1039,13 @@ async function main() {
             tarProc.on('error', reject);
           });
         } else {
-          await exec.exec("rsync", [debug === 'true' ? "-av" : "-a", `--rsync-path=${REMOTE_RSYNC_PATH}`, "--exclude", ".git", "-e", "ssh", `${sshHost}:${vmwork}/`, `${work}/`]);
+          const slowArchBack = isSlowEmulatedArch(arch);
+          const copybackArgs = [debug === 'true' ? "-av" : "-a", `--rsync-path=${REMOTE_RSYNC_PATH}`, "--exclude", ".git"];
+          if (slowArchBack) {
+            copybackArgs.push("--timeout", RSYNC_SLOW_TIMEOUT);
+          }
+          copybackArgs.push("-e", slowArchBack ? RSYNC_SSH_SLOW : "ssh", `${sshHost}:${vmwork}/`, `${work}/`);
+          await exec.exec("rsync", copybackArgs);
         }
         core.endGroup();
       }
