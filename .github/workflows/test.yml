@@ -47,21 +47,11 @@ jobs:
             arch: "s390x"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
-            arch: aarch64
-          - release: "13.2"
-            arch: riscv64
-          - release: "13.2"
-            arch: powerpc64
-          - release: "13.2"
             arch: sparc64
           - release: "13.2"
             arch: ppc64le
           - release: "13.2"
             arch: s390x
-          - release: "13.3"
-            arch: riscv64
-          - release: "13.3"
-            arch: powerpc64
           - release: "13.3"
             arch: sparc64
           - release: "13.3"
@@ -70,8 +60,6 @@ jobs:
             arch: s390x
           - release: "13.4"
             arch: riscv64
-          - release: "13.4"
-            arch: powerpc64
           - release: "13.4"
             arch: sparc64
           - release: "13.4"
@@ -85,29 +73,17 @@ jobs:
           - release: "13.5"
             arch: s390x
           - release: "14.0"
-            arch: aarch64
-          - release: "14.0"
-            arch: riscv64
-          - release: "14.0"
-            arch: powerpc64
-          - release: "14.0"
             arch: sparc64
           - release: "14.0"
             arch: ppc64le
           - release: "14.0"
             arch: s390x
           - release: "14.1"
-            arch: riscv64
-          - release: "14.1"
-            arch: powerpc64
-          - release: "14.1"
             arch: sparc64
           - release: "14.1"
             arch: ppc64le
           - release: "14.1"
             arch: s390x
-          - release: "14.2"
-            arch: powerpc64
           - release: "14.2"
             arch: sparc64
           - release: "14.2"
@@ -166,7 +142,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -262,21 +238,11 @@ jobs:
             arch: "s390x"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
-            arch: aarch64
-          - release: "13.2"
-            arch: riscv64
-          - release: "13.2"
-            arch: powerpc64
-          - release: "13.2"
             arch: sparc64
           - release: "13.2"
             arch: ppc64le
           - release: "13.2"
             arch: s390x
-          - release: "13.3"
-            arch: riscv64
-          - release: "13.3"
-            arch: powerpc64
           - release: "13.3"
             arch: sparc64
           - release: "13.3"
@@ -285,8 +251,6 @@ jobs:
             arch: s390x
           - release: "13.4"
             arch: riscv64
-          - release: "13.4"
-            arch: powerpc64
           - release: "13.4"
             arch: sparc64
           - release: "13.4"
@@ -300,29 +264,17 @@ jobs:
           - release: "13.5"
             arch: s390x
           - release: "14.0"
-            arch: aarch64
-          - release: "14.0"
-            arch: riscv64
-          - release: "14.0"
-            arch: powerpc64
-          - release: "14.0"
             arch: sparc64
           - release: "14.0"
             arch: ppc64le
           - release: "14.0"
             arch: s390x
           - release: "14.1"
-            arch: riscv64
-          - release: "14.1"
-            arch: powerpc64
-          - release: "14.1"
             arch: sparc64
           - release: "14.1"
             arch: ppc64le
           - release: "14.1"
             arch: s390x
-          - release: "14.2"
-            arch: powerpc64
           - release: "14.2"
             arch: sparc64
           - release: "14.2"
@@ -373,7 +325,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -470,21 +422,11 @@ jobs:
             arch: "s390x"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
-            arch: aarch64
-          - release: "13.2"
-            arch: riscv64
-          - release: "13.2"
-            arch: powerpc64
-          - release: "13.2"
             arch: sparc64
           - release: "13.2"
             arch: ppc64le
           - release: "13.2"
             arch: s390x
-          - release: "13.3"
-            arch: riscv64
-          - release: "13.3"
-            arch: powerpc64
           - release: "13.3"
             arch: sparc64
           - release: "13.3"
@@ -493,8 +435,6 @@ jobs:
             arch: s390x
           - release: "13.4"
             arch: riscv64
-          - release: "13.4"
-            arch: powerpc64
           - release: "13.4"
             arch: sparc64
           - release: "13.4"
@@ -508,29 +448,17 @@ jobs:
           - release: "13.5"
             arch: s390x
           - release: "14.0"
-            arch: aarch64
-          - release: "14.0"
-            arch: riscv64
-          - release: "14.0"
-            arch: powerpc64
-          - release: "14.0"
             arch: sparc64
           - release: "14.0"
             arch: ppc64le
           - release: "14.0"
             arch: s390x
           - release: "14.1"
-            arch: riscv64
-          - release: "14.1"
-            arch: powerpc64
-          - release: "14.1"
             arch: sparc64
           - release: "14.1"
             arch: ppc64le
           - release: "14.1"
             arch: s390x
-          - release: "14.2"
-            arch: powerpc64
           - release: "14.2"
             arch: sparc64
           - release: "14.2"
@@ -588,7 +516,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -671,21 +599,11 @@ jobs:
             arch: "s390x"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
-            arch: aarch64
-          - release: "13.2"
-            arch: riscv64
-          - release: "13.2"
-            arch: powerpc64
-          - release: "13.2"
             arch: sparc64
           - release: "13.2"
             arch: ppc64le
           - release: "13.2"
             arch: s390x
-          - release: "13.3"
-            arch: riscv64
-          - release: "13.3"
-            arch: powerpc64
           - release: "13.3"
             arch: sparc64
           - release: "13.3"
@@ -694,8 +612,6 @@ jobs:
             arch: s390x
           - release: "13.4"
             arch: riscv64
-          - release: "13.4"
-            arch: powerpc64
           - release: "13.4"
             arch: sparc64
           - release: "13.4"
@@ -709,29 +625,17 @@ jobs:
           - release: "13.5"
             arch: s390x
           - release: "14.0"
-            arch: aarch64
-          - release: "14.0"
-            arch: riscv64
-          - release: "14.0"
-            arch: powerpc64
-          - release: "14.0"
             arch: sparc64
           - release: "14.0"
             arch: ppc64le
           - release: "14.0"
             arch: s390x
           - release: "14.1"
-            arch: riscv64
-          - release: "14.1"
-            arch: powerpc64
-          - release: "14.1"
             arch: sparc64
           - release: "14.1"
             arch: ppc64le
           - release: "14.1"
             arch: s390x
-          - release: "14.2"
-            arch: powerpc64
           - release: "14.2"
             arch: sparc64
           - release: "14.2"
@@ -782,7 +686,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -873,21 +777,11 @@ jobs:
             arch: "s390x"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
-            arch: aarch64
-          - release: "13.2"
-            arch: riscv64
-          - release: "13.2"
-            arch: powerpc64
-          - release: "13.2"
             arch: sparc64
           - release: "13.2"
             arch: ppc64le
           - release: "13.2"
             arch: s390x
-          - release: "13.3"
-            arch: riscv64
-          - release: "13.3"
-            arch: powerpc64
           - release: "13.3"
             arch: sparc64
           - release: "13.3"
@@ -896,8 +790,6 @@ jobs:
             arch: s390x
           - release: "13.4"
             arch: riscv64
-          - release: "13.4"
-            arch: powerpc64
           - release: "13.4"
             arch: sparc64
           - release: "13.4"
@@ -911,29 +803,17 @@ jobs:
           - release: "13.5"
             arch: s390x
           - release: "14.0"
-            arch: aarch64
-          - release: "14.0"
-            arch: riscv64
-          - release: "14.0"
-            arch: powerpc64
-          - release: "14.0"
             arch: sparc64
           - release: "14.0"
             arch: ppc64le
           - release: "14.0"
             arch: s390x
           - release: "14.1"
-            arch: riscv64
-          - release: "14.1"
-            arch: powerpc64
-          - release: "14.1"
             arch: sparc64
           - release: "14.1"
             arch: ppc64le
           - release: "14.1"
             arch: s390x
-          - release: "14.2"
-            arch: powerpc64
           - release: "14.2"
             arch: sparc64
           - release: "14.2"
@@ -984,7 +864,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1061,7 +941,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         usesh: true
         debug: true
@@ -1089,7 +969,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@76bc9d8b85526d6a5dd4e08bf496a2256a9c6ddd
+      uses: vmactions/freebsd-vm@95c759211f02aa9427f0a9b61e3487840ea0b84c
       with:
         usesh: true
         debug: true
