@@ -300,7 +300,7 @@ If the time in VM is not correct, You can use `sync-time` option to synchronize 
 
 ## 9. Disable cache
 
-By default, the action caches `apt` packages on the host and VM images/artifacts. You can use the `disableCache` option to disable this:
+By default, the action caches `apt` packages on the host and VM images/artifacts. You can use the `disable-cache` option to disable this:
 
 ```yml
 ...
