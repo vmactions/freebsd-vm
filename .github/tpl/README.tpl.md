@@ -257,6 +257,11 @@ Support custom shell:
 
 The custom shell will automatically `cd` into `$GITHUB_WORKSPACE` if it exists before running your commands.
 
+How file changes propagate between the host and the VM depends on the `sync` method:
+
+- `sync: nfs` or `sync: sshfs`: the workspace is a live mount, so file changes are visible on both sides immediately.
+- `sync: rsync` or `sync: scp`: the wrapper syncs the workspace to the VM before each custom shell step and syncs it back afterwards, so files created in the VM are available to later host steps (and vice versa). `rsync` transfers are incremental; `scp` copies the whole workspace each time, which can be slow for large workspaces.
+
 You can also use `custom-shell-name` to set a custom name for the shell wrapper:
 
 ```yaml

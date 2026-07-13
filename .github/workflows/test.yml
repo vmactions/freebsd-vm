@@ -612,6 +612,25 @@ jobs:
         cat ${GITHUB_ENV}
         echo "TEST_ENV=$TEST_ENV";
         [ "$TEST_ENV" = "abc" ];
+    # File round-trip through the custom shell with sync scp (same as the
+    # rsync test in testcustomshell). Skipped on Haiku/BlissOS: their guests
+    # get no GITHUB_WORKSPACE (SendEnv excluded), so the custom shell does not
+    # run in the synced work tree.
+    - name: Prepare custom shell sync test file on host
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') && !contains(github.repository, 'haiku') && !contains(github.repository, 'blissos') }}
+      run: |
+        echo "host-data" > hostfile.txt
+    - name: Test custom shell file sync
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') && !contains(github.repository, 'haiku') && !contains(github.repository, 'blissos') }}
+      shell: freebsd {0}
+      run: |
+        [ "$(cat hostfile.txt)" = "host-data" ]
+        echo "vm-data" > vmfile.txt
+    - name: Verify custom shell copyback on host
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') && !contains(github.repository, 'haiku') && !contains(github.repository, 'blissos') }}
+      run: |
+        set -e
+        [ "$(cat vmfile.txt)" = "vm-data" ]
     - name: Collect VM debug artifacts
       if: failure()
       run: |
@@ -1009,6 +1028,26 @@ jobs:
           sysctl hw.usermem
 
 
+    # File round-trip through the custom shell with sync rsync: a file created
+    # on the host must be visible inside the VM, and a file created in the VM
+    # must come back to the host (vmactions/freebsd-vm#128). Skipped on Haiku:
+    # its guest gets no GITHUB_WORKSPACE (SendEnv excluded), so the custom
+    # shell does not run in the synced work tree.
+    - name: Prepare custom shell sync test file on host
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') && !contains(github.repository, 'haiku') }}
+      run: |
+        echo "host-data" > hostfile.txt
+    - name: Test custom shell file sync
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') && !contains(github.repository, 'haiku') }}
+      shell: vmsh {0}
+      run: |
+        [ "$(cat hostfile.txt)" = "host-data" ]
+        echo "vm-data" > vmfile.txt
+    - name: Verify custom shell copyback on host
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') && !contains(github.repository, 'haiku') }}
+      run: |
+        set -e
+        [ "$(cat vmfile.txt)" = "vm-data" ]
     - name: Collect VM debug artifacts
       if: failure()
       run: |

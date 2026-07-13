@@ -891,7 +891,87 @@ async function main() {
     }
 
     const sshWrapperPath = path.join(localBinDir, customShellName);
-    const sshWrapperContent = `\
+    // With sync rsync/scp the work tree is copied into the VM once at action
+    // start and copied back once when this main step ends -- files created by
+    // a later custom-shell step would otherwise stay in the VM and never
+    // reach the host (vmactions/freebsd-vm#128). Make every custom-shell step
+    // self-syncing: push the work tree before the command and pull it back
+    // after. rsync transfers are incremental; scp guests have no rsync in the
+    // image, so they reuse the main sync's transports (scp -O push, cpio/tar
+    // over ssh pull) as full copies. nfs/sshfs are live mounts and keep the
+    // plain wrapper.
+    let sshWrapperContent;
+    if (sync === 'rsync') {
+      const shellSlowArch = isSlowEmulatedArch(arch);
+      const shellRsyncSsh = shellSlowArch ? RSYNC_SSH_SLOW : "ssh";
+      const shellRsyncTimeout = shellSlowArch ? ` --timeout ${RSYNC_SLOW_TIMEOUT}` : "";
+      const shellPushFlags = debug === 'true' ? "-avrtopg" : "-artopg";
+      const shellPullFlags = debug === 'true' ? "-av" : "-a";
+      const shellCacheExclude = disableCache ? "" : " --exclude cache.tzst";
+      // Escaped for embedding in a single-quoted sh string.
+      const shellRsyncPath = REMOTE_RSYNC_PATH.replace(/'/g, "'\\''");
+      // The pull-back respects copyback=false, like the final copyback. A
+      // failed pull turns a successful command into a failed step, but never
+      // masks the command's own exit code.
+      const shellPull = copyback !== 'false' ? `
+if ! rsync ${shellPullFlags} --rsync-path "$RSYNC_PATH" --exclude .git${shellRsyncTimeout} -e '${shellRsyncSsh}' '${sshHost}:${vmwork}/' '${work}/'; then
+  if [ "$rc" -eq 0 ]; then rc=1; fi
+fi
+` : "";
+      sshWrapperContent = `\
+#!/usr/bin/env sh
+
+RSYNC_PATH='${shellRsyncPath}'
+
+rsync ${shellPushFlags} --rsync-path "$RSYNC_PATH" --exclude _actions --exclude _PipelineMapping${shellCacheExclude}${shellRsyncTimeout} -e '${shellRsyncSsh}' '${work}/' '${sshHost}:${vmwork}/' || exit 1
+
+{
+  echo 'if [ -d "$GITHUB_WORKSPACE" ]; then cd "$GITHUB_WORKSPACE"; fi'
+  cat "$1"
+} | ssh ${sshHost} sh
+rc=$?
+${shellPull}
+exit $rc
+`;
+    } else if (sync === 'scp') {
+      // Same per-OS archive choices as the final copyback block: cpio -H
+      // ustar by default, plain tar on BlissOS (toybox cpio ignores -H
+      // ustar), runtime cpio probe on Haiku.
+      let shellPullRemote;
+      if (osName === 'blissos') {
+        shellPullRemote = `cd "${vmwork}" && tar -cf - --exclude .git .`;
+      } else if (osName === 'haiku') {
+        shellPullRemote = `cd "${vmwork}" && if command -v cpio >/dev/null 2>&1; then find . -name .git -prune -o -print | cpio -o -H ustar; else tar -cf - --exclude .git .; fi`;
+      } else {
+        shellPullRemote = `cd "${vmwork}" && find . -name .git -prune -o -print | cpio -o -H ustar`;
+      }
+      const shellScpFlags = debug === 'true' ? "-O -r -p" : "-O -r -p -q";
+      const shellScpPull = copyback !== 'false' ? `
+if ! ssh ${sshHost} '${shellPullRemote}' | tar -xf - -C '${work}'; then
+  if [ "$rc" -eq 0 ]; then rc=1; fi
+fi
+` : "";
+      sshWrapperContent = `\
+#!/usr/bin/env sh
+
+for item in '${work}'/* '${work}'/.[!.]* '${work}'/..?*; do
+  [ -e "$item" ] || continue
+  case "$item" in
+    */_actions|*/_PipelineMapping|*/cache.tzst) continue ;;
+  esac
+  scp ${shellScpFlags} -o StrictHostKeyChecking=no "$item" '${sshHost}:${vmwork}/' || exit 1
+done
+
+{
+  echo 'if [ -d "$GITHUB_WORKSPACE" ]; then cd "$GITHUB_WORKSPACE"; fi'
+  cat "$1"
+} | ssh ${sshHost} sh
+rc=$?
+${shellScpPull}
+exit $rc
+`;
+    } else {
+      sshWrapperContent = `\
 #!/usr/bin/env sh
 
 {
@@ -899,6 +979,7 @@ async function main() {
   cat "$1"
 } | ssh ${sshHost} sh
 `;
+    }
     fs.writeFileSync(sshWrapperPath, sshWrapperContent);
     fs.chmodSync(sshWrapperPath, '755');
 
