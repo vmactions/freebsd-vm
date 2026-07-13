@@ -29,6 +29,20 @@ function isAnyvmCacheSupported(version) {
   return false;
 }
 
+// Check if anyvm.py supports the 'sys-nfs' sync method (>=0.4.9). Older
+// versions don't know that argument, so we must keep using plain 'nfs'.
+function isAnyvmSysNfsSupported(version) {
+  if (!version) return false;
+  const parts = version.split('.');
+  const major = parseInt(parts[0], 10) || 0;
+  const minor = parseInt(parts[1], 10) || 0;
+  const patch = parseInt((parts[2] || '0'), 10) || 0;
+  if (major > 0) return true;
+  if (major === 0 && minor > 4) return true;
+  if (major === 0 && minor === 4 && patch >= 9) return true;
+  return false;
+}
+
 // Helper to expand shell-style variables
 function expandVars(str, env) {
   if (!str) {
@@ -748,7 +762,14 @@ async function main() {
         //we will sync later
         isScpOrRsync = true;
       } else {
-        args.push("--sync", sync);
+        // On a Linux host use the host kernel NFS server ('sys-nfs') instead of
+        // the portable userspace 'nfs' server; other hosts keep 'nfs'. Only when
+        // anyvm.py is new enough to understand 'sys-nfs' (>=0.4.9).
+        let syncArg = sync;
+        if (sync === 'nfs' && process.platform === 'linux' && isAnyvmSysNfsSupported(anyvmVersion)) {
+          syncArg = 'sys-nfs';
+        }
+        args.push("--sync", syncArg);
         args.push("-v", `${work}:${vmwork}`);
       }
     }
