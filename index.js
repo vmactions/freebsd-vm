@@ -2,6 +2,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as cache from '@actions/cache';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -87,48 +88,71 @@ function parseConfig(filePath, initialEnv = {}) {
   return env;
 }
 
-function downloadFile(url, dest) {
+function downloadFileOnce(url, dest) {
   return new Promise((resolve, reject) => {
-    core.info(`Downloading ${url} to ${dest}`);
     const file = fs.createWriteStream(dest);
+    let settled = false;
+
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      file.destroy();
+      fs.unlink(dest, () => { });
+      reject(err);
+    };
 
     const handleResponse = (response) => {
       if (response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 307 || response.statusCode === 308) {
         if (response.headers.location) {
           core.info(`Redirecting to ${response.headers.location}`);
-          https.get(response.headers.location, handleResponse).on('error', (err) => {
-            fs.unlink(dest, () => { });
-            reject(err);
-          });
+          https.get(response.headers.location, handleResponse).on('error', fail);
           return;
         }
       }
 
       if (response.statusCode !== 200) {
-        fs.unlink(dest, () => { });
-        reject(new Error(`Failed to download ${url}: Status Code ${response.statusCode}`));
+        fail(new Error(`Failed to download ${url}: Status Code ${response.statusCode}`));
         return;
       }
 
+      // A socket reset mid-body errors on the response stream, not the
+      // request; without this the file never 'finish'es and we hang forever.
+      response.on('error', fail);
       response.pipe(file);
     };
 
-    const request = https.get(url, handleResponse);
-
-    request.on('error', (err) => {
-      fs.unlink(dest, () => { });
-      reject(err);
-    });
+    https.get(url, handleResponse).on('error', fail);
 
     file.on('finish', () => {
+      if (settled) return;
+      settled = true;
       file.close(() => resolve());
     });
 
-    file.on('error', (err) => {
-      fs.unlink(dest, () => { });
-      reject(err);
-    });
+    file.on('error', fail);
   });
+}
+
+// Transient network errors (e.g. `read ECONNRESET` from raw.githubusercontent.com,
+// which killed freebsd-vm run 29292440869) should not fail the whole job:
+// retry a few times with a short growing backoff before giving up.
+async function downloadFile(url, dest, retries = 4) {
+  core.info(`Downloading ${url} to ${dest}`);
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      await downloadFileOnce(url, dest);
+      return;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        const delayMs = 3000 * (attempt + 1);
+        core.warning(`Download failed: ${err.message}, retrying in ${delayMs / 1000}s (${attempt + 1}/${retries})...`);
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+  }
+  throw lastErr;
 }
 
 // Run `ssh ... sh` once, piping `input` to its stdin. Returns the exit code.
@@ -252,6 +276,27 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false, opt
 // The appended dirs cover BSD pkg (/usr/local/{bin,sbin}), NetBSD pkgsrc
 // (/usr/pkg/{bin,sbin}) and Tribblix/MacPorts (/opt/local/{bin,sbin}).
 const REMOTE_RSYNC_PATH = `sh -c 'PATH=$PATH:/usr/local/bin:/usr/local/sbin:/usr/pkg/bin:/usr/pkg/sbin:/opt/local/bin:/opt/local/sbin exec rsync "$@"' rsync`;
+
+// In-guest poweroff commands used by cache-after-prepare to shut the VM down
+// cleanly before caching the prepared qcow2. Values copied from each
+// anyvm-org/<os>-builder conf's VM_SHUTDOWN_CMD (the builders run the same
+// command to shut down every image build). A VM_SHUTDOWN_CMD baked into the
+// release conf takes precedence over this fallback table.
+const SHUTDOWN_CMDS = {
+  freebsd: "/sbin/shutdown -p now",
+  ghostbsd: "/sbin/shutdown -p now",
+  midnightbsd: "/sbin/shutdown -p now",
+  dragonflybsd: "/sbin/shutdown -p now",
+  netbsd: "/sbin/shutdown -p now",
+  openbsd: "/sbin/shutdown -p now",
+  solaris: "shutdown -y -i5 -g0",
+  omnios: "shutdown -y -i5 -g0",
+  openindiana: "shutdown -y -i5 -g0",
+  tribblix: "/usr/sbin/poweroff",
+  haiku: "shutdown -q",
+  blissos: "reboot -p",
+  ubuntu: "shutdown -h now",
+};
 
 // On GitHub's x86_64 runners only an x86_64/amd64 guest gets KVM acceleration;
 // every other guest arch runs under full TCG emulation and is dramatically
@@ -532,6 +577,7 @@ async function main() {
     const copyback = core.getInput("copyback").toLowerCase();
     const syncTime = core.getInput("sync-time").toLowerCase();
     const disableCache = core.getInput("disable-cache").toLowerCase() === 'true';
+    const cacheAfterPrepareInput = core.getInput("cache-after-prepare").toLowerCase() === 'true';
     const debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
     const vncPassword = core.getInput("vnc-password");
 
@@ -645,6 +691,23 @@ async function main() {
     const restoreKeys = [cacheKey];
     let restoredKey = null;
 
+    // cache-after-prepare: cache the qcow2 again after 'prepare' has run, so
+    // the next run with the same prepare script boots the prepared image and
+    // skips 'prepare' entirely. The key includes a hash of the prepare script
+    // and the sync method, so changing either falls back to the base image.
+    // Not usable on win32 hosts (the shutdown wait relies on pgrep/pkill).
+    let cacheAfterPrepare = cacheAfterPrepareInput;
+    if (cacheAfterPrepare && (!prepare || !cacheSupported || disableCache || process.platform === 'win32')) {
+      core.info(`Ignoring cache-after-prepare (prepare: ${!!prepare}, cacheSupported: ${cacheSupported}, disableCache: ${disableCache}, platform: ${process.platform})`);
+      cacheAfterPrepare = false;
+    }
+    const prepHash = crypto.createHash('sha256').update(`${prepare}\n${sync}`).digest('hex').slice(0, 16);
+    // Deliberately NOT a prefix-extension of cacheKey ("-prep-" replaces the
+    // "-v2" tail position), so a prefix restore of the base key can never
+    // match a prepared-image entry and vice versa.
+    const prepCacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-prep-${prepHash}-v2`;
+    let prepRestored = false;
+
     core.startGroup("Cache");
     if (cacheSupported && !disableCache) {
       cacheDir = cacheDirInput ? expandVars(cacheDirInput, process.env) : path.join(os.tmpdir(), cacheKey);
@@ -652,54 +715,84 @@ async function main() {
         fs.mkdirSync(cacheDir, { recursive: true });
       }
 
-      try {
-        const restoreStart = Date.now();
+      if (cacheAfterPrepare) {
         try {
-          restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
-        } catch (e) {
-          core.warning(`cache.restoreCache() threw error: ${e.message}`);
-        }
-        const restoreElapsed = Date.now() - restoreStart;
-        core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
-
-        if (restoredKey) {
-          core.info(`Cache restored: ${restoredKey}`);
-          if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
-            core.info('Restored cache dir preview (debug)');
-            try {
-              await exec.exec('ls', ['-R', cacheDir]);
-            } catch (e) {
-              core.warning(`Listing restored cache dir failed: ${e.message}`);
-            }
+          const prepKeyHit = await cache.restoreCache([cacheDir], prepCacheKey);
+          if (prepKeyHit) {
+            prepRestored = true;
+            // Also disables the base-image background save below: cacheDir
+            // now holds the prepared image, not the pristine base image.
+            restoredKey = prepKeyHit;
+            core.info(`Prepared-image cache restored: ${prepKeyHit}`);
           }
-        } else {
-          // Detect if restore failed silently but left files (e.g. tar error)
-          const files = fs.readdirSync(cacheDir).filter(f => f !== '.' && f !== '..');
-          if (files.length > 0) {
-            core.warning(`Cache hit might have occurred but restoration failed (corrupted or partial download). Clearing cache directory.`);
-            try {
+        } catch (e) {
+          core.warning(`Prepared-image cache restore failed: ${e.message}`);
+        }
+        if (!prepRestored) {
+          core.info(`No prepared-image cache for ${prepCacheKey}; will run 'prepare' and cache the image afterwards`);
+          // Clear partial-restore leftovers before the base-image restore.
+          try {
+            if (fs.readdirSync(cacheDir).length > 0) {
+              core.warning('Prepared-image cache restore left files behind. Clearing cache directory.');
               fs.rmSync(cacheDir, { recursive: true, force: true });
               fs.mkdirSync(cacheDir, { recursive: true });
-            } catch (err) {
-              core.warning(`Failed to clear corrupted cache directory: ${err.message}`);
             }
-          } else {
-            core.info('No cache hit for VM cache directory');
+          } catch (err) {
+            core.warning(`Failed to clear cache directory: ${err.message}`);
           }
         }
-      } catch (e) {
-        core.warning(`Cache restore process failed: ${e.message}`);
       }
 
-      if (!restoredKey) {
+      if (!prepRestored) {
         try {
-          if (cacheDir && fs.existsSync(cacheDir)) {
-            core.info(`Clearing cache directory for a fresh start: ${cacheDir}`);
-            fs.rmSync(cacheDir, { recursive: true, force: true });
-            fs.mkdirSync(cacheDir, { recursive: true });
+          const restoreStart = Date.now();
+          try {
+            restoredKey = await cache.restoreCache([cacheDir], cacheKey, restoreKeys);
+          } catch (e) {
+            core.warning(`cache.restoreCache() threw error: ${e.message}`);
           }
-        } catch (err) {
-          core.warning(`Failed to clear cache directory: ${err.message}`);
+          const restoreElapsed = Date.now() - restoreStart;
+          core.info(`cache.restoreCache() took ${restoreElapsed}ms`);
+
+          if (restoredKey) {
+            core.info(`Cache restored: ${restoredKey}`);
+            if (debug === 'true' && cacheDir && fs.existsSync(cacheDir)) {
+              core.info('Restored cache dir preview (debug)');
+              try {
+                await exec.exec('ls', ['-R', cacheDir]);
+              } catch (e) {
+                core.warning(`Listing restored cache dir failed: ${e.message}`);
+              }
+            }
+          } else {
+            // Detect if restore failed silently but left files (e.g. tar error)
+            const files = fs.readdirSync(cacheDir).filter(f => f !== '.' && f !== '..');
+            if (files.length > 0) {
+              core.warning(`Cache hit might have occurred but restoration failed (corrupted or partial download). Clearing cache directory.`);
+              try {
+                fs.rmSync(cacheDir, { recursive: true, force: true });
+                fs.mkdirSync(cacheDir, { recursive: true });
+              } catch (err) {
+                core.warning(`Failed to clear corrupted cache directory: ${err.message}`);
+              }
+            } else {
+              core.info('No cache hit for VM cache directory');
+            }
+          }
+        } catch (e) {
+          core.warning(`Cache restore process failed: ${e.message}`);
+        }
+
+        if (!restoredKey) {
+          try {
+            if (cacheDir && fs.existsSync(cacheDir)) {
+              core.info(`Clearing cache directory for a fresh start: ${cacheDir}`);
+              fs.rmSync(cacheDir, { recursive: true, force: true });
+              fs.mkdirSync(cacheDir, { recursive: true });
+            }
+          } catch (err) {
+            core.warning(`Failed to clear cache directory: ${err.message}`);
+          }
         }
       }
 
@@ -709,6 +802,7 @@ async function main() {
       core.info(`anyvm cache-dir skip cache (cacheSupported: ${cacheSupported}, disableCache: ${disableCache}).`);
     }
     core.endGroup();
+    core.setOutput("cache-after-prepare-hit", prepRestored ? "true" : "false");
 
     if (builderVersion) {
       args.push("--builder", builderVersion);
@@ -780,7 +874,15 @@ async function main() {
     let sshHost = osName;
     args.push("--ssh-name", sshHost);
 
-    args.push("--snapshot");
+    // With cache-after-prepare on a prepared-cache miss the first boot must be
+    // writable, so 'prepare' persists into the qcow2 copy in data-dir; the VM
+    // is then shut down, rebooted with --snapshot from that prepared image,
+    // and the image is cached (see the block after the 'prepare' step). Every
+    // other boot keeps the usual throwaway --snapshot mode.
+    const firstBootWritable = cacheAfterPrepare && !prepRestored;
+    if (!firstBootWritable) {
+      args.push("--snapshot");
+    }
     if (osName === 'haiku') {
       args.push("--vga", "std");
     }
@@ -810,6 +912,7 @@ async function main() {
     core.endGroup();
 
     // Save cache for anyvm cache directory immediately after VM start/prepare
+    let baseSavePromise = null;
     if (cacheSupported && !disableCache) {
       const saveVmCache = async () => {
         activeBackgroundTasks++;
@@ -842,7 +945,8 @@ async function main() {
           activeBackgroundTasks--;
         }
       };
-      backgroundPromises.push(saveVmCache());
+      baseSavePromise = saveVmCache();
+      backgroundPromises.push(baseSavePromise);
     }
 
     core.startGroup("SSH Config");
@@ -1039,11 +1143,15 @@ exit $rc
       await execSSH(`[ -L "$HOME/work" ] || ln -s ${vmwork} $HOME/work`, { ...sshConfig }, false, false, { timeoutMs: 60000, retries: 2 });
       core.endGroup();
     }
+    let prepareRanOk = false;
     try {
       core.startGroup("Run 'prepare' in VM");
-      if (prepare) {
+      if (prepare && prepRestored) {
+        core.info(`Skipping 'prepare': prepared-image cache was restored (${prepCacheKey})`);
+      } else if (prepare) {
         const prepareCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${prepare}` : prepare;
         await execSSH(prepareCmd, { ...sshConfig });
+        prepareRanOk = true;
       }
       core.endGroup();
     } catch (err) {
@@ -1056,6 +1164,131 @@ exit $rc
         await handleErrorWithDebug(sshHost, vncLink, debug);
       } else {
         throw err;
+      }
+    }
+
+    // cache-after-prepare, prepared-cache miss: the VM has been running
+    // writable, so 'prepare' is now baked into the qcow2 in data-dir. Shut the
+    // guest down cleanly, reboot it in the usual --snapshot mode from that
+    // prepared image, and cache the image in the background while 'run'
+    // executes. Skipped when 'prepare' failed (debug-on-error path): a
+    // half-prepared image must never be cached.
+    if (firstBootWritable && prepareRanOk) {
+      core.startGroup("Restarting VM to cache the prepared image");
+      const shutdownCmd = env['VM_SHUTDOWN_CMD'] || SHUTDOWN_CMDS[osName] || 'poweroff';
+      core.info(`Shutting down the VM: ${shutdownCmd}`);
+      // The shutdown kills the very ssh connection it runs over; ignore the
+      // exit code and cap the session so a half-open channel cannot hang here.
+      await execSSH(shutdownCmd, { ...sshConfig }, true, false, { timeoutMs: 120000 });
+
+      core.info("Waiting for QEMU to exit...");
+      let cleanShutdown = false;
+      const shutdownDeadline = Date.now() + 1800000;
+      for (;;) {
+        const pgrepCode = await exec.exec('pgrep', ['-f', 'qemu-system-'], { ignoreReturnCode: true, silent: true });
+        if (pgrepCode !== 0) {
+          cleanShutdown = true;
+          break;
+        }
+        if (Date.now() > shutdownDeadline) {
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 5000));
+      }
+      if (!cleanShutdown) {
+        core.warning('VM did not power off within 30 minutes; force-killing QEMU and skipping the prepared-image cache save');
+        await exec.exec('pkill', ['-f', 'qemu-system-'], { ignoreReturnCode: true });
+        await new Promise((r) => setTimeout(r, 10000));
+      }
+
+      // anyvm writes ssh aliases as ~/.ssh/config.d/<port>.conf and
+      // <vm_name>.conf. The reboot may pick a DIFFERENT ssh port (the old one
+      // can linger in TIME_WAIT and fail anyvm's free-port probe), so it
+      // generates new files while the first boot's files still claim the same
+      // aliases -- and ssh reads config.d includes in lexical order with
+      // first-match-wins, resolving the alias to the dead port (tribblix-vm
+      // run 29497155045: alias kept port 10022, rebooted VM listened on
+      // 10023). Drop every config.d entry naming our alias before rebooting.
+      const sshConfD = path.join(process.env["HOME"], ".ssh", "config.d");
+      if (fs.existsSync(sshConfD)) {
+        const aliasRe = new RegExp(`^Host\\b.*\\b${sshHost}`, 'm');
+        for (const fname of fs.readdirSync(sshConfD)) {
+          if (!fname.endsWith('.conf')) {
+            continue;
+          }
+          const staleConf = path.join(sshConfD, fname);
+          try {
+            if (aliasRe.test(fs.readFileSync(staleConf, 'utf8'))) {
+              fs.unlinkSync(staleConf);
+              core.info(`Removed stale ssh config: ${staleConf}`);
+            }
+          } catch (e) {
+            core.warning(`Failed to check/remove ${staleConf}: ${e.message}`);
+          }
+        }
+      }
+
+      // Reboot from the prepared qcow2 left in data-dir: drop --cache-dir (in
+      // snapshot mode anyvm would boot the pristine cached image instead of
+      // the prepared one) and add --snapshot.
+      const rebootArgs = [];
+      for (let i = 0; i < args.length; i++) {
+        if (args[i] === '--cache-dir') {
+          i++;
+          continue;
+        }
+        rebootArgs.push(args[i]);
+      }
+      rebootArgs.push('--snapshot');
+      await exec.exec("python3", rebootArgs, options);
+      core.endGroup();
+
+      if (cleanShutdown) {
+        const savePreparedCache = async () => {
+          activeBackgroundTasks++;
+          core.info("Save prepared-image cache (Background)");
+          try {
+            // The base-image save tars cacheDir; wait for it before
+            // overwriting the qcow2 inside the same directory.
+            if (baseSavePromise) {
+              await baseSavePromise;
+            }
+            const findQcow2 = (dir) => {
+              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                const p = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                  const found = findQcow2(p);
+                  if (found) return found;
+                } else if (entry.name.endsWith('.qcow2')) {
+                  return p;
+                }
+              }
+              return null;
+            };
+            const preparedQcow2 = findQcow2(datadir);
+            if (!preparedQcow2) {
+              throw new Error(`no qcow2 found under ${datadir}`);
+            }
+            // Reading the image is safe: the rebooted VM runs with -snapshot,
+            // so QEMU never writes to it. Mirror the data-dir layout inside
+            // cacheDir so anyvm finds the image at the same relative path.
+            const destQcow2 = path.join(cacheDir, path.relative(datadir, preparedQcow2));
+            fs.mkdirSync(path.dirname(destQcow2), { recursive: true });
+            await fs.promises.copyFile(preparedQcow2, destQcow2);
+            await cache.saveCache([cacheDir], prepCacheKey);
+            core.info(`Prepared-image cache saved: ${prepCacheKey}`);
+          } catch (e) {
+            if (e.message && (e.message.includes('already exists') ||
+              e.message.includes('Cache already exists'))) {
+              core.info(`Prepared-image cache save skipped (benign): ${e.message}`);
+            } else {
+              core.warning(`Prepared-image cache save failed: ${e.message}`);
+            }
+          } finally {
+            activeBackgroundTasks--;
+          }
+        };
+        backgroundPromises.push(savePreparedCache());
       }
     }
 
@@ -1084,13 +1317,17 @@ exit $rc
       // Wait for background tasks to finish before copyback to avoid file conflicts
       if (backgroundPromises.length > 0 && activeBackgroundTasks > 0) {
         core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete before copyback (max 60s)...`);
-        const timeoutPromise = new Promise((resolve) => setTimeout(() => {
-          if (activeBackgroundTasks > 0) {
-            core.warning(`Background tasks timed out after 60s. Continuing with copyback...`);
-          }
-          resolve();
-        }, 60000));
+        let copybackWaitTimer = null;
+        const timeoutPromise = new Promise((resolve) => {
+          copybackWaitTimer = setTimeout(() => {
+            if (activeBackgroundTasks > 0) {
+              core.warning(`Background tasks timed out after 60s. Continuing with copyback...`);
+            }
+            resolve();
+          }, 60000);
+        });
         await Promise.race([Promise.allSettled(backgroundPromises), timeoutPromise]);
+        clearTimeout(copybackWaitTimer);
       }
 
       const workspace = process.env['GITHUB_WORKSPACE'];
@@ -1154,16 +1391,26 @@ exit $rc
     }
 
     if (backgroundPromises.length > 0) {
+      // The prepared-image cache save may still be compressing/uploading a
+      // multi-GB qcow2; give it more time than the usual 60s so the freshly
+      // prepared image is not lost right before the job ends.
+      const finalWaitMs = firstBootWritable ? 1800000 : 60000;
       if (activeBackgroundTasks > 0) {
-        core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete (max 60s)...`);
+        core.info(`Waiting for ${activeBackgroundTasks} background tasks to complete (max ${finalWaitMs / 1000}s)...`);
       }
-      const timeoutPromise = new Promise((resolve) => setTimeout(() => {
-        if (activeBackgroundTasks > 0) {
-          core.warning(`Background tasks timed out after 60s. Continuing...`);
-        }
-        resolve();
-      }, 60000));
+      // Keep the timer handle so it can be cleared: a pending setTimeout would
+      // hold the node event loop (and thus the job) open until it fires.
+      let finalWaitTimer = null;
+      const timeoutPromise = new Promise((resolve) => {
+        finalWaitTimer = setTimeout(() => {
+          if (activeBackgroundTasks > 0) {
+            core.warning(`Background tasks timed out after ${finalWaitMs / 1000}s. Continuing...`);
+          }
+          resolve();
+        }, finalWaitMs);
+      });
       await Promise.race([Promise.allSettled(backgroundPromises), timeoutPromise]);
+      clearTimeout(finalWaitTimer);
     }
 
   } catch (error) {

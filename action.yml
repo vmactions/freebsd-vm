@@ -55,6 +55,10 @@ inputs:
     description: 'Disable caching for apt packages and VM images. Default is false.'
     required: false
     default: 'false'
+  cache-after-prepare:
+    description: 'Cache the VM image again after the prepare step, so later runs with the same prepare script skip it and start directly at run. Default is false.'
+    required: false
+    default: 'false'
   debug-on-error:
     description: 'If true, enable remote VNC and you can connect to the VM via web VNC page to debug. Default is false.'
     required: false
@@ -66,8 +70,11 @@ inputs:
   custom-shell-name:
     description: 'Custom shell name for the VM shell wrapper script.'
     required: false
+outputs:
+  cache-after-prepare-hit:
+    description: 'true when a prepared VM image cache was restored and the prepare step was skipped, false otherwise.'
 branding:
-  icon: 'activity'  
+  icon: 'activity'
   color: 'green'
 
 runs:

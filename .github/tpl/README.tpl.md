@@ -318,7 +318,34 @@ By default, the action caches `apt` packages on the host and VM images/artifacts
 ```
 
 
-## 10. Debug on error
+## 10. Cache the VM image after prepare
+
+The `prepare` step (installing packages etc.) normally runs on every build. With `cache-after-prepare: true`, the action shuts the VM down cleanly after `prepare` has finished, caches the prepared VM image, and boots the VM again before `run`. Later runs with the same `prepare` script restore the prepared image, skip `prepare` entirely, and start directly at `run`:
+
+```yml
+...
+    - name: Test
+      id: test
+      uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
+      with:
+        cache-after-prepare: true
+        prepare: |
+          {{VM_PREPARE}}
+        run: |
+          ...
+...
+```
+
+Notes:
+
+- The cache key includes a hash of the `prepare` script and the `sync` method, so changing either of them rebuilds the prepared image from the base image.
+- The source tree is still synchronized into the VM on every run; only the `prepare` step is skipped.
+- The first run (or any run after `prepare` changes) takes longer: the VM is shut down after `prepare`, the prepared image is cached, and the VM boots again before `run`.
+- The action output `cache-after-prepare-hit` is `true` when a prepared image was restored and `prepare` was skipped.
+- The option is ignored when `disable-cache: true` is set or when `prepare` is empty.
+
+
+## 11. Debug on error
 
 If you want to debug the VM when the `prepare` or `run` step fails, you can set `debug-on-error: true`.
 
