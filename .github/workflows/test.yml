@@ -142,7 +142,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -346,7 +346,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -558,7 +558,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -768,7 +768,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -967,7 +967,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1080,7 +1080,16 @@ jobs:
   # prepare's effect inside the VM. The marker file counts how many times
   # 'prepare' ever ran in the booted image: it must be exactly 1 in both jobs
   # (a second 'prepare' run on the cached image would make it 2).
+  #
+  # Both jobs run AFTER the whole matrix: the matrix jobs save dozens of
+  # 1-2GB base caches, and on big repos (freebsd) that churn blows the 10GB
+  # repo cache budget and LRU-evicts the prepared entry while the hit job
+  # sits in the runner queue. Running last, seed and hit execute back to
+  # back with no concurrent saves in this run. !cancelled() keeps them
+  # running even when a flaky matrix job fails.
   testcacheafterprepare:
+    needs: [ testsshfs, testnfs, testscp, test, testcustomshell, testerr, testpass ]
+    if: ${{ !cancelled() }}
     strategy:
       fail-fast: false
     runs-on: ubuntu-24.04
@@ -1092,7 +1101,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         mem: 4096
         usesh: true
@@ -1142,6 +1151,11 @@ jobs:
 
   testcacheafterpreparehit:
     needs: testcacheafterprepare
+    # Explicit condition: the default success() walks the WHOLE needs chain,
+    # so a flaky matrix job upstream of the seed job would silently skip this
+    # one even though the seed itself succeeded. Only the seed's own result
+    # matters here.
+    if: ${{ !cancelled() && needs.testcacheafterprepare.result == 'success' }}
     strategy:
       fail-fast: false
     runs-on: ubuntu-24.04
@@ -1155,7 +1169,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         mem: 4096
         usesh: true
@@ -1181,6 +1195,11 @@ jobs:
           sysctl hw.usermem
 
 
+    # Hard assertion: this job runs right after the seed job with no
+    # concurrent cache saves in this run (see the needs chain), so the
+    # prepared entry must still be present. A miss here means either a real
+    # hit-path regression or cross-run cache churn from another ref -- both
+    # worth a red job.
     - name: Verify prepare was skipped
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[]}')['x86_64'], 'rsync') }}
       run: |
@@ -1219,7 +1238,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         usesh: true
         debug: true
@@ -1247,7 +1266,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@41530cc8a053129f75d4eb4e77475ecc6bea56f4
+      uses: vmactions/freebsd-vm@0eea5137bc632b845b6194e80c74c373e0d617ac
       with:
         usesh: true
         debug: true
