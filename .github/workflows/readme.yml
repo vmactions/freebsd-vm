@@ -52,8 +52,10 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git pull --rebase --autostash
+            # Commit BEFORE pulling: --autostash restores changes unstaged,
+            # so pulling first would leave nothing staged for the commit.
             git commit -m "Update version to ${{ steps.get-latest-release.outputs.tag_name }}"
+            git pull --rebase --autostash
             git push
           fi
 
