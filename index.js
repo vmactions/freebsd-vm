@@ -687,7 +687,10 @@ async function main() {
     const cacheDirInput = core.getInput("cache-dir") || '';
     let cacheDir;
     const archForKey = arch || (process.arch === 'x64' ? 'amd64' : process.arch);
-    const cacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-v2`;
+    // -v3: default cacheDir moved from os.tmpdir() to _actions/_vmcache. The
+    // cache tar stores absolute paths, so entries saved under /tmp must not
+    // be restored against the new location; bumping the key keeps them apart.
+    const cacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-v3`;
     const restoreKeys = [cacheKey];
     let restoredKey = null;
 
@@ -703,14 +706,25 @@ async function main() {
     }
     const prepHash = crypto.createHash('sha256').update(`${prepare}\n${sync}`).digest('hex').slice(0, 16);
     // Deliberately NOT a prefix-extension of cacheKey ("-prep-" replaces the
-    // "-v2" tail position), so a prefix restore of the base key can never
+    // "-v3" tail position), so a prefix restore of the base key can never
     // match a prepared-image entry and vice versa.
-    const prepCacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-prep-${prepHash}-v2`;
+    const prepCacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-prep-${prepHash}-v3`;
     let prepRestored = false;
 
     core.startGroup("Cache");
     if (cacheSupported && !disableCache) {
-      cacheDir = cacheDirInput ? expandVars(cacheDirInput, process.env) : path.join(os.tmpdir(), cacheKey);
+      // Default under <work>/_actions/_vmcache, NOT os.tmpdir(): the
+      // ubuntu-26.04 runner image enforces a disk quota on /tmp smaller than
+      // one extracted qcow2 (EDQUOT, vmactions/freebsd-vm#148). _actions sits
+      // on the roomy work volume, is already excluded from every push-sync
+      // path (rsync/scp/tar all skip the _actions name), and unlike a path
+      // under __dirname it does not embed the action ref -- the cache tar
+      // stores absolute paths, so a ref-dependent path would break restores
+      // between @v1 and pinned-tag checkouts. RUNNER_TEMP (<work>/_temp)
+      // would be pushed into the guest by the sync; /tmp is quota'd.
+      const actionsRoot = path.resolve(__dirname, '..', '..', '..');
+      const cacheBaseDir = path.basename(actionsRoot) === '_actions' ? path.join(actionsRoot, '_vmcache') : os.tmpdir();
+      cacheDir = cacheDirInput ? expandVars(cacheDirInput, process.env) : path.join(cacheBaseDir, cacheKey);
       if (!fs.existsSync(cacheDir)) {
         fs.mkdirSync(cacheDir, { recursive: true });
       }
