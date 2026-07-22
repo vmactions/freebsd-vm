@@ -388,7 +388,9 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
       "qemu-utils"
     ];
 
-    if (!arch || arch === 'x86_64' || arch === 'amd64') {
+    if (!arch || arch === 'x86_64' || arch === 'amd64' || arch === 'i386') {
+      // qemu-system-x86 ships BOTH qemu-system-x86_64 and qemu-system-i386
+      // on Debian/Ubuntu (i386 is the GNU Hurd 2025-i386 guest).
       pkgs.push("qemu-system-x86", "ovmf");
     } else if (arch === 'aarch64' || arch === 'arm64') {
       pkgs.push("qemu-system-arm", "qemu-efi-aarch64", "ipxe-qemu");
