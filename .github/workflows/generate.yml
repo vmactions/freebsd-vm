@@ -118,7 +118,7 @@ jobs:
           def="$DEFAULT_RELEASE"
 
           # non-x86_64 arches the test matrix covers (keep in sync with test.tpl.yml)
-          ARCHES="aarch64 riscv64 powerpc64 sparc64 ppc64le s390x"
+          ARCHES="aarch64 riscv64 powerpc64 sparc64 ppc64le s390x i386"
 
           # methods (comma list) for an arch suffix, from the default release
           # conf; fall back to any release that has that arch.
