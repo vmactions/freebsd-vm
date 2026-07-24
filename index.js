@@ -568,6 +568,7 @@ async function main() {
     const inputOsName = core.getInput("osname").toLowerCase();
     const mem = core.getInput("mem");
     const cpu = core.getInput("cpu");
+    const cpuType = core.getInput("cpu-type");
     const nat = core.getInput("nat");
     const envs = core.getInput("envs");
     const prepare = core.getInput("prepare");
@@ -836,6 +837,9 @@ async function main() {
 
     if (cpu) {
       args.push("--cpu", cpu);
+    }
+    if (cpuType) {
+      args.push("--cpu-type", cpuType);
     }
     if (mem) {
       args.push("--mem", mem);
