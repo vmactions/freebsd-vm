@@ -170,7 +170,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -402,7 +402,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -642,7 +642,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -880,7 +880,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1107,7 +1107,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1241,7 +1241,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         mem: 4096
         usesh: true
@@ -1309,7 +1309,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         mem: 4096
         usesh: true
@@ -1378,7 +1378,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         usesh: true
         debug: true
@@ -1406,7 +1406,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@85bab5769cc437189a0bcda928b062bde52c419a
+      uses: vmactions/freebsd-vm@6f7023027a2112491af2985294f19c88de32ce5f
       with:
         usesh: true
         debug: true
