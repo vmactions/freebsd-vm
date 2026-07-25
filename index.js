@@ -563,7 +563,12 @@ async function main() {
   try {
     // 1. Inputs
     const debug = core.getInput("debug");
-    const releaseInput = core.getInput("release").toLowerCase();
+    // NOT lowercased: a release name can carry upper case (openEuler ships
+    // "24.03-LTS-SP4"), and it is used verbatim for the conf file name AND
+    // handed to anyvm.py, which builds the image asset URL from it. The conf
+    // lookup below still matches case-insensitively, so a user typing
+    // "24.03-lts-sp4" keeps working and gets the canonical spelling back.
+    const releaseInput = core.getInput("release");
     const archInput = core.getInput("arch").toLowerCase();
     const inputOsName = core.getInput("osname").toLowerCase();
     const mem = core.getInput("mem");
@@ -617,7 +622,22 @@ async function main() {
     // Load specific conf files
     let confName = release;
     if (arch) confName += `-${arch}`;
-    const confPath = path.join(__dirname, `conf/${confName}.conf`);
+    let confPath = path.join(__dirname, `conf/${confName}.conf`);
+
+    if (!fs.existsSync(confPath)) {
+      // Fall back to a case-insensitive match on the conf directory, then
+      // adopt the file's spelling as the canonical release: the conf name and
+      // the release passed to anyvm.py must match the builder's asset names
+      // exactly (e.g. "24.03-LTS-SP4"), whatever case the user typed.
+      const confDir = path.join(__dirname, 'conf');
+      const wanted = `${confName.toLowerCase()}.conf`;
+      const found = fs.readdirSync(confDir).find((f) => f.toLowerCase() === wanted);
+      if (found) {
+        confName = found.slice(0, -'.conf'.length);
+        release = arch ? confName.slice(0, -(arch.length + 1)) : confName;
+        confPath = path.join(confDir, found);
+      }
+    }
 
     if (!fs.existsSync(confPath)) {
       // Attempt to look for base config if arch specific not found? fails if not found.

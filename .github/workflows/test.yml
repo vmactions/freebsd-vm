@@ -30,7 +30,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -47,6 +47,8 @@ jobs:
             arch: "s390x"
           - runs: "ubuntu-24.04-arm"
             arch: "i386"
+          - runs: "ubuntu-24.04-arm"
+            arch: "loongarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -268,7 +270,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -285,6 +287,8 @@ jobs:
             arch: "s390x"
           - runs: "ubuntu-24.04-arm"
             arch: "i386"
+          - runs: "ubuntu-24.04-arm"
+            arch: "loongarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -499,7 +503,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -516,6 +520,8 @@ jobs:
             arch: "s390x"
           - runs: "ubuntu-24.04-arm"
             arch: "i386"
+          - runs: "ubuntu-24.04-arm"
+            arch: "loongarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -741,7 +747,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         disableCache: [ "", "true"]
         exclude:
@@ -759,6 +765,8 @@ jobs:
             arch: "s390x"
           - runs: "ubuntu-24.04-arm"
             arch: "i386"
+          - runs: "ubuntu-24.04-arm"
+            arch: "loongarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -967,7 +975,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -984,6 +992,8 @@ jobs:
             arch: "s390x"
           - runs: "ubuntu-24.04-arm"
             arch: "i386"
+          - runs: "ubuntu-24.04-arm"
+            arch: "loongarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
