@@ -676,9 +676,23 @@ async function main() {
     if (!anyvmVersion) {
       throw new Error("ANYVM_VERSION not defined in config");
     }
-    const anyvmUrl = `https://raw.githubusercontent.com/anyvm-org/anyvm/v${anyvmVersion}/anyvm.py`;
+    // Fetch the runtime as a release asset of the pinned version, the same
+    // matched-pair rule the VM images follow -- never a branch, never
+    // releases/latest.
+    const anyvmUrl = `https://github.com/anyvm-org/anyvm/releases/download/v${anyvmVersion}/anyvm.py`;
     const anyvmPath = path.join(__dirname, 'anyvm.py');
-    await downloadFile(anyvmUrl, anyvmPath);
+    // No raw-URL fallback on purpose: a pinned version whose release has no
+    // anyvm.py asset is a bad pin, and quietly pulling the tag's raw file
+    // would hide that behind a warning nobody reads. Fail with a message that
+    // says what to fix.
+    try {
+      await downloadFile(anyvmUrl, anyvmPath);
+    } catch (err) {
+      throw new Error(
+        `Could not download anyvm.py for v${anyvmVersion} (${err.message}). ` +
+        `Check that the anyvm release v${anyvmVersion} exists and has anyvm.py ` +
+        `attached as a release asset.`);
+    }
     core.endGroup();
 
     core.startGroup("Installing dependencies");
