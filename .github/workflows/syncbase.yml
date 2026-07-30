@@ -43,7 +43,24 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Sync from base-builder"
-          git pull --rebase --autostash
-          git push
+          # Step 2 and the version bumper push to main within seconds of
+          # this job, so the ref can move between the rebase and the push
+          # -- GitHub then rejects with "cannot lock ref ... is at X but
+          # expected Y" and the run goes red even though the content is
+          # fine. Rebase and retry instead of failing.
+          pushed=""
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase --autostash
+            if git push; then
+              pushed=yes
+              break
+            fi
+            echo "push rejected (attempt ${attempt}), retrying in ${attempt}s"
+            sleep "${attempt}"
+          done
+          if [ -z "$pushed" ]; then
+            echo "push still rejected after 5 attempts"
+            exit 1
+          fi
 
 
