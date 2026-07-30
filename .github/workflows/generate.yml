@@ -57,15 +57,31 @@ jobs:
           mkdir -p .github/tpl
           cat base-vm/.github/tpl/README.tpl.md >.github/tpl/README.tpl.md
 
-      - name: Bake sync methods from builder confs
+      - name: Bake sync methods from the builder release index
         run: |
-          # Each conf/<release>[-<arch>].conf pins a BUILDER_VERSION. The
-          # matching builder conf declares VM_SYNC_METHODS (comma separated;
-          # first = default) and VM_SHUTDOWN_CMD (the in-guest poweroff command,
-          # used by cache-after-prepare). Copy those values into the local conf
-          # so the action and test workflow can read them without a network
-          # call at run time.
+          # Each conf/<release>[-<arch>].conf pins a BUILDER_VERSION. That
+          # builder release publishes releases.json (gendata's index) as a
+          # release asset, carrying per-release "sync" (VM_SYNC_METHODS,
+          # comma separated, first = default) and "shutdown"
+          # (VM_SHUTDOWN_CMD, the in-guest poweroff command used by
+          # cache-after-prepare). Copy those into the local conf so the
+          # action and test workflow read them with no run-time network call.
+          #
+          # The index is fetched as a RELEASE ASSET at the pinned version --
+          # never a branch, never releases/latest -- so the values and the
+          # image that ships in that release are a matched pair. One fetch
+          # per distinct BUILDER_VERSION (cached below), not one per release.
           os="freebsd"
+          mkdir -p /tmp/relindex
+          # jq -r hands back the UNESCAPED string, which then lands in a sed
+          # replacement (where the delimiter, & and backslash are special) and
+          # inside double quotes in the conf. Today every value is a plain
+          # command, but escape/reject rather than trust that:
+          #   sed_escape - backslash-escape the sed-special chars
+          #   unsafe     - a value with a double quote or a control char would
+          #                emit a conf that breaks when sourced; skip it loudly
+          sed_escape() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
+          unsafe() { case "$1" in *'"'*) return 0 ;; esac; return 1; }
           for f in conf/*.conf; do
             base="$(basename "$f" .conf)"
             case "$base" in
@@ -76,30 +92,39 @@ jobs:
               echo "${base}: no BUILDER_VERSION, skip"
               continue
             fi
-            url="https://raw.githubusercontent.com/anyvm-org/${os}-builder/v${bv}/conf/${os}-${base}.conf"
-            # Old builder pins (<2.0.0, e.g. openbsd 7.2-7.6) have no tag in
-            # anyvm-org, so this curl 404s; the step runs under bash -e and a
-            # bare command substitution would abort the whole job (exit 22).
-            # Degrade to an empty confdata -> both fields fall into their
-            # "leaving conf as-is" branches, same as the legacy behavior.
-            confdata="$(curl -fsSL "$url" 2>/dev/null || true)"
-            methods="$(printf '%s\n' "$confdata" | sed -n 's/^[[:space:]]*VM_SYNC_METHODS=//p' | tr -d '"' | tail -n 1)"
+            url="https://github.com/anyvm-org/${os}-builder/releases/download/v${bv}/releases.json"
+            idx="/tmp/relindex/${bv}.json"
+            # Releases cut before the index asset existed (and old pins with
+            # no tag at all, e.g. openbsd 7.2-7.6) 404 here. The step runs
+            # under bash -e, so a bare command substitution would abort the
+            # whole job: tolerate the failure and degrade to an empty index
+            # -> both fields fall into their "leaving conf as-is" branches,
+            # exactly the legacy behavior.
+            if [ ! -f "$idx" ]; then
+              curl -fsSL "$url" -o "$idx" 2>/dev/null || : > "$idx"
+            fi
+            # jq -e fails (non-zero) on null/absent, which `|| true` absorbs.
+            methods="$(jq -re --arg t "$base" '.releases[] | select(.tag == $t) | .sync' "$idx" 2>/dev/null | tail -n 1 || true)"
             if [ -z "$methods" ]; then
-              echo "${base}: no VM_SYNC_METHODS in ${url}, leaving conf as-is"
+              echo "${base}: no sync for tag ${base} in ${url}, leaving conf as-is"
+            elif unsafe "$methods"; then
+              echo "${base}: sync value contains a quote, refusing to write: ${methods}"
             else
               if grep -q '^VM_SYNC_METHODS=' "$f"; then
-                sed -i "s|^VM_SYNC_METHODS=.*|VM_SYNC_METHODS=\"${methods}\"|" "$f"
+                sed -i "s|^VM_SYNC_METHODS=.*|VM_SYNC_METHODS=\"$(sed_escape "$methods")\"|" "$f"
               else
                 printf '\nVM_SYNC_METHODS="%s"\n' "${methods}" >> "$f"
               fi
               echo "${base}: VM_SYNC_METHODS=\"${methods}\""
             fi
-            shutcmd="$(printf '%s\n' "$confdata" | sed -n 's/^[[:space:]]*VM_SHUTDOWN_CMD=//p' | tr -d '"' | tail -n 1)"
+            shutcmd="$(jq -re --arg t "$base" '.releases[] | select(.tag == $t) | .shutdown' "$idx" 2>/dev/null | tail -n 1 || true)"
             if [ -z "$shutcmd" ]; then
-              echo "${base}: no VM_SHUTDOWN_CMD in ${url}, leaving conf as-is"
+              echo "${base}: no shutdown for tag ${base} in ${url}, leaving conf as-is"
+            elif unsafe "$shutcmd"; then
+              echo "${base}: shutdown value contains a quote, refusing to write: ${shutcmd}"
             else
               if grep -q '^VM_SHUTDOWN_CMD=' "$f"; then
-                sed -i "s|^VM_SHUTDOWN_CMD=.*|VM_SHUTDOWN_CMD=\"${shutcmd}\"|" "$f"
+                sed -i "s|^VM_SHUTDOWN_CMD=.*|VM_SHUTDOWN_CMD=\"$(sed_escape "$shutcmd")\"|" "$f"
               else
                 printf '\nVM_SHUTDOWN_CMD="%s"\n' "${shutcmd}" >> "$f"
               fi
