@@ -1,0 +1,101 @@
+name: "Bump versions"
+
+# Propagate a human-cut anyvm-org/<os>-builder release (and anyvm releases
+# that carry the anyvm.py asset) into this repo's conf/ files. The commit
+# lands on main and auto-fires Step 1 / Step 2, which re-bake
+# sync-map.json / exclude-missing.txt from the new conf set. The action
+# release (what @v1 users run) stays human-cut, as does DEFAULT_RELEASE.
+# See base-vm/bump.py.
+
+permissions:
+  contents: write
+  issues: write
+
+on:
+  schedule:
+    - cron: '35 20 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.VM_TOKEN }}
+
+      - name: Bump versions from upstream releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git switch main || (git fetch --all && git checkout -b main origin/main)
+          git clone https://github.com/vmactions/base-vm.git
+          python3 base-vm/bump.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.email "ghactions@vmactions.org"
+          git config user.name "Bump.yml"
+          git add conf
+          if git diff --cached --quiet; then
+            echo "Nothing to commit, skipping push"
+          else
+            git commit -m "Bump versions from upstream releases"
+            # Step 1/Step 2 and Update Readme push to main within seconds
+            # of each other, so the ref can move between the rebase and
+            # the push. Rebase and retry instead of failing.
+            pushed=""
+            for attempt in 1 2 3 4 5; do
+              git pull --rebase --autostash
+              if git push; then
+                pushed=yes
+                break
+              fi
+              echo "push rejected (attempt ${attempt}), retrying in ${attempt}s"
+              sleep "${attempt}"
+            done
+            if [ -z "$pushed" ]; then
+              echo "push still rejected after 5 attempts"
+              exit 1
+            fi
+          fi
+
+      # A nightly bot nobody reads is not a bot. A failure here means the
+      # builder cut a tag the bump refuses (no releases.json, missing
+      # image, mixed local pins) -- that needs a human, and main is left
+      # untouched, so there is no other visible signal. One issue per
+      # repo, reused by exact title, never re-posted while open.
+      - name: Report a broken bump
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: "version bump: ${{ github.event.repository.name }}"
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          num=$(gh issue list --state open --limit 100 \
+                  --json number,title \
+                  --jq "[.[] | select(.title == env.TITLE)] | .[0].number // empty")
+          if [ -n "$num" ]; then
+            echo "issue #${num} is already open for this repo"
+            exit 0
+          fi
+          {
+            echo "The version bump bot failed and changed nothing."
+            echo
+            echo "Run: ${RUN_URL}"
+            echo
+            echo "Likely causes: the new builder release has no"
+            echo "releases.json asset or is missing an image (tag cut"
+            echo "before the build finished?), or the local confs have"
+            echo "mixed BUILDER_VERSION values from a half-finished hand"
+            echo "edit. The run log names the exact one."
+            echo
+            echo "This issue is not re-posted while it stays open. Close"
+            echo "it once the bump succeeds to re-arm the report."
+          } > "${RUNNER_TEMP}/issue-body.txt"
+          gh issue create --title "${TITLE}" \
+            --body-file "${RUNNER_TEMP}/issue-body.txt"
