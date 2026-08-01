@@ -12,7 +12,7 @@ inputs:
     description: 'The CI command to run'
     required: false
   release:
-    description: 'The release version of FreeBSD vm'
+    description: 'The release version of FreeBSD vm. Only the leading, "." separated part of it is enough, the newest matching release is used.'
     required: false
   arch:
     description: 'The cpu architecture of FreeBSD vm'

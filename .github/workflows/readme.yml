@@ -32,10 +32,49 @@ jobs:
         run: |
           git switch main || (git fetch --all && git checkout -b main origin/main)
           . conf/default.release.conf
+          LATEST_MAJOR="$(echo ${{ steps.get-latest-release.outputs.tag_name }} | cut -d . -f 1)"
           echo "DEFAULT_RELEASE=$DEFAULT_RELEASE" >> $GITHUB_ENV
-          echo "LATEST_MAJOR=$(echo ${{ steps.get-latest-release.outputs.tag_name }} | cut -d . -f 1)" >> $GITHUB_ENV
+          echo "LATEST_MAJOR=$LATEST_MAJOR" >> $GITHUB_ENV
           echo "LATEST_TAG=${{ steps.get-latest-release.outputs.tag_name }}" >> $GITHUB_ENV
           echo "ALL_RELEASES=$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed "s/,\$//" | sed 's/,/, /g')" >> $GITHUB_ENV
+
+          # Section 5 of the readme also documents picking a release by its
+          # leading, "." separated part ("15" -> the newest 15.x). That only
+          # says anything when this VM's release names carry a dot at all --
+          # OmniOS r151058, OpenIndiana 202604, Tribblix 0m40 and friends carry
+          # none -- so the whole block is built here, with this VM's own
+          # numbers, and picked up by the RELEASE_PREFIX_DOC placeholder in
+          # README.tpl.md: empty where the option cannot do anything. Keep the
+          # wording in step with the resolver in index.js. (No double braces in
+          # this file: generate.yml renders it, and a placeholder written out
+          # in full would be substituted away here.)
+          {
+            echo 'RELEASE_PREFIX_DOC<<VMEOF'
+            case "$DEFAULT_RELEASE" in
+              *.*)
+                VMNAME="$(sed -n 's/^VM_NAME=//p' .github/data/datafile.ini 2>/dev/null | head -n 1 | sed 's/[[:space:]]*$//')"
+                FIRST_PART="${DEFAULT_RELEASE%%.*}"
+                HEAD_PART="${DEFAULT_RELEASE%.*}"
+                # Every leading part this repo ships a conf for, e.g. FreeBSD
+                # has 12, 13, 14 and 15 -- each one resolves on its own, so say
+                # so instead of leaving the default's major as the only example.
+                MAJORS="$(ls conf/ | sed -n 's/\.conf$//p' | sed '/^default\.release$/d' \
+                  | sed 's/-\(aarch64\|riscv64\|powerpc64\|sparc64\|ppc64le\|s390x\|i386\|loongarch64\)$//' \
+                  | cut -d . -f 1 | sort -u -V | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')"
+                printf 'You can also give only the leading, `.` separated part of a release. The newest release that starts with it is used, so the workflow does not have to be edited for every point release:\n\n'
+                printf '```yaml\n...\n    - name: Test\n      id: test\n      uses: %s@%s\n      with:\n        release: "%s"\n...\n```\n\n' "${{ github.repository }}" "$LATEST_MAJOR" "$FIRST_PART"
+                printf 'Here `release: "%s"` runs the newest `%s.x` release of %s.' "$FIRST_PART" "$FIRST_PART" "$VMNAME"
+                case "$MAJORS" in
+                  *,*) printf ' Every leading part works the same way, this action ships %s.' "$MAJORS" ;;
+                esac
+                if [ "$HEAD_PART" != "$FIRST_PART" ]; then
+                  printf ' Give more parts to narrow it down: `release: "%s"` runs the newest `%s.x`.' "$HEAD_PART" "$HEAD_PART"
+                fi
+                printf ' Each part you give has to match in full, so a release that does not exist fails the job instead of quietly falling back to another one.\n\n'
+                ;;
+            esac
+            echo 'VMEOF'
+          } >> $GITHUB_ENV
 
       - name: Update the readme.md
         uses: anyvm-org/template-render@v0.0.4

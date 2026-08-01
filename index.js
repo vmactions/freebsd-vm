@@ -88,6 +88,105 @@ function parseConfig(filePath, initialEnv = {}) {
   return env;
 }
 
+// The conf file of a non-x86_64 build is "<release>-<arch>.conf", so the arch
+// suffixes have to be known to tell them apart from a release name that just
+// carries a dash of its own: GhostBSD ships "26.1-xfce", Solaris "11.4-gcc-14",
+// OmniOS "r151058-build". Keep in sync with ARCHES in
+// .github/tpl/generate.tpl.yml, the arch matrix in .github/tpl/test.tpl.yml,
+// and the two arch regexes in bump.py.
+const CONF_ARCHES = [
+  "aarch64", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"
+];
+
+// Split one release component into the pieces a human compares: runs of digits
+// and runs of everything else, so "10" sorts after "9" and "-SP5" after "-SP4".
+function releaseChunks(part) {
+  return part.match(/\d+|\D+/g) || [];
+}
+
+// Compare a single dot separated component of two release names.
+function compareReleaseParts(a, b) {
+  const ca = releaseChunks(a);
+  const cb = releaseChunks(b);
+  const n = Math.min(ca.length, cb.length);
+  for (let i = 0; i < n; i++) {
+    const x = ca[i];
+    const y = cb[i];
+    if (/^\d+$/.test(x) && /^\d+$/.test(y)) {
+      const nx = parseInt(x, 10);
+      const ny = parseInt(y, 10);
+      if (nx !== ny) return nx < ny ? -1 : 1;
+    } else if (x.toLowerCase() !== y.toLowerCase()) {
+      return x.toLowerCase() < y.toLowerCase() ? -1 : 1;
+    }
+  }
+  // Equal so far: the one WITHOUT the extra pieces wins. A trailing suffix is a
+  // flavor, not a newer version -- "26.1" is the plain GhostBSD release and
+  // "26.1-xfce" a variant of it, so "release: 26" has to pick "26.1".
+  if (ca.length !== cb.length) return ca.length < cb.length ? 1 : -1;
+  return 0;
+}
+
+// Compare two release names, oldest first. A release name is not always a
+// number: openEuler ships "24.03-LTS-SP4", Haiku "r1beta5", Tribblix "0m40".
+function compareReleaseNames(a, b) {
+  const pa = a.split('.');
+  const pb = b.split('.');
+  const n = Math.min(pa.length, pb.length);
+  for (let i = 0; i < n; i++) {
+    const c = compareReleaseParts(pa[i], pb[i]);
+    if (c !== 0) return c;
+  }
+  // More components = more specific = newer ("6.4.2" after "6.4").
+  if (pa.length !== pb.length) return pa.length < pb.length ? -1 : 1;
+  return 0;
+}
+
+// Every release this repo ships a conf for, for one arch, oldest first.
+// Each entry is { release, confName }: for x86_64 they are the same, for any
+// other arch confName is "<release>-<arch>".
+function listConfReleases(confDir, arch) {
+  const archSuffix = arch ? `-${arch.toLowerCase()}` : '';
+  const found = [];
+  for (const file of fs.readdirSync(confDir)) {
+    if (!file.endsWith('.conf')) continue;
+    const name = file.slice(0, -'.conf'.length);
+    if (name === 'default.release') continue;
+    const lower = name.toLowerCase();
+    if (arch) {
+      if (!lower.endsWith(archSuffix)) continue;
+      found.push({ release: name.slice(0, -archSuffix.length), confName: name });
+    } else {
+      // conf/<release>.conf is the x86_64 one, so every other arch is out.
+      if (CONF_ARCHES.some((a) => lower.endsWith(`-${a}`))) continue;
+      found.push({ release: name, confName: name });
+    }
+  }
+  return found
+    .filter((r) => r.release)
+    .sort((x, y) => compareReleaseNames(x.release, y.release));
+}
+
+// Resolve a partial release -- "14" -> the newest 14.x, "14.3" -> the newest
+// 14.3.x -- to the release it stands for. The number of components is not
+// fixed ("6.4.2", "14.3", "24.03-LTS-SP4"), but all releases of one VM have the
+// same shape, so a shorter input can only be a leading part of a full name.
+// Every component given must match in full: "14" picks 14.4 but never 140.x,
+// and "13.4" never falls through to 13.5. Returns null when nothing matches.
+function resolveReleasePrefix(confDir, prefix, arch) {
+  const wanted = prefix.toLowerCase().split('.');
+  let best = null;
+  for (const item of listConfReleases(confDir, arch)) {
+    const parts = item.release.split('.');
+    if (parts.length < wanted.length) continue;
+    if (wanted.some((w, i) => parts[i].toLowerCase() !== w)) continue;
+    if (!best || compareReleaseNames(best.release, item.release) < 0) {
+      best = item;
+    }
+  }
+  return best;
+}
+
 function downloadFileOnce(url, dest) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest);
@@ -620,16 +719,16 @@ async function main() {
 
 
     // Load specific conf files
+    const confDir = path.join(__dirname, 'conf');
     let confName = release;
     if (arch) confName += `-${arch}`;
-    let confPath = path.join(__dirname, `conf/${confName}.conf`);
+    let confPath = path.join(confDir, `${confName}.conf`);
 
     if (!fs.existsSync(confPath)) {
       // Fall back to a case-insensitive match on the conf directory, then
       // adopt the file's spelling as the canonical release: the conf name and
       // the release passed to anyvm.py must match the builder's asset names
       // exactly (e.g. "24.03-LTS-SP4"), whatever case the user typed.
-      const confDir = path.join(__dirname, 'conf');
       const wanted = `${confName.toLowerCase()}.conf`;
       const found = fs.readdirSync(confDir).find((f) => f.toLowerCase() === wanted);
       if (found) {
@@ -640,8 +739,25 @@ async function main() {
     }
 
     if (!fs.existsSync(confPath)) {
-      // Attempt to look for base config if arch specific not found? fails if not found.
-      throw new Error(`Config not found: ${confPath}`);
+      // Not a full release name: take it as the leading, dot separated part of
+      // one and run the newest release that starts with it, so "release: 14"
+      // follows 14.x and "release: 14.3" follows 14.3.x on their own.
+      const resolved = resolveReleasePrefix(confDir, release, arch);
+      if (resolved) {
+        core.info(`Release "${release}" resolved to "${resolved.release}"`);
+        release = resolved.release;
+        confName = resolved.confName;
+        confPath = path.join(confDir, `${confName}.conf`);
+      }
+    }
+
+    if (!fs.existsSync(confPath)) {
+      const available = listConfReleases(confDir, arch).map((r) => r.release);
+      throw new Error(
+        `Release "${release}" is not available` +
+        (arch ? ` for arch ${arch}` : '') +
+        ` (config not found: ${confPath}).` +
+        (available.length ? ` Available releases: ${available.join(', ')}` : ''));
     }
 
     env = parseConfig(confPath, env);

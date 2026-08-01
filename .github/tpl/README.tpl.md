@@ -208,7 +208,7 @@ It uses [the {{VM_NAME}} {{DEFAULT_RELEASE}}](conf/default.release.conf) by defa
 ...
 ```
 
-
+{{RELEASE_PREFIX_DOC}}
 ## 6. Select architecture
 
 The vm is using x86_64(AMD64) by default, but you can use `arch` option to change the architecture:
