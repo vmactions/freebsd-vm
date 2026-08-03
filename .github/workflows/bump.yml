@@ -34,7 +34,7 @@ jobs:
         run: |
           git switch main || (git fetch --all && git checkout -b main origin/main)
           git clone https://github.com/vmactions/base-vm.git
-          python3 base-vm/bump.py
+          python3 base-vm/bump.py --landed-out "${RUNNER_TEMP}/landed.txt"
 
       - name: Commit and push changes
         run: |
@@ -63,6 +63,49 @@ jobs:
               exit 1
             fi
           fi
+
+      # A SILENT SUCCESS is a miss too: after a bump lands, cutting this
+      # repo's action release (what @v1 users actually run) is still a
+      # human call -- without a notification the maintainer never hears
+      # that one is wanted. The issue doubles as the to-do: close it when
+      # the action release is cut (or when no release is needed). One
+      # issue per change set, deduped by exact title.
+      - name: Report a landed bump
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          if [ ! -s "${RUNNER_TEMP}/landed.txt" ]; then
+            echo "nothing landed, no notification"
+            exit 0
+          fi
+          summary=$(paste -sd ', ' "${RUNNER_TEMP}/landed.txt")
+          TITLE="version bump landed: ${summary}"
+          export TITLE
+          num=$(gh issue list --state open --limit 100 \
+                  --json number,title \
+                  --jq "[.[] | select(.title == env.TITLE)] | .[0].number // empty")
+          if [ -n "$num" ]; then
+            echo "issue #${num} already open for this change set"
+            exit 0
+          fi
+          {
+            echo "The version bump bot landed the following on main:"
+            echo
+            sed 's/^/- /' "${RUNNER_TEMP}/landed.txt"
+            echo
+            echo "Run: ${RUN_URL}"
+            echo
+            echo "Next step (human call): once the Test workflow is green,"
+            echo "cut a new action release on this repo so @v1 users"
+            echo "receive it (major.yml moves the floating tag)."
+            echo
+            echo "Close this issue once the release is cut, or if no"
+            echo "release is needed for this change."
+          } > "${RUNNER_TEMP}/landed-issue.txt"
+          gh issue create --title "${TITLE}" \
+            --body-file "${RUNNER_TEMP}/landed-issue.txt"
 
       # A nightly bot nobody reads is not a bot. A failure here means the
       # builder cut a tag the bump refuses (no releases.json, missing
