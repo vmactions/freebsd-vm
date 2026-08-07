@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Update major version tag
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
