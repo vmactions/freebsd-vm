@@ -38,18 +38,18 @@ All the supported releases are here:
 
 | Release | x86_64 | aarch64(arm64) | riscv64 | powerpc64 |
 |---------|---------|---------|---------|---------|
-| 15.1 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 15.0 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 14.4 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 14.3 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 14.2 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 14.1 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 14.0 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 13.5 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 13.4 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | —[^rv-stub] | ✅ (nfs,scp) |
-| 13.3 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 13.2 | ✅ (rsync,scp,sshfs,nfs) | ✅ (rsync,scp,sshfs,nfs) | ✅ (nfs,scp) | ✅ (nfs,scp) |
-| 12.4 | ✅ (nfs,scp) | ✅ (nfs,scp) | —[^rv-none] | —[^ppc-panic] |
+| 15.1 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 15.0 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 14.4 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 14.3 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 14.2 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 14.1 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 14.0 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 13.5 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 13.4 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | —[^rv-stub] | ✅ (nfs,scp,tar) |
+| 13.3 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 13.2 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
+| 12.4 | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) | —[^rv-none] | —[^ppc-panic] |
 
 <!-- arch-label: aarch64 = aarch64(arm64) -->
 <!-- absent: 13.4-riscv64 rv-stub -->
@@ -143,7 +143,7 @@ All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 
 So, you will have the same directory and same default env variables when you `run` the CI script.
 
-The default shell in FreeBSD(before 14.0) is `tcsh`, if you want to use `sh` to execute the `run` script, please set `usesh` to `true`.  https://docs.freebsd.org/en/articles/linux-users/#shells
+The default login shell in FreeBSD(before 14.0) is `tcsh`.  https://docs.freebsd.org/en/articles/linux-users/#shells
 
 
 
