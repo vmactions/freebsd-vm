@@ -31,7 +31,7 @@ inputs:
     description: 'The NAT ports to FreeBSD vm'
     required: false
   usesh:
-    description: 'Use sh instead of the default shell. Default is false.'
+    description: 'Deprecated and ignored. The prepare/run scripts are always executed with sh.'
     required: false
   sync:
     description: 'How to synchronize the source code to/from the VM. Default is rsync.'

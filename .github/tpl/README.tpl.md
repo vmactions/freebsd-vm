@@ -61,7 +61,6 @@ jobs:
       uses: {{GITHUB_REPOSITORY}}@{{LATEST_MAJOR}}
       with:
         envs: 'MYTOKEN MYTOKEN2'
-        usesh: true
         prepare: |
           {{VM_PREPARE}}
 
@@ -93,6 +92,8 @@ All the source code tree in the Host machine are mounted into the VM.
 All the `GITHUB_*` as well as `CI=true` env variables are passed into the VM.
 
 So, you will have the same directory and same default env variables when you `run` the CI script.
+
+The `prepare` and `run` scripts are always executed with `sh` in the VM, whatever the default login shell of the VM is.
 
 {{VM_SHELL_COMMENTS}}
 
