@@ -376,6 +376,54 @@ async function execSSH(cmd, sshConfig, ignoreReturn = false, silent = false, opt
 // (/usr/pkg/{bin,sbin}) and Tribblix/MacPorts (/opt/local/{bin,sbin}).
 const REMOTE_RSYNC_PATH = `sh -c 'PATH=$PATH:/usr/local/bin:/usr/local/sbin:/usr/pkg/bin:/usr/pkg/sbin:/opt/local/bin:/opt/local/sbin exec rsync "$@"' rsync`;
 
+// Fixed host-side forward of a telnet guest's control channel (guest port
+// 23). The telnet guests (ReactOS, Redox, RISC OS) have no sshd; anyvm
+// drives them over a baked-in telnet agent, and this action reaches a
+// running VM through `anyvm.py --attach --ssh-port <port>`. Runners are
+// single-job, so a fixed port cannot collide.
+const TELNET_CTRL_PORT = 10023;
+
+// Pinned host port for a 9P guest's file channel (Plan 9). Same reason as
+// the control port above: the copyback runs in a SEPARATE anyvm process
+// (`--attach --pull-files`) which cannot discover a randomly chosen forward.
+const P9_PORT = 20564;
+
+// Run one command in a telnet-transport guest through `anyvm.py --attach`.
+// The attach exec is marker-based: it waits until the command actually
+// finishes (no fixed read window) and exits with the command's 0/1 status
+// where the guest shell can express one; the RISC OS agent has no status
+// channel, so there completion always reports 0.
+async function execTelnet(cmd, osName, anyvmPath, ignoreReturn = false) {
+  core.info(`Exec (telnet): ${cmd}`);
+  const rc = await exec.exec("python3", [
+    anyvmPath, "--os", osName, "--attach",
+    "--ssh-port", String(TELNET_CTRL_PORT), "--", cmd,
+  ], { ignoreReturnCode: true });
+  if (rc !== 0 && !ignoreReturn) {
+    throw new Error(`Guest command failed with exit code ${rc}`);
+  }
+  return rc;
+}
+
+// A multi-line prepare/run script on a telnet guest. cmd.exe (ReactOS) and
+// ion (Redox) chain lines with && inside ONE session, which gives the same
+// stop-on-first-failure semantics the ssh guests get from `sh -e`-style
+// scripts. The RISC OS agent has no operators, so each line goes as its own
+// command (its agent gives every line a fresh CLI anyway).
+async function execTelnetScript(script, osName, anyvmPath) {
+  const lines = script.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (!lines.length) {
+    return;
+  }
+  if (osName === 'riscos') {
+    for (const line of lines) {
+      await execTelnet(line, osName, anyvmPath);
+    }
+  } else {
+    await execTelnet(lines.join(' && '), osName, anyvmPath);
+  }
+}
+
 // In-guest poweroff commands used by cache-after-prepare to shut the VM down
 // cleanly before caching the prepared qcow2. Values copied from each
 // anyvm-org/<os>-builder conf's VM_SHUTDOWN_CMD (the builders run the same
@@ -684,7 +732,7 @@ async function main() {
     const syncTime = core.getInput("sync-time").toLowerCase();
     const disableCache = core.getInput("disable-cache").toLowerCase() === 'true';
     const cacheAfterPrepareInput = core.getInput("cache-after-prepare").toLowerCase() === 'true';
-    const debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
+    let debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
     const vncPassword = core.getInput("vnc-password");
 
     const work = path.join(process.env["HOME"], "work");
@@ -710,7 +758,10 @@ async function main() {
 
     // Handle Arch logic
     if (!arch) {
-      // x86_64 implict
+      // x86_64 implicit -- unless the repo declares another default arch in
+      // conf/default.release.conf (ReactOS ships i386 only, RISC OS armv7
+      // only; neither has an x86_64 build at all).
+      arch = (env['DEFAULT_ARCH'] || '').toLowerCase();
     } else if (arch === 'arm64') {
       arch = 'aarch64';
     } else if (arch === 'x86_64' || arch === 'amd64') {
@@ -783,6 +834,26 @@ async function main() {
         `Supported methods: ${syncMethods.join(', ')}`);
     }
 
+    // Remote-exec transport, declared per release conf (VM_TRANSPORT=telnet).
+    // The telnet guests (ReactOS, Redox, RISC OS) ship no sshd at all: anyvm
+    // drives them over a baked-in telnet agent, and this action runs
+    // prepare/run/copyback through `anyvm.py --attach` instead of ssh.
+    const transport = (env['VM_TRANSPORT'] || 'ssh').toLowerCase();
+    const isTelnet = transport === 'telnet';
+    // Guest-side work dir. The ssh guests use $HOME/work (with the per-OS
+    // overrides above); a telnet guest has no $HOME contract, so its conf
+    // declares the path (ReactOS: C:\work, Redox / RISC OS: /work).
+    if (env['VM_WORKPATH']) {
+      vmwork = env['VM_WORKPATH'];
+    }
+    if (isTelnet && debugOnError) {
+      core.warning(`debug-on-error is not supported on ${osName} (telnet transport, no ssh); ignoring it.`);
+      debugOnError = false;
+    }
+    if (isTelnet && envs) {
+      core.warning(`envs is not supported on ${osName} (telnet transport, no ssh SendEnv); ignoring it.`);
+    }
+
     core.startGroup("Configuration AnyVM.org");
     core.info(`Using ANYVM_VERSION: ${anyvmVersion}`);
     core.info(`Using BUILDER_VERSION: ${builderVersion}`);
@@ -852,8 +923,8 @@ async function main() {
     // and the sync method, so changing either falls back to the base image.
     // Not usable on win32 hosts (the shutdown wait relies on pgrep/pkill).
     let cacheAfterPrepare = cacheAfterPrepareInput;
-    if (cacheAfterPrepare && (!prepare || !cacheSupported || disableCache || process.platform === 'win32')) {
-      core.info(`Ignoring cache-after-prepare (prepare: ${!!prepare}, cacheSupported: ${cacheSupported}, disableCache: ${disableCache}, platform: ${process.platform})`);
+    if (cacheAfterPrepare && (!prepare || !cacheSupported || disableCache || process.platform === 'win32' || isTelnet)) {
+      core.info(`Ignoring cache-after-prepare (prepare: ${!!prepare}, cacheSupported: ${cacheSupported}, disableCache: ${disableCache}, platform: ${process.platform}, telnet: ${isTelnet})`);
       cacheAfterPrepare = false;
     }
     const prepHash = crypto.createHash('sha256').update(`${prepare}\n${sync}`).digest('hex').slice(0, 16);
@@ -1030,6 +1101,18 @@ async function main() {
           syncArg = 'sys-nfs';
         }
         args.push("--sync", syncArg);
+        // Same exclusions the rsync/scp paths already apply, which the tar
+        // and 9P backends had no way to receive: _actions holds this
+        // action's own node_modules (thousands of files the guest never
+        // needs), and shipping it is what made a ReactOS push spend half an
+        // hour and still not finish.
+        if (syncArg === 'tar' || syncArg === '9p') {
+          args.push("--sync-exclude", "_actions");
+          args.push("--sync-exclude", "_PipelineMapping");
+          if (!disableCache) {
+            args.push("--sync-exclude", "cache.tzst");
+          }
+        }
         args.push("-v", `${work}:${vmwork}`);
       }
     }
@@ -1038,7 +1121,16 @@ async function main() {
     args.push("-d"); // Background/daemon
 
     let sshHost = osName;
-    args.push("--ssh-name", sshHost);
+    if (isTelnet) {
+      // No ssh config to write; instead pin the control-channel forward so
+      // the --attach calls below know where the running VM listens.
+      args.push("--ssh-port", String(TELNET_CTRL_PORT));
+      if (sync === '9p') {
+        args.push("--p9-port", String(P9_PORT));
+      }
+    } else {
+      args.push("--ssh-name", sshHost);
+    }
 
     // With cache-after-prepare on a prepared-cache miss the first boot must be
     // writable, so 'prepare' persists into the qcow2 copy in data-dir; the VM
@@ -1115,35 +1207,37 @@ async function main() {
       backgroundPromises.push(baseSavePromise);
     }
 
-    core.startGroup("SSH Config");
-    const sshDir = path.join(process.env["HOME"], ".ssh");
-    if (!fs.existsSync(sshDir)) {
-      fs.mkdirSync(sshDir, { recursive: true });
-    }
-    const sshConfigPath = path.join(sshDir, "config");
+    if (!isTelnet) {
+      core.startGroup("SSH Config");
+      const sshDir = path.join(process.env["HOME"], ".ssh");
+      if (!fs.existsSync(sshDir)) {
+        fs.mkdirSync(sshDir, { recursive: true });
+      }
+      const sshConfigPath = path.join(sshDir, "config");
 
-    let sendEnvs = [];
-    if (envs) {
-      sendEnvs.push(envs);
-    }
-    // Only use wildcard GITHUB_* if not on Haiku/BlissOS. On those we inject the
-    // GITHUB_* vars over the sh stdin instead, rewriting the runner work path to
-    // the guest vmwork path (see the injection block in execSSH).
-    if (osName !== 'haiku' && osName !== 'blissos') {
-      sendEnvs.push("GITHUB_*");
-    }
-    sendEnvs.push("CI");
+      let sendEnvs = [];
+      if (envs) {
+        sendEnvs.push(envs);
+      }
+      // Only use wildcard GITHUB_* if not on Haiku/BlissOS. On those we inject the
+      // GITHUB_* vars over the sh stdin instead, rewriting the runner work path to
+      // the guest vmwork path (see the injection block in execSSH).
+      if (osName !== 'haiku' && osName !== 'blissos') {
+        sendEnvs.push("GITHUB_*");
+      }
+      sendEnvs.push("CI");
 
-    if (sendEnvs.length > 0) {
-      fs.appendFileSync(sshConfigPath, `Host ${sshHost}\n  SendEnv ${sendEnvs.join(" ")}\n`);
-    }
+      if (sendEnvs.length > 0) {
+        fs.appendFileSync(sshConfigPath, `Host ${sshHost}\n  SendEnv ${sendEnvs.join(" ")}\n`);
+      }
 
-    fs.appendFileSync(sshConfigPath, "Host *\n  StrictHostKeyChecking no\n");
-    if (debug) {
-      core.info("SSH config content:");
-      core.info(fs.readFileSync(sshConfigPath, "utf8"));
+      fs.appendFileSync(sshConfigPath, "Host *\n  StrictHostKeyChecking no\n");
+      if (debug) {
+        core.info("SSH config content:");
+        core.info(fs.readFileSync(sshConfigPath, "utf8"));
+      }
+      core.endGroup();
     }
-    core.endGroup();
 
     const sshConfig = {
       host: sshHost,
@@ -1171,7 +1265,15 @@ async function main() {
     // over ssh pull) as full copies. nfs/sshfs are live mounts and keep the
     // plain wrapper.
     let sshWrapperContent;
-    if (sync === 'rsync') {
+    if (isTelnet) {
+      // No ssh and no POSIX shell in the guest: later `shell:` steps cannot
+      // work here. Leave a wrapper that says so plainly instead of failing
+      // with a confusing ssh error.
+      sshWrapperContent = `#!/usr/bin/env sh
+echo "custom shell steps are not supported on ${osName} (telnet transport, no ssh)" >&2
+exit 1
+`;
+    } else if (sync === 'rsync') {
       const shellSlowArch = isSlowEmulatedArch(arch);
       const shellRsyncSsh = shellSlowArch ? RSYNC_SSH_SLOW : "ssh";
       const shellRsyncTimeout = shellSlowArch ? ` --timeout ${RSYNC_SLOW_TIMEOUT}` : "";
@@ -1254,7 +1356,7 @@ exit $rc
     fs.chmodSync(sshWrapperPath, '755');
 
     const onStartedHook = path.join(__dirname, 'hooks', 'onStarted.sh');
-    if (fs.existsSync(onStartedHook)) {
+    if (fs.existsSync(onStartedHook) && !isTelnet) {
       core.startGroup(`Running onStarted hook: ${onStartedHook}`);
       const hookContent = fs.readFileSync(onStartedHook, 'utf8');
       await execSSH(hookContent, sshConfig, false, debug !== 'true');
@@ -1300,7 +1402,7 @@ exit $rc
       }
       core.endGroup();
     }
-    if (sync !== 'no') {
+    if (sync !== 'no' && !isTelnet) {
       core.startGroup('Creating workdir symlink');
       // Make the ln retry-safe without deleting $HOME/work: if a prior attempt
       // already created the symlink but the ssh channel hung, just skip re-linking
@@ -1315,8 +1417,14 @@ exit $rc
       if (prepare && prepRestored) {
         core.info(`Skipping 'prepare': prepared-image cache was restored (${prepCacheKey})`);
       } else if (prepare) {
-        const prepareCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${prepare}` : prepare;
-        await execSSH(prepareCmd, { ...sshConfig });
+        if (isTelnet) {
+          // No $GITHUB_WORKSPACE in the guest: commands run against the
+          // conf-declared work path (the -v target) with absolute paths.
+          await execTelnetScript(prepare, osName, anyvmPath);
+        } else {
+          const prepareCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${prepare}` : prepare;
+          await execSSH(prepareCmd, { ...sshConfig });
+        }
         prepareRanOk = true;
       }
       core.endGroup();
@@ -1461,8 +1569,12 @@ exit $rc
     try {
       core.startGroup("Run 'run' in VM");
       if (run) {
-        const runCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${run}` : run;
-        await execSSH(runCmd, { ...sshConfig });
+        if (isTelnet) {
+          await execTelnetScript(run, osName, anyvmPath);
+        } else {
+          const runCmd = (sync !== 'no') ? `cd "$GITHUB_WORKSPACE"\n${run}` : run;
+          await execSSH(runCmd, { ...sshConfig });
+        }
       }
       core.endGroup();
     } catch (err) {
@@ -1499,7 +1611,24 @@ exit $rc
       const workspace = process.env['GITHUB_WORKSPACE'];
       if (workspace) {
         core.startGroup("Copyback artifacts");
-        if (sync === 'scp') {
+        if (isTelnet && (sync === 'tar' || sync === '9p')) {
+          // Pull the synced tree back through the same channel the push used
+          // at boot: a tar stream over telnet, or the guest's 9P share for
+          // Plan 9. Neither push is a live mount, so without this the
+          // guest's output would never reach the runner.
+          const pullArgs = [
+            anyvmPath, "--os", osName, "--attach",
+            "--ssh-port", String(TELNET_CTRL_PORT),
+          ];
+          if (sync === '9p') {
+            pullArgs.push("--sync", "9p", "--p9-port", String(P9_PORT));
+          }
+          pullArgs.push("--pull-files", "-v", `${work}:${vmwork}`);
+          await exec.exec("python3", pullArgs);
+        } else if (sync === 'scp' || sync === 'tar') {
+          // scp guests pull with cpio/tar over ssh; an ssh guest running
+          // `sync: tar` (push done by anyvm at boot) reuses the same
+          // transport for the pull.
           let useCpio = true;
           if (osName === 'blissos') {
             // Toybox cpio ignores `-H ustar` and emits a newc cpio stream that

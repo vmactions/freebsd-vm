@@ -28,7 +28,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -47,6 +47,8 @@ jobs:
             arch: "i386"
           - runs: "ubuntu-24.04-arm"
             arch: "loongarch64"
+          - runs: "ubuntu-24.04-arm"
+            arch: "armv7"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -192,7 +194,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -291,7 +293,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -310,6 +312,8 @@ jobs:
             arch: "i386"
           - runs: "ubuntu-24.04-arm"
             arch: "loongarch64"
+          - runs: "ubuntu-24.04-arm"
+            arch: "armv7"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -447,7 +451,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -547,7 +551,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -566,6 +570,8 @@ jobs:
             arch: "i386"
           - runs: "ubuntu-24.04-arm"
             arch: "loongarch64"
+          - runs: "ubuntu-24.04-arm"
+            arch: "armv7"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -710,7 +716,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -806,6 +812,143 @@ jobs:
 
 
 
+  # One-shot tar sync (push at boot, pull at the end). This is the ONLY
+  # transport the telnet guests (ReactOS, Redox, RISC OS) have, and a
+  # declared-but-otherwise-untested method on the ssh guests whose builders
+  # list it. ONE leg per repo, on purpose: default release, default arch --
+  # tar's transport does not vary per release, so a full matrix would only
+  # burn runners. The gate greps the rendered sync map JSON as a string
+  # ('tar' is not a substring of any other method name); a per-arch lookup
+  # would wrongly skip the repos with no x86_64 arch at all (ReactOS is
+  # i386-only, RISC OS armv7-only -- their default arch comes from
+  # DEFAULT_ARCH in conf/default.release.conf). The in-guest command body is
+  # per-repo data (VM_TAR_RUN / VM_TAR_VERIFY in datafile.ini): the telnet
+  # guests speak their own command languages, so no shared POSIX script can
+  # run everywhere. A repo that defines neither still tests boot + push +
+  # copyback.
+  testtar:
+    runs-on: ubuntu-24.04
+    name: tar FreeBSD
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    # Sparse on purpose. The workspace IS the payload here, and this repo
+    # commits node_modules -- 4636 of its 4662 files, 35 MB of npm packages
+    # that prove nothing about the sync path. The agent guests move a few MB
+    # per minute (measured: 42 MB over 9P took 4.5 min each way), so a full
+    # checkout turns this job into an npm bulk-transfer benchmark -- it is
+    # what left the ReactOS push without a completion marker after 12
+    # minutes. The action under test is fetched into _actions, which the
+    # sync excludes anyway, so it is unaffected.
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: |
+          conf
+          .github
+        sparse-checkout-cone-mode: true
+    - name: Test in FreeBSD
+      if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}', 'tar') }}
+      id: test
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
+      with:
+        mem: 4096
+        debug: true
+        sync: tar
+        run: |
+
+    - name: Verify tar copyback on host
+      if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}', 'tar') }}
+      run: |
+        set -e
+        ls -lah "$HOME/work"
+
+    - name: Collect VM debug artifacts
+      if: failure()
+      run: |
+        mkdir -p ./vm-debug-artifacts
+        find /home/runner/work/_actions -type d -name output 2>/dev/null | while read d; do
+          find "$d" -type f \( -name "*.log" -o -name "*.ppm" \) | while read f; do
+            rel="${f#/home/runner/work/_actions/}"
+            mkdir -p "./vm-debug-artifacts/$(dirname "$rel")"
+            cp "$f" "./vm-debug-artifacts/$rel"
+          done
+        done
+        echo "Collected:"
+        find ./vm-debug-artifacts -type f || true
+    - name: Upload VM debug artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: vm-debug-${{ github.job }}-${{ strategy.job-index }}
+        path: vm-debug-artifacts/
+        retention-days: 7
+        if-no-files-found: ignore
+
+
+
+  # 9P share (Plan 9 / 9front). Same one-leg shape and same string-grep gate
+  # as testtar above, and for the same reason: 9p is that guest's ONLY
+  # transport, so without this job a 9p-only repo would run no test at all --
+  # every other job here is gated on rsync/scp/sshfs/nfs/tar. Unlike tar this
+  # is a LIVE mount (the runner mounts the guest's exportfs through the kernel
+  # v9fs client), so there is no copy-back: a file the guest writes is already
+  # on the host, which is exactly what the verify step checks. The in-guest
+  # body is per-repo data (VM_9P_RUN / VM_9P_VERIFY) because this guest speaks
+  # rc, not POSIX sh.
+  test9p:
+    runs-on: ubuntu-24.04
+    name: 9p FreeBSD
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    # Sparse for the same reason as testtar above: the workspace is the
+    # payload, and 35 MB of committed node_modules measures the guest's
+    # patience rather than the 9P path.
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: |
+          conf
+          .github
+        sparse-checkout-cone-mode: true
+    - name: Test in FreeBSD
+      if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}', '9p') }}
+      id: test
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
+      with:
+        mem: 4096
+        debug: true
+        sync: 9p
+        run: |
+
+    - name: Verify 9P share on host
+      if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}', '9p') }}
+      run: |
+        set -e
+        ls -lah "$HOME/work"
+
+    - name: Collect VM debug artifacts
+      if: failure()
+      run: |
+        mkdir -p ./vm-debug-artifacts
+        find /home/runner/work/_actions -type d -name output 2>/dev/null | while read d; do
+          find "$d" -type f \( -name "*.log" -o -name "*.ppm" \) | while read f; do
+            rel="${f#/home/runner/work/_actions/}"
+            mkdir -p "./vm-debug-artifacts/$(dirname "$rel")"
+            cp "$f" "./vm-debug-artifacts/$rel"
+          done
+        done
+        echo "Collected:"
+        find ./vm-debug-artifacts -type f || true
+    - name: Upload VM debug artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: vm-debug-${{ github.job }}-${{ strategy.job-index }}
+        path: vm-debug-artifacts/
+        retention-days: 7
+        if-no-files-found: ignore
+
+
 
 
   test:
@@ -814,7 +957,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         disableCache: [ "", "true"]
         exclude:
@@ -834,6 +977,8 @@ jobs:
             arch: "i386"
           - runs: "ubuntu-24.04-arm"
             arch: "loongarch64"
+          - runs: "ubuntu-24.04-arm"
+            arch: "armv7"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -971,7 +1116,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1065,7 +1210,7 @@ jobs:
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "15.0", "15.1"
 , ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64"]
+        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
         exclude:
           - runs: "ubuntu-24.04-arm"
@@ -1084,6 +1229,8 @@ jobs:
             arch: "i386"
           - runs: "ubuntu-24.04-arm"
             arch: "loongarch64"
+          - runs: "ubuntu-24.04-arm"
+            arch: "armv7"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -1221,7 +1368,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1354,7 +1501,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         mem: 4096
         debug: true
@@ -1421,7 +1568,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs"],"aarch64":["rsync","scp","sshfs","nfs"],"riscv64":["nfs","scp"],"powerpc64":["nfs","scp"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         mem: 4096
         debug: true
@@ -1479,22 +1626,46 @@ jobs:
         retention-days: 7
         if-no-files-found: ignore
 
+  # Skipped on RISC OS: its guest agent is not a shell and has no status
+  # channel at all, so anyvm can only report that a command COMPLETED, never
+  # whether it succeeded. A test whose whole point is "this must come back
+  # failed" therefore cannot pass there, and pretending otherwise would just
+  # bake a permanent red into that repo.
   testerr:
+    if: ${{ !contains(github.repository, 'riscos') }}
     strategy:
       fail-fast: false
     runs-on: ubuntu-24.04
     name: test default error FreeBSD
     steps:
+    # Sparse, like testtar/test9p: this job runs with the repo's DEFAULT sync,
+    # which on the agent guests is the tar or 9P channel, and it would
+    # otherwise ship 35 MB of committed node_modules through it just to check
+    # that a failing command reports failure.
     - uses: actions/checkout@v7
+      with:
+        sparse-checkout: |
+          conf
+          .github
+        sparse-checkout-cone-mode: true
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         debug: true
+        # A command that EXISTS and fails, rather than `false` or a made-up
+        # name. This body is shared by every guest and the agent guests do
+        # not run a POSIX shell: 9front has no /bin/false (probed live), and
+        # cmd.exe has none either. An unknown NAME is worse still -- ion on
+        # Redox aborts the whole line with "pipeline execution error", so the
+        # `|| marker` arm never runs and the exec waits out its full timeout
+        # (measured: rc 124 instead of a prompt failure). A failing `ls` is
+        # reported the ordinary way by sh, rc and ion, and cmd.exe treats the
+        # missing `ls` itself as a plain command failure.
         run: |
-          echo "this is an error"
-          false
+          echo this is an error
+          ls /no/such/path
     - name: Verify that the previous step failed
       if: steps.testerr.outcome != 'failure'
       run: |
@@ -1512,16 +1683,31 @@ jobs:
     runs-on: ubuntu-24.04
     name: test default success FreeBSD
     steps:
+    # Sparse, same reason as testerr above -- and this is the job the full
+    # payload actually broke: the ReactOS push spent 12 minutes on those
+    # node_modules and still had no completion marker, and the RISC OS
+    # copy-back corrupted its archive at that size while the small-payload
+    # tar job passed.
     - uses: actions/checkout@v7
+      with:
+        sparse-checkout: |
+          conf
+          .github
+        sparse-checkout-cone-mode: true
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@f1b985eb7db04f5fa78ae1bf7e2c49a056111b18
+      uses: vmactions/freebsd-vm@f3ce7aae17219d1fe35f977bf2a854ec6e8f15d8
       with:
         debug: true
+        # No `true` and no double quotes: this body runs on every guest, and
+        # the agent guests are not POSIX. 9front has no /bin/true (probed
+        # live -- "file does not exist: './true'", which is exactly why this
+        # job went red on plan9-vm), cmd.exe has none either, and rc treats
+        # double quotes as ordinary characters rather than stripping them.
+        # A bare echo is valid in sh, rc, cmd.exe and ion alike.
         run: |
-          echo "this is a normal command"
-          true
+          echo this is a normal command
     - name: Verify that the previous step succeeded
       if: steps.testpass.outcome != 'success'
       run: |

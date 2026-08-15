@@ -1,5 +1,5 @@
 name: 'FreeBSD-vm'
-description: 'Run CI in FreeBSD for GitHub Actions'
+description: 'Test in a real FreeBSD virtual machine on GitHub Actions -- QEMU-powered, with SSH and two-way folder sync'
 inputs:
   osname:
     description: 'The OS name'
@@ -37,7 +37,7 @@ inputs:
     description: 'How to synchronize the source code to/from the VM. Default is rsync.'
     required: false
   copyback:
-    description: 'whether or not to copy the build result repo back from the VM to the host Mac OS, defalt is True'
+    description: 'Whether or not to copy the build result repo back from the VM to the host runner. Default is true.'
     required: false
   debug:
     description: 'output debug message'
@@ -74,8 +74,8 @@ outputs:
   cache-after-prepare-hit:
     description: 'true when a prepared VM image cache was restored and the prepare step was skipped, false otherwise.'
 branding:
-  icon: 'activity'
-  color: 'green'
+  icon: ''
+  color: ''
 
 runs:
   using: 'node24'
