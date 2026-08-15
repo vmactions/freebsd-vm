@@ -143,7 +143,7 @@ jobs:
           def="$DEFAULT_RELEASE"
 
           # non-x86_64 arches the test matrix covers (keep in sync with test.tpl.yml)
-          ARCHES="aarch64 riscv64 powerpc64 sparc64 ppc64le s390x i386 loongarch64"
+          ARCHES="aarch64 riscv64 powerpc64 sparc64 ppc64le s390x i386 loongarch64 armv7"
 
           # methods (comma list) for an arch suffix, from the default release
           # conf; fall back to any release that has that arch.
@@ -228,8 +228,13 @@ jobs:
           currentHash="$(cat .github/workflows/test.yml | grep -i "uses: ${{ github.repository }}" | head -1 | cut -d @ -f 2)"
           echo "Current hash: $currentHash"
           # On a brand-new repo with a single commit, HEAD~1 does not exist.
-          # Under `bash -e` that aborts the step (exit 128), so fall back to HEAD.
-          lastHash="$(git rev-parse 'HEAD~1' 2>/dev/null || git rev-parse HEAD)"
+          # Under `bash -e` that aborts the step (exit 128), so fall back to
+          # HEAD. --verify --quiet matters: a plain `git rev-parse HEAD~1`
+          # echoes the literal string "HEAD~1" to stdout even when the rev is
+          # missing, so the fallback would CONCATENATE ("HEAD~1\n<sha>") and
+          # the newline then breaks the sed below with "unterminated s command"
+          # (hit on nextbsd-vm's very first push).
+          lastHash="$(git rev-parse --verify --quiet 'HEAD~1' 2>/dev/null || git rev-parse HEAD)"
           echo "Last hash: $lastHash"
           oldHash="$lastHash"
           echo "OLD_HASH: $OLD_HASH"
