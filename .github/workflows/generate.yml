@@ -134,11 +134,15 @@ jobs:
 
       - name: Compute sync method map and missing-arch excludes
         run: |
-          # Turn the per-conf VM_SYNC_METHODS into two values for the renderer:
+          # Turn the per-conf VM_SYNC_METHODS into three kinds of value for the
+          # renderer:
           #   VM_SYNC_METHODS_MAP    - {"<arch>":["method",...]} keyed by matrix.arch,
           #                            so test.yml gates each sync job with `if:`.
           #   VM_TEST_EXCLUDE_MISSING - matrix excludes for release/arch combos
           #                            that have no conf (so they never spawn).
+          #   VM_TEST_EXCLUDE_<METHOD> - matrix excludes for combos whose arch
+          #                            does not support that job's sync method
+          #                            (so they never spawn either).
           . conf/default.release.conf
           def="$DEFAULT_RELEASE"
 
@@ -190,10 +194,49 @@ jobs:
           done
           echo "exclude-missing:"; cat .github/data/exclude-missing.txt
 
-          # expose both to template-render via the datafile (idempotent)
+          # Per-method excludes. A sync job's leg is pointless when that arch's
+          # VM_SYNC_METHODS does not list the job's method: every step in it is
+          # gated off by the same map, so the leg burns a runner slot and a
+          # checkout to produce a green job that did nothing. Read from the very
+          # same methods_for() as sync-map.json above, so an exclude and a
+          # step-level `if:` can never disagree.
+          #
+          # Combos with no conf are skipped -- exclude-missing.txt already
+          # covers them. x86_64 is the exception: it has no entry there (the
+          # loop above walks $ARCHES, which is suffix arches only), so it is
+          # checked unconditionally here, which also drops the dead x86_64 leg
+          # on guests that ship no conf/<release>.conf at all (methods_for
+          # returns empty for a missing conf -> supports nothing -> excluded).
+          SYNC_JOB_METHODS="sshfs nfs scp rsync"
+          for meth in $SYNC_JOB_METHODS; do
+            : > ".github/data/exclude-${meth}.txt"
+          done
+          for r in $(sed 's/[",]/ /g' conf/test.releases) ""; do
+            rc="$r"; [ -z "$rc" ] && rc="$def"
+            for a in "" $ARCHES; do
+              if [ -n "$a" ] && [ ! -e "conf/${rc}-${a}.conf" ]; then continue; fi
+              have=",$(methods_for "$a" | tr -d ' '),"
+              for meth in $SYNC_JOB_METHODS; do
+                case "$have" in
+                  *",${meth},"*) ;;
+                  *) printf '          - release: "%s"\n            arch: "%s"\n' \
+                       "$r" "$a" >> ".github/data/exclude-${meth}.txt" ;;
+                esac
+              done
+            done
+          done
+          for meth in $SYNC_JOB_METHODS; do
+            echo "exclude-${meth}:"; cat ".github/data/exclude-${meth}.txt"
+          done
+
+          # expose them all to template-render via the datafile (idempotent)
           df=".github/data/datafile.ini"
           grep -q '^VM_SYNC_METHODS_MAP=' "$df" || printf '\nVM_SYNC_METHODS_MAP=@.github/data/sync-map.json\n' >> "$df"
           grep -q '^VM_TEST_EXCLUDE_MISSING=' "$df" || printf '\nVM_TEST_EXCLUDE_MISSING=@.github/data/exclude-missing.txt\n' >> "$df"
+          for meth in $SYNC_JOB_METHODS; do
+            v="VM_TEST_EXCLUDE_$(printf '%s' "$meth" | tr 'a-z' 'A-Z')"
+            grep -q "^${v}=" "$df" || printf '\n%s=@.github/data/exclude-%s.txt\n' "$v" "$meth" >> "$df"
+          done
 
       - name: Generate files
         uses: anyvm-org/template-render@v0.0.4
@@ -274,6 +317,10 @@ jobs:
             .github/data/datafile.ini \
             .github/data/sync-map.json \
             .github/data/exclude-missing.txt \
+            .github/data/exclude-sshfs.txt \
+            .github/data/exclude-nfs.txt \
+            .github/data/exclude-scp.txt \
+            .github/data/exclude-rsync.txt \
             conf \
             package.json \
             package-lock.json \
