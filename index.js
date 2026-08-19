@@ -584,19 +584,26 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
       "-o", "Acquire::Languages=none",
     ];
 
-    // 1. Neutralize the man-db trigger. It re-indexes the whole man hierarchy
-    // after the install (measured 4.7s on a runner) to build pages nothing in
-    // a CI job ever reads. man-db.postinst's run_mandb() returns early when
-    // this stamp file is gone, so removing it makes the trigger a no-op. The
-    // runner is single-use, so the global side effect dies with the job.
-    await exec.exec("sudo", ["rm", "-f", "/var/lib/man-db/auto-update"],
+    // 1. Drop apt's needrestart hook. After every install it scans the running
+    // processes to report which services want restarting -- measured 3-4.7s on
+    // a runner that gets destroyed minutes later. The hook is a single
+    // DPkg::Post-Invoke line in this one file, so removing the file is enough.
+    // (No point touching man-db: the runner image already ships
+    // man-db/auto-update false, so that trigger is a no-op before we start.)
+    await exec.exec("sudo", ["rm", "-f", "/etc/apt/apt.conf.d/99needrestart"],
       { silent: true, ignoreReturnCode: true });
 
-    // 2. Install the packages. The runner image ships a populated apt index,
-    // so try it as-is first: 'apt-get update' measured ~10s on both x86_64 and
-    // arm64 runners and is pure overhead whenever the preinstalled index still
-    // resolves. It stops resolving only once the archive supersedes a pinned
-    // version, and step 3 recovers from exactly that.
+    // 2. Install the packages straight off the preinstalled apt index. The
+    // runner image keeps /var/lib/apt/lists (actions/runner-images cleanup.sh
+    // only runs 'apt-get clean'), so the index resolves without a refresh:
+    // 266/266 jobs on run 32203913004 installed without ever reaching the
+    // retry in step 3, saving a median 5.6s each.
+    //
+    // Under observation: that same run had 16/266 jobs whose mirror download
+    // dropped below 3847 kB/s (worst 140 kB/s), a rate not seen in any of 375
+    // pre-change samples. Cause unproven -- no sibling repo ran that day, so
+    // the mirror's own state could not be controlled for. Re-check the
+    // download-rate spread over the next runs before calling this settled.
     const installArgs = ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs];
     const installRc = await exec.exec("sudo", installArgs, { ignoreReturnCode: true });
 
