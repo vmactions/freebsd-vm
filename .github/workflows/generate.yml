@@ -21,9 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with: 
+        with:
           token: ${{ secrets.VM_TOKEN }}
           fetch-depth: '2'
+          # checkout fetches NO tags at any fetch-depth unless asked. Without
+          # this, `git tag` below returns nothing, LATEST_TAG is empty and
+          # ${LATEST_TAG:1} stamps package.json's version as "" -- which is
+          # what every sibling shipped until 2026-08-19.
+          fetch-tags: true
 
       - name: Preparing env variables
         run: |
