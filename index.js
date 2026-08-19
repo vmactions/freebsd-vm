@@ -584,11 +584,29 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
       "-o", "Acquire::Languages=none",
     ];
 
-    // 1. Update with quiet mode
-    await exec.exec("sudo", ["apt-get", "update", "-q"], { silent: true });
+    // 1. Neutralize the man-db trigger. It re-indexes the whole man hierarchy
+    // after the install (measured 4.7s on a runner) to build pages nothing in
+    // a CI job ever reads. man-db.postinst's run_mandb() returns early when
+    // this stamp file is gone, so removing it makes the trigger a no-op. The
+    // runner is single-use, so the global side effect dies with the job.
+    await exec.exec("sudo", ["rm", "-f", "/var/lib/man-db/auto-update"],
+      { silent: true, ignoreReturnCode: true });
 
-    // 2. Install the packages
-    await exec.exec("sudo", ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs]);
+    // 2. Install the packages. The runner image ships a populated apt index,
+    // so try it as-is first: 'apt-get update' measured ~10s on both x86_64 and
+    // arm64 runners and is pure overhead whenever the preinstalled index still
+    // resolves. It stops resolving only once the archive supersedes a pinned
+    // version, and step 3 recovers from exactly that.
+    const installArgs = ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs];
+    const installRc = await exec.exec("sudo", installArgs, { ignoreReturnCode: true });
+
+    // 3. Fall back to a refreshed index and retry. Not silent, and not
+    // ignoreReturnCode: a failure here is a real failure.
+    if (installRc !== 0) {
+      core.info(`apt-get install failed against the preinstalled index (exit ${installRc}); refreshing it and retrying.`);
+      await exec.exec("sudo", ["apt-get", "update", "-q"], { silent: true });
+      await exec.exec("sudo", installArgs);
+    }
 
     if (fs.existsSync('/dev/kvm')) {
       await exec.exec("sudo", ["chmod", "666", "/dev/kvm"]);
