@@ -74,8 +74,8 @@ outputs:
   cache-after-prepare-hit:
     description: 'true when a prepared VM image cache was restored and the prepare step was skipped, false otherwise.'
 branding:
-  icon: ''
-  color: ''
+  icon: 'server'
+  color: 'red'
 
 runs:
   using: 'node24'
