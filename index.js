@@ -593,26 +593,97 @@ async function install(arch, sync, builderVersion, debug, disableCache) {
     await exec.exec("sudo", ["rm", "-f", "/etc/apt/apt.conf.d/99needrestart"],
       { silent: true, ignoreReturnCode: true });
 
-    // 2. Install the packages straight off the preinstalled apt index. The
-    // runner image keeps /var/lib/apt/lists (actions/runner-images cleanup.sh
-    // only runs 'apt-get clean'), so the index resolves without a refresh:
-    // 266/266 jobs on run 32203913004 installed without ever reaching the
-    // retry in step 3, saving a median 5.6s each.
+    // 2. Restore the .deb files from a previous run into apt's archive cache,
+    // so step 3 installs from disk instead of pulling them off the Ubuntu
+    // mirror -- the least reliable link in the job (measured: a median 378
+    // kB/s for a whole hour on freebsd-vm run 32207630189 attempt 1, worst 14
+    // kB/s, one job stuck in apt for 56 minutes).
     //
-    // Under observation: that same run had 16/266 jobs whose mirror download
-    // dropped below 3847 kB/s (worst 140 kB/s), a rate not seen in any of 375
-    // pre-change samples. Cause unproven -- no sibling repo ran that day, so
-    // the mirror's own state could not be controlled for. Re-check the
-    // download-rate spread over the next runs before calling this settled.
+    // The key carries ImageVersion, so a weekly runner-image rebuild starts a
+    // fresh entry rather than serving .debs that no longer match the
+    // preinstalled index step 3 resolves against. Even when it does go stale,
+    // apt only reuses a cached .deb whose hash matches the index, so the worst
+    // case is a partial download, never a wrong install.
+    const aptCacheDir = path.join(os.homedir(), ".apt-cache");
+    const imageTag = `${process.env.ImageOS || 'linux'}-${process.env.ImageVersion || os.release()}`;
+    const pkgsHash = crypto.createHash('md5').update(pkgs.slice().sort().join(',')).digest('hex');
+    const aptCacheKey = `apt-pkgs-${process.platform}-${process.arch}-${imageTag}-${pkgsHash}`;
+    let aptRestoredKey = null;
+
+    if (!disableCache) {
+      try {
+        if (!fs.existsSync(aptCacheDir)) {
+          fs.mkdirSync(aptCacheDir, { recursive: true });
+        }
+        aptRestoredKey = await cache.restoreCache([aptCacheDir], aptCacheKey);
+        if (aptRestoredKey) {
+          core.info(`Restored apt packages from cache: ${aptRestoredKey}`);
+          await exec.exec("sudo", ["sh", "-c",
+            `cp -p ${aptCacheDir}/*.deb /var/cache/apt/archives/ 2>/dev/null || true`],
+            { silent: true, ignoreReturnCode: true });
+        }
+      } catch (e) {
+        core.warning(`Apt cache restore failed: ${e.message}`);
+      }
+    }
+
+    // 3. Install the packages straight off the preinstalled apt index. The
+    // runner image keeps /var/lib/apt/lists (actions/runner-images cleanup.sh
+    // only runs 'apt-get clean'), so the index resolves without a refresh and
+    // the retry in step 4 stays unused.
+    //
+    // Measured across all 17 *-vm repos, each against its own pre-change run:
+    // install() went from a median 19.9s to 13.4s, improving in 16 of 17. The
+    // odd one out (freebsd-vm) hit an hour where the mirror itself was sick.
+    // An early worry that skipping the update caused intermittent mirror
+    // stalls did NOT survive that wider sample -- sub-1MB/s downloads ran
+    // 18/208 BEFORE the change and 9/208 after. The 375 clean pre-change
+    // samples that raised the worry were all from one repo.
     const installArgs = ["apt-get", "install", "-y", "-q", ...aptOpts, "--no-install-recommends", ...pkgs];
     const installRc = await exec.exec("sudo", installArgs, { ignoreReturnCode: true });
 
-    // 3. Fall back to a refreshed index and retry. Not silent, and not
+    // 4. Fall back to a refreshed index and retry. Not silent, and not
     // ignoreReturnCode: a failure here is a real failure.
     if (installRc !== 0) {
       core.info(`apt-get install failed against the preinstalled index (exit ${installRc}); refreshing it and retrying.`);
       await exec.exec("sudo", ["apt-get", "update", "-q"], { silent: true });
       await exec.exec("sudo", installArgs);
+    }
+
+    // 5. Save the downloaded .debs for the next run. Only on a miss -- on a hit
+    // the entry already holds them and the key is immutable, so re-saving would
+    // just burn an upload and log an "already exists" warning. Runs in the
+    // background: the VM boot that follows does not depend on it.
+    if (!disableCache && !aptRestoredKey) {
+      const saveAptCache = async () => {
+        activeBackgroundTasks++;
+        try {
+          // apt-get leaves the .debs behind: Ubuntu's
+          // Keep-Downloaded-Packages "0" is scoped to binary::apt::, so it
+          // applies to `apt` but not to the `apt-get` above (verified both
+          // ways on 24.04).
+          if (!fs.existsSync(aptCacheDir)) {
+            fs.mkdirSync(aptCacheDir, { recursive: true });
+          }
+          await exec.exec("sh", ["-c",
+            `cp -p /var/cache/apt/archives/*.deb ${aptCacheDir}/ 2>/dev/null || true`],
+            { silent: true, ignoreReturnCode: true });
+          if (fs.readdirSync(aptCacheDir).some(f => f.endsWith('.deb'))) {
+            await cache.saveCache([aptCacheDir], aptCacheKey);
+            core.info(`Saved apt packages to cache: ${aptCacheKey}`);
+          }
+        } catch (e) {
+          if (e.message && (e.message.includes('already exists') ||
+            e.message.includes('Cache already exists'))) {
+            core.info(`Apt cache save skipped (benign): ${e.message}`);
+          } else {
+            core.warning(`Apt cache save failed: ${e.message}`);
+          }
+        } finally {
+          activeBackgroundTasks--;
+        }
+      };
+      backgroundPromises.push(saveAptCache());
     }
 
     if (fs.existsSync('/dev/kvm')) {
