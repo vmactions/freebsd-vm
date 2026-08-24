@@ -278,7 +278,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -561,7 +561,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -852,7 +852,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -989,7 +989,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'tar') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         mem: 4096
         debug: true
@@ -1056,7 +1056,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', '9p') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         mem: 4096
         debug: true
@@ -1333,7 +1333,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1657,7 +1657,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1790,7 +1790,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         mem: 4096
         debug: true
@@ -1857,7 +1857,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["nfs","scp","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         mem: 4096
         debug: true
@@ -1940,7 +1940,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         debug: true
         # A command that EXISTS and fails, rather than `false` or a made-up
@@ -1986,7 +1986,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@759dd0c7a66278ed7f64fb287491ad787f86db58
+      uses: vmactions/freebsd-vm@139a2cb7198fe956e35e3cbb77d5951aa89fc394
       with:
         debug: true
         # No `true` and no double quotes: this body runs on every guest, and
