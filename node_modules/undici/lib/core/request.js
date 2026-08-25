@@ -66,6 +66,10 @@ class Request {
       throw new InvalidArgumentError('upgrade must be a string')
     }
 
+    if (upgrade && !isValidHeaderValue(upgrade)) {
+      throw new InvalidArgumentError('invalid upgrade header')
+    }
+
     if (headersTimeout != null && (!Number.isFinite(headersTimeout) || headersTimeout < 0)) {
       throw new InvalidArgumentError('invalid headersTimeout')
     }
@@ -346,7 +350,13 @@ function processHeader (request, key, val) {
       } else if (typeof val[i] === 'object') {
         throw new InvalidArgumentError(`invalid ${key} header`)
       } else {
-        arr.push(`${val[i]}`)
+        // Coerce primitives (and reject unsafe coercions such as functions
+        // with a crafted toString/Symbol.toPrimitive).
+        const str = `${val[i]}`
+        if (!isValidHeaderValue(str)) {
+          throw new InvalidArgumentError(`invalid ${key} header`)
+        }
+        arr.push(str)
       }
     }
     val = arr
@@ -357,16 +367,27 @@ function processHeader (request, key, val) {
   } else if (val === null) {
     val = ''
   } else {
+    // Coerce primitives (and reject unsafe coercions such as functions
+    // with a crafted toString/Symbol.toPrimitive).
     val = `${val}`
+    if (!isValidHeaderValue(val)) {
+      throw new InvalidArgumentError(`invalid ${key} header`)
+    }
   }
 
-  if (request.host === null && headerName === 'host') {
+  if (headerName === 'host') {
+    if (request.host !== null) {
+      throw new InvalidArgumentError('duplicate host header')
+    }
     if (typeof val !== 'string') {
       throw new InvalidArgumentError('invalid host header')
     }
     // Consumed by Client
     request.host = val
-  } else if (request.contentLength === null && headerName === 'content-length') {
+  } else if (headerName === 'content-length') {
+    if (request.contentLength !== null) {
+      throw new InvalidArgumentError('duplicate content-length header')
+    }
     request.contentLength = parseInt(val, 10)
     if (!Number.isFinite(request.contentLength)) {
       throw new InvalidArgumentError('invalid content-length header')
