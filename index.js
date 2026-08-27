@@ -456,6 +456,29 @@ function isSlowEmulatedArch(arch) {
   return !!arch && arch !== 'x86_64' && arch !== 'amd64';
 }
 
+// AlmaLinux 10 and Rocky 10 ship rsync 3.4.4, and its ppc64le build hands
+// utimensat a struct timespec with one field left uninitialized. strace on the
+// receiver shows either a stack address duplicated into both members
+// ({tv_sec=140736855219272, tv_nsec=140736855219272}) or a garbage pair
+// ({tv_sec=-1167088121787636991, tv_nsec=1167088121787636990}); tv_nsec is then
+// far outside 0..999999999, the kernel returns EINVAL, and rsync exits 23. It
+// hits a different ~0.05% of files every run because it depends on what the
+// stack happened to hold, and it takes the customshell job down with it, since
+// that defaults to rsync.
+//
+// Only the timestamp call fails -- file CONTENT always transfers correctly
+// (verified: 5000/5000 identical by sha256 with -t dropped). So skip -t rather
+// than give up rsync on the arch; the trees CI syncs come from actions/checkout,
+// where every mtime is already just "checkout time".
+//
+// Not a kernel, XFS or emulation fault: an in-guest utimensat probe on the same
+// image accepts 5000/5000 timestamps including every nsec edge value, and the
+// identical push to almalinux x86_64 -- same rsync build, same XFS -- is clean.
+// Debian ppc64le is clean too, so it is this rsync build, not the architecture.
+function rsyncOmitsTimes(osName, arch) {
+  return arch === 'ppc64le' && (osName === 'almalinux' || osName === 'rocky');
+}
+
 // ssh transport handed to rsync for slow emulated guests: stay connected
 // through long stalls instead of giving up after the default keepalive window.
 // 30s interval x 60 unanswered probes = ~30 min of grace before disconnecting.
@@ -1403,10 +1426,11 @@ exit $rc
 `;
     } else if (sync === 'scp') {
       // Same per-OS archive choices as the final copyback block: cpio -H
-      // ustar by default, plain tar on BlissOS (toybox cpio ignores -H
-      // ustar), runtime cpio probe on Haiku.
+      // ustar by default, plain tar on BlissOS and Alpine (toybox cpio
+      // ignores -H ustar, BusyBox cpio cannot write ustar at all), runtime
+      // cpio probe on Haiku.
       let shellPullRemote;
-      if (osName === 'blissos') {
+      if (osName === 'blissos' || osName === 'alpine') {
         shellPullRemote = `cd "${vmwork}" && tar -cf - --exclude .git .`;
       } else if (osName === 'haiku') {
         shellPullRemote = `cd "${vmwork}" && if command -v cpio >/dev/null 2>&1; then find . -name .git -prune -o -print | cpio -o -H ustar; else tar -cf - --exclude .git .; fi`;
@@ -1482,6 +1506,9 @@ exit $rc
         core.info("Syncing via Rsync");
         const slowArch = isSlowEmulatedArch(arch);
         const rsyncArgs = [debug === 'true' ? "-avrtopg" : "-artopg", `--rsync-path=${REMOTE_RSYNC_PATH}`, "--exclude", "_actions", "--exclude", "_PipelineMapping"];
+        if (rsyncOmitsTimes(osName, arch)) {
+          rsyncArgs.push("--no-times");
+        }
         if (!disableCache) {
           rsyncArgs.push("--exclude", "cache.tzst");
         }
@@ -1726,11 +1753,14 @@ exit $rc
           // `sync: tar` (push done by anyvm at boot) reuses the same
           // transport for the pull.
           let useCpio = true;
-          if (osName === 'blissos') {
-            // Toybox cpio ignores `-H ustar` and emits a newc cpio stream that
+          if (osName === 'blissos' || osName === 'alpine') {
+            // Neither guest can produce a ustar stream with cpio. Toybox cpio
+            // (BlissOS) ignores `-H ustar` and emits a newc cpio stream that
             // the host `tar -xf` rejects ("This does not look like a tar
-            // archive"). Toybox tar writes a standard, host-readable archive,
-            // so copy back with tar directly instead of cpio.
+            // archive"); BusyBox cpio (Alpine) has no ustar writer at all, so
+            // it prints its usage to stderr and sends zero bytes. Both ship a
+            // tar that writes a standard, host-readable archive, so copy back
+            // with tar directly instead of cpio.
             useCpio = false;
           } else if (osName === 'haiku') {
             try {
