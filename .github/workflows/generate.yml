@@ -8,6 +8,7 @@ on:
       - 'main'
     paths:
       - 'conf/*'
+      - 'hooks/*'
       - '.github/data/*'
       - '.github/workflows/generate.yml'
 
