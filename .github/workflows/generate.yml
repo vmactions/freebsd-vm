@@ -166,6 +166,25 @@ jobs:
             [ -n "$cf" ] && [ -e "$cf" ] && ( . "$cf"; printf '%s' "$VM_SYNC_METHODS" )
           }
 
+          # methods for ONE release+arch, read from THAT release's own conf.
+          # The per-method excludes below must use this rather than
+          # methods_for(): sync capability is a property of the RELEASE, not
+          # only of the arch. methods_for() always answers from the DEFAULT
+          # release, which was fine while every release of an arch had the same
+          # methods -- netbsd 11.0-microvm broke that assumption. It is x86_64
+          # like 11.0 but drops nfs (its MICROVM kernel has no NFS client), so
+          # the arch answer said "nfs supported", no exclude was emitted, and
+          # the nfs leg ran and failed with "sync method 'nfs' is not supported
+          # by netbsd 11.0-microvm" (netbsd-vm run 33459640344).
+          # No conf for that release+arch -> empty -> unsupported, which keeps
+          # the deliberate x86_64 behaviour below (a guest shipping no
+          # conf/<release>.conf at all has its dead x86_64 leg dropped).
+          methods_for_rel() {
+            _r="$1"; _a="$2"
+            if [ -n "$_a" ]; then _cf="conf/${_r}-${_a}.conf"; else _cf="conf/${_r}.conf"; fi
+            [ -e "$_cf" ] && ( . "$_cf"; printf '%s' "$VM_SYNC_METHODS" )
+          }
+
           # comma list -> JSON array: rsync,scp -> ["rsync","scp"] (empty -> [])
           to_json() {
             printf '['
@@ -200,12 +219,22 @@ jobs:
           done
           echo "exclude-missing:"; cat .github/data/exclude-missing.txt
 
-          # Per-method excludes. A sync job's leg is pointless when that arch's
-          # VM_SYNC_METHODS does not list the job's method: every step in it is
-          # gated off by the same map, so the leg burns a runner slot and a
-          # checkout to produce a green job that did nothing. Read from the very
-          # same methods_for() as sync-map.json above, so an exclude and a
-          # step-level `if:` can never disagree.
+          # Per-method excludes. A sync job's leg is pointless -- or worse,
+          # RED -- when that release's VM_SYNC_METHODS does not list the job's
+          # method: at best every step is gated off and the leg burns a runner
+          # slot to produce a green job that did nothing, at worst the action
+          # refuses the unsupported method and the leg fails.
+          #
+          # Keyed on RELEASE+arch via methods_for_rel(), while sync-map.json
+          # above stays keyed on arch alone (it feeds ~20 step-level `if:`
+          # expressions of the form MAP[arch]). The two therefore no longer
+          # answer identically for a release that differs from its arch-mates.
+          # That asymmetry is safe in the direction that occurs today -- a
+          # release supporting FEWER methods gets its leg excluded here and so
+          # never reaches the step gate. A release supporting MORE than the
+          # default would be the reverse: the leg would run and every step
+          # would skip, i.e. a silent do-nothing green. No such release exists
+          # today; if one appears, make the map release-keyed too.
           #
           # Combos with no conf are skipped -- exclude-missing.txt already
           # covers them. x86_64 is the exception: it has no entry there (the
@@ -221,7 +250,7 @@ jobs:
             rc="$r"; [ -z "$rc" ] && rc="$def"
             for a in "" $ARCHES; do
               if [ -n "$a" ] && [ ! -e "conf/${rc}-${a}.conf" ]; then continue; fi
-              have=",$(methods_for "$a" | tr -d ' '),"
+              have=",$(methods_for_rel "$rc" "$a" | tr -d ' '),"
               for meth in $SYNC_JOB_METHODS; do
                 case "$have" in
                   *",${meth},"*) ;;
