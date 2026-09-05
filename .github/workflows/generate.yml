@@ -301,7 +301,26 @@ jobs:
           # npm install honors the committed package-lock.json, so vulnerable
           # transitive deps stay pinned forever. audit fix bumps only the
           # vulnerable ones, within the existing semver ranges (no --force).
-          npm audit fix
+          #
+          # The advisories endpoint (registry.npmjs.org/-/npm/v1/security/
+          # advisories/bulk) is a separate service from the package registry
+          # and fails on its own: on 2026-09-04 it answered 503 / timed out
+          # for 9+ hours while npm install kept working, and every Step 2 in
+          # the fleet went red on it. npm install's built-in audit tolerates
+          # that outage (npm/cli lib/utils/audit-error.js only throws when
+          # the command is `audit`); a standalone `npm audit fix` exits 1
+          # with "audit endpoint returned an error". An outage is no reason
+          # to skip the regen -- the lock-pinned tree is what shipped before
+          # audit fix existed -- so tolerate exactly that error and keep
+          # every other audit fix failure (unfixable vulnerabilities) fatal.
+          set -o pipefail
+          if ! npm audit fix 2>&1 | tee /tmp/npm-audit-fix.log; then
+            if grep -q 'audit endpoint returned an error' /tmp/npm-audit-fix.log; then
+              echo "::warning::npm advisories endpoint unavailable, skipping audit fix this run"
+            else
+              exit 1
+            fi
+          fi
           git add node_modules
 
       - name: Check modifications
