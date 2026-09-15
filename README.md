@@ -50,7 +50,9 @@ All the supported releases are here:
 | 13.4 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | —[^rv-stub] | ✅ (nfs,scp,tar) |
 | 13.3 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
 | 13.2 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
-| 12.4 | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) | —[^rv-none] | —[^ppc-panic] |
+| 12.4 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | —[^rv-none] | —[^ppc-panic] |
+| 11.4 | ✅ (rsync,scp,sshfs,nfs,tar) | — | — | — |
+| 10.4 | ✅ (rsync,scp,sshfs,nfs,tar) | — | — | — |
 
 <!-- arch-label: aarch64 = aarch64(arm64) -->
 <!-- absent: 13.4-riscv64 rv-stub -->
@@ -307,7 +309,7 @@ You can also give only the leading, `.` separated part of a release. The newest 
 ...
 ```
 
-Here `release: "15"` runs the newest `15.x` release of FreeBSD. Every leading part works the same way, this action ships 12, 13, 14, 15. Each part you give has to match in full, so a release that does not exist fails the job instead of quietly falling back to another one.
+Here `release: "15"` runs the newest `15.x` release of FreeBSD. Every leading part works the same way, this action ships 10, 11, 12, 13, 14, 15. Each part you give has to match in full, so a release that does not exist fails the job instead of quietly falling back to another one.
 
 ## 6. Select architecture
 
