@@ -144,6 +144,42 @@
             arch: loongarch64
           - release: "15.1"
             arch: armv7
+          - release: "10.4"
+            arch: aarch64
+          - release: "10.4"
+            arch: riscv64
+          - release: "10.4"
+            arch: powerpc64
+          - release: "10.4"
+            arch: sparc64
+          - release: "10.4"
+            arch: ppc64le
+          - release: "10.4"
+            arch: s390x
+          - release: "10.4"
+            arch: i386
+          - release: "10.4"
+            arch: loongarch64
+          - release: "10.4"
+            arch: armv7
+          - release: "11.4"
+            arch: aarch64
+          - release: "11.4"
+            arch: riscv64
+          - release: "11.4"
+            arch: powerpc64
+          - release: "11.4"
+            arch: sparc64
+          - release: "11.4"
+            arch: ppc64le
+          - release: "11.4"
+            arch: s390x
+          - release: "11.4"
+            arch: i386
+          - release: "11.4"
+            arch: loongarch64
+          - release: "11.4"
+            arch: armv7
           - release: ""
             arch: sparc64
           - release: ""

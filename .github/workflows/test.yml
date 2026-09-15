@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1"
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
 , ""]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
@@ -210,6 +210,42 @@ jobs:
             arch: loongarch64
           - release: "15.1"
             arch: armv7
+          - release: "10.4"
+            arch: aarch64
+          - release: "10.4"
+            arch: riscv64
+          - release: "10.4"
+            arch: powerpc64
+          - release: "10.4"
+            arch: sparc64
+          - release: "10.4"
+            arch: ppc64le
+          - release: "10.4"
+            arch: s390x
+          - release: "10.4"
+            arch: i386
+          - release: "10.4"
+            arch: loongarch64
+          - release: "10.4"
+            arch: armv7
+          - release: "11.4"
+            arch: aarch64
+          - release: "11.4"
+            arch: riscv64
+          - release: "11.4"
+            arch: powerpc64
+          - release: "11.4"
+            arch: sparc64
+          - release: "11.4"
+            arch: ppc64le
+          - release: "11.4"
+            arch: s390x
+          - release: "11.4"
+            arch: i386
+          - release: "11.4"
+            arch: loongarch64
+          - release: "11.4"
+            arch: armv7
           - release: ""
             arch: sparc64
           - release: ""
@@ -288,7 +324,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -387,7 +423,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1"
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
 , ""]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
@@ -557,6 +593,42 @@ jobs:
             arch: loongarch64
           - release: "15.1"
             arch: armv7
+          - release: "10.4"
+            arch: aarch64
+          - release: "10.4"
+            arch: riscv64
+          - release: "10.4"
+            arch: powerpc64
+          - release: "10.4"
+            arch: sparc64
+          - release: "10.4"
+            arch: ppc64le
+          - release: "10.4"
+            arch: s390x
+          - release: "10.4"
+            arch: i386
+          - release: "10.4"
+            arch: loongarch64
+          - release: "10.4"
+            arch: armv7
+          - release: "11.4"
+            arch: aarch64
+          - release: "11.4"
+            arch: riscv64
+          - release: "11.4"
+            arch: powerpc64
+          - release: "11.4"
+            arch: sparc64
+          - release: "11.4"
+            arch: ppc64le
+          - release: "11.4"
+            arch: s390x
+          - release: "11.4"
+            arch: i386
+          - release: "11.4"
+            arch: loongarch64
+          - release: "11.4"
+            arch: armv7
           - release: ""
             arch: sparc64
           - release: ""
@@ -583,7 +655,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -683,7 +755,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1"
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
 , ""]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
@@ -853,6 +925,42 @@ jobs:
             arch: loongarch64
           - release: "15.1"
             arch: armv7
+          - release: "10.4"
+            arch: aarch64
+          - release: "10.4"
+            arch: riscv64
+          - release: "10.4"
+            arch: powerpc64
+          - release: "10.4"
+            arch: sparc64
+          - release: "10.4"
+            arch: ppc64le
+          - release: "10.4"
+            arch: s390x
+          - release: "10.4"
+            arch: i386
+          - release: "10.4"
+            arch: loongarch64
+          - release: "10.4"
+            arch: armv7
+          - release: "11.4"
+            arch: aarch64
+          - release: "11.4"
+            arch: riscv64
+          - release: "11.4"
+            arch: powerpc64
+          - release: "11.4"
+            arch: sparc64
+          - release: "11.4"
+            arch: ppc64le
+          - release: "11.4"
+            arch: s390x
+          - release: "11.4"
+            arch: i386
+          - release: "11.4"
+            arch: loongarch64
+          - release: "11.4"
+            arch: armv7
           - release: ""
             arch: sparc64
           - release: ""
@@ -886,7 +994,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -1023,7 +1131,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'tar') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         mem: 4096
         debug: true
@@ -1090,7 +1198,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', '9p') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         mem: 4096
         debug: true
@@ -1136,7 +1244,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1"
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
 , ""]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
@@ -1307,6 +1415,42 @@ jobs:
             arch: loongarch64
           - release: "15.1"
             arch: armv7
+          - release: "10.4"
+            arch: aarch64
+          - release: "10.4"
+            arch: riscv64
+          - release: "10.4"
+            arch: powerpc64
+          - release: "10.4"
+            arch: sparc64
+          - release: "10.4"
+            arch: ppc64le
+          - release: "10.4"
+            arch: s390x
+          - release: "10.4"
+            arch: i386
+          - release: "10.4"
+            arch: loongarch64
+          - release: "10.4"
+            arch: armv7
+          - release: "11.4"
+            arch: aarch64
+          - release: "11.4"
+            arch: riscv64
+          - release: "11.4"
+            arch: powerpc64
+          - release: "11.4"
+            arch: sparc64
+          - release: "11.4"
+            arch: ppc64le
+          - release: "11.4"
+            arch: s390x
+          - release: "11.4"
+            arch: i386
+          - release: "11.4"
+            arch: loongarch64
+          - release: "11.4"
+            arch: armv7
           - release: ""
             arch: sparc64
           - release: ""
@@ -1377,7 +1521,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1471,7 +1615,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1"
+        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
 , ""]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-24.04", "ubuntu-24.04-arm"]
@@ -1641,6 +1785,42 @@ jobs:
             arch: loongarch64
           - release: "15.1"
             arch: armv7
+          - release: "10.4"
+            arch: aarch64
+          - release: "10.4"
+            arch: riscv64
+          - release: "10.4"
+            arch: powerpc64
+          - release: "10.4"
+            arch: sparc64
+          - release: "10.4"
+            arch: ppc64le
+          - release: "10.4"
+            arch: s390x
+          - release: "10.4"
+            arch: i386
+          - release: "10.4"
+            arch: loongarch64
+          - release: "10.4"
+            arch: armv7
+          - release: "11.4"
+            arch: aarch64
+          - release: "11.4"
+            arch: riscv64
+          - release: "11.4"
+            arch: powerpc64
+          - release: "11.4"
+            arch: sparc64
+          - release: "11.4"
+            arch: ppc64le
+          - release: "11.4"
+            arch: s390x
+          - release: "11.4"
+            arch: i386
+          - release: "11.4"
+            arch: loongarch64
+          - release: "11.4"
+            arch: armv7
           - release: ""
             arch: sparc64
           - release: ""
@@ -1711,7 +1891,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1844,7 +2024,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         mem: 4096
         debug: true
@@ -1911,7 +2091,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         mem: 4096
         debug: true
@@ -1994,7 +2174,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         debug: true
         # A command that EXISTS and fails, rather than `false` or a made-up
@@ -2040,7 +2220,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@adefe39eb85cda6f163c55418ead13561f0a312a
+      uses: vmactions/freebsd-vm@112c19029bde758e5bb522eb1fa8a048ab580fb8
       with:
         debug: true
         # No `true` and no double quotes: this body runs on every guest, and
