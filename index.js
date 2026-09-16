@@ -853,6 +853,12 @@ async function main() {
     const cacheAfterPrepareInput = core.getInput("cache-after-prepare").toLowerCase() === 'true';
     let debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
     const vncPassword = core.getInput("vnc-password");
+    // Handed to anyvm.py as GITHUB_TOKEN so its GitHub API requests (the
+    // builder release list, used when the direct image URL probe fails) are
+    // authenticated. Unauthenticated api.github.com calls are limited per
+    // IP, and a hosted runner shares its IP with many other jobs; one
+    // exhausted limit surfaced as "Unsupported OS" (freebsd-vm#163).
+    const githubToken = core.getInput("token");
 
     const work = path.join(process.env["HOME"], "work");
     let vmwork = path.join(process.env["HOME"], "work");
@@ -1285,6 +1291,9 @@ async function main() {
         }
       }
     };
+    if (githubToken && !process.env.GITHUB_TOKEN) {
+      options.env = Object.assign({}, process.env, { GITHUB_TOKEN: githubToken });
+    }
     await exec.exec("python3", args, options);
     core.endGroup();
 

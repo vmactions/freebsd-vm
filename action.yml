@@ -70,6 +70,10 @@ inputs:
   custom-shell-name:
     description: 'Custom shell name for the VM shell wrapper script.'
     required: false
+  token:
+    description: 'GitHub token used for the GitHub API requests that locate the VM image. Defaults to the workflow token; unauthenticated requests share a small rate limit across all jobs on the same runner IP.'
+    required: false
+    default: ${{ github.token }}
 outputs:
   cache-after-prepare-hit:
     description: 'true when a prepared VM image cache was restored and the prepare step was skipped, false otherwise.'
