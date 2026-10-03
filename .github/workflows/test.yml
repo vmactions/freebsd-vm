@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
-, ""]
+ ]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-26.04", "ubuntu-26.04-arm"]
         exclude:
@@ -63,6 +63,11 @@ jobs:
             arch: "loongarch64"
           - runs: "ubuntu-26.04-arm"
             arch: "armv7"
+          # aarch64 on the x86 runner (TCG) is booted by the rsync matrix;
+          # the sync transport itself does not depend on TCG vs KVM, so
+          # these legs only repeat what the ubuntu-26.04-arm legs test.
+          - runs: "ubuntu-26.04"
+            arch: "aarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -246,18 +251,6 @@ jobs:
             arch: loongarch64
           - release: "11.4"
             arch: armv7
-          - release: ""
-            arch: sparc64
-          - release: ""
-            arch: ppc64le
-          - release: ""
-            arch: s390x
-          - release: ""
-            arch: i386
-          - release: ""
-            arch: loongarch64
-          - release: ""
-            arch: armv7
           - release: "13.2"
             arch: "riscv64"
           - release: "13.2"
@@ -300,8 +293,6 @@ jobs:
             arch: "powerpc64"
           - release: "15.1"
             arch: "powerpc64"
-          - release: ""
-            arch: "powerpc64"
 
 
     runs-on: ${{ matrix.runs }}
@@ -324,7 +315,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -424,7 +415,7 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
-, ""]
+ ]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-26.04", "ubuntu-26.04-arm"]
         exclude:
@@ -446,6 +437,11 @@ jobs:
             arch: "loongarch64"
           - runs: "ubuntu-26.04-arm"
             arch: "armv7"
+          # aarch64 on the x86 runner (TCG) is booted by the rsync matrix;
+          # the sync transport itself does not depend on TCG vs KVM, so
+          # these legs only repeat what the ubuntu-26.04-arm legs test.
+          - runs: "ubuntu-26.04"
+            arch: "aarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -629,18 +625,6 @@ jobs:
             arch: loongarch64
           - release: "11.4"
             arch: armv7
-          - release: ""
-            arch: sparc64
-          - release: ""
-            arch: ppc64le
-          - release: ""
-            arch: s390x
-          - release: ""
-            arch: i386
-          - release: ""
-            arch: loongarch64
-          - release: ""
-            arch: armv7
 
 
     runs-on: ${{ matrix.runs }}
@@ -655,7 +639,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -756,7 +740,7 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
-, ""]
+ ]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-26.04", "ubuntu-26.04-arm"]
         exclude:
@@ -778,6 +762,11 @@ jobs:
             arch: "loongarch64"
           - runs: "ubuntu-26.04-arm"
             arch: "armv7"
+          # aarch64 on the x86 runner (TCG) is booted by the rsync matrix;
+          # the sync transport itself does not depend on TCG vs KVM, so
+          # these legs only repeat what the ubuntu-26.04-arm legs test.
+          - runs: "ubuntu-26.04"
+            arch: "aarch64"
           # Manual matrix excludes only; combos with no conf are auto-excluded.
           - release: "13.2"
             arch: sparc64
@@ -961,18 +950,6 @@ jobs:
             arch: loongarch64
           - release: "11.4"
             arch: armv7
-          - release: ""
-            arch: sparc64
-          - release: ""
-            arch: ppc64le
-          - release: ""
-            arch: s390x
-          - release: ""
-            arch: i386
-          - release: ""
-            arch: loongarch64
-          - release: ""
-            arch: armv7
 
 
     runs-on: ${{ matrix.runs }}
@@ -994,7 +971,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -1131,7 +1108,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'tar') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         mem: 4096
         debug: true
@@ -1198,7 +1175,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', '9p') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         mem: 4096
         debug: true
@@ -1245,10 +1222,9 @@ jobs:
       fail-fast: false
       matrix:
         release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
-, ""]
+ ]
         arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
         runs: [ "ubuntu-26.04", "ubuntu-26.04-arm"]
-        disableCache: [ "", "true"]
         exclude:
           - runs: "ubuntu-26.04-arm"
             arch: ""
@@ -1451,18 +1427,6 @@ jobs:
             arch: loongarch64
           - release: "11.4"
             arch: armv7
-          - release: ""
-            arch: sparc64
-          - release: ""
-            arch: ppc64le
-          - release: ""
-            arch: s390x
-          - release: ""
-            arch: i386
-          - release: ""
-            arch: loongarch64
-          - release: ""
-            arch: armv7
           - release: "13.2"
             arch: "riscv64"
           - release: "13.2"
@@ -1505,8 +1469,6 @@ jobs:
             arch: "powerpc64"
           - release: "15.1"
             arch: "powerpc64"
-          - release: ""
-            arch: "powerpc64"
 
 
 
@@ -1521,7 +1483,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1536,7 +1498,6 @@ jobs:
           udp:"8081": "80"
         debug: true
         debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
-        disable-cache: ${{ matrix.disableCache }}
         run: |
           env
           echo "TEST_ENV=abc" >>${GITHUB_ENV}
@@ -1609,6 +1570,158 @@ jobs:
 
 
 
+  # disable-cache: true, once on the default release/arch. It used to be a
+  # second value in the matrix of the job above, which ran every release/arch
+  # leg twice; whether the cache is skipped does not depend on the release
+  # or arch, and every builder bump changes the cache key, so each image's
+  # download path is still exercised then.
+  testdisablecache:
+    if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'rsync') }}
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-26.04
+    name: disable-cache FreeBSD
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v7
+    - name: Test in FreeBSD
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
+      id: test
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
+      with:
+        prepare: |
+          
+        mem: 4096
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        disable-cache: true
+        run: |
+          pwd
+          #pkg install -y curl
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          uname -a
+          #sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
+
+    - name: Collect VM debug artifacts
+      if: failure()
+      run: |
+        mkdir -p ./vm-debug-artifacts
+        find /home/runner/work/_actions -type d -name output 2>/dev/null | while read d; do
+          find "$d" -type f \( -name "*.log" -o -name "*.ppm" \) | while read f; do
+            rel="${f#/home/runner/work/_actions/}"
+            mkdir -p "./vm-debug-artifacts/$(dirname "$rel")"
+            cp "$f" "./vm-debug-artifacts/$rel"
+          done
+        done
+        echo "Collected:"
+        find ./vm-debug-artifacts -type f || true
+    - name: Upload VM debug artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: vm-debug-${{ github.job }}-${{ strategy.job-index }}
+        path: vm-debug-artifacts/
+        retention-days: 7
+        if-no-files-found: ignore
+
+  # 'release' omitted, 'arch' set explicitly: one leg per arch the default
+  # release ships a conf for, with the default sync method. The sync
+  # matrices above only list test.releases, so this is where an omitted
+  # release is resolved to DEFAULT_RELEASE together with a given arch (the
+  # conf/<default>-<arch>.conf lookup). The arch list comes from the conf
+  # files at run time rather than from matrix excludes, so no leg is spawned
+  # for an arch the default release does not have. Keep ARCHES in sync with
+  # generate.tpl.yml, the arch matrices above and CONF_ARCHES in index.js.
+  defaultreleasearches:
+    runs-on: ubuntu-26.04
+    name: default release arches FreeBSD
+    outputs:
+      arches: ${{ steps.list.outputs.arches }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: |
+          conf
+        sparse-checkout-cone-mode: true
+    - name: List the arches of the default release
+      id: list
+      run: |
+        set -e
+        . conf/default.release.conf
+        ARCHES="aarch64 riscv64 powerpc64 sparc64 ppc64le s390x i386 loongarch64 armv7"
+        list=""
+        [ -e "conf/${DEFAULT_RELEASE}.conf" ] && list='"x86_64"'
+        for a in $ARCHES; do
+          if [ -e "conf/${DEFAULT_RELEASE}-${a}.conf" ]; then
+            list="${list:+$list,}\"$a\""
+          fi
+        done
+        echo "default release ${DEFAULT_RELEASE}: [${list}]"
+        echo "arches=[${list}]" >> "$GITHUB_OUTPUT"
+
+  testdefaultrelease:
+    needs: defaultreleasearches
+    if: ${{ needs.defaultreleasearches.outputs.arches != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ${{ fromJSON(needs.defaultreleasearches.outputs.arches) }}
+    # aarch64 on the arm runner (KVM); booting it under TCG on the x86 runner
+    # is covered by the rsync default matrix.
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-26.04-arm' || 'ubuntu-26.04' }}
+    name: default release FreeBSD
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    # This job runs on every guest, agent guests included, so it follows
+    # testpass: a sparse checkout (small push payload) and a bare echo that
+    # sh, rc, cmd.exe and ion all accept, with no prepare.
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: |
+          conf
+          .github
+        sparse-checkout-cone-mode: true
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
+      with:
+        arch: ${{ matrix.arch }}
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        run: |
+          echo this is a normal command
+    - name: Collect VM debug artifacts
+      if: failure()
+      run: |
+        mkdir -p ./vm-debug-artifacts
+        find /home/runner/work/_actions -type d -name output 2>/dev/null | while read d; do
+          find "$d" -type f \( -name "*.log" -o -name "*.ppm" \) | while read f; do
+            rel="${f#/home/runner/work/_actions/}"
+            mkdir -p "./vm-debug-artifacts/$(dirname "$rel")"
+            cp "$f" "./vm-debug-artifacts/$rel"
+          done
+        done
+        echo "Collected:"
+        find ./vm-debug-artifacts -type f || true
+    - name: Upload VM debug artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: vm-debug-${{ github.job }}-${{ strategy.job-index }}
+        path: vm-debug-artifacts/
+        retention-days: 7
+        if-no-files-found: ignore
+
   # Two-level sync gating -- see the comment above testsshfs.
   # Single job on the default release/arch: envs, nat and the custom shell
   # are action-side features, not per-release or per-arch ones, so a full
@@ -1628,7 +1741,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1759,7 +1872,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         mem: 4096
         debug: true
@@ -1826,7 +1939,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         mem: 4096
         debug: true
@@ -1911,7 +2024,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         mem: 4096
         debug: true
@@ -1977,7 +2090,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         mem: 4096
         debug: true
@@ -2056,7 +2169,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         debug: true
         # A command that EXISTS and fails, rather than `false` or a made-up
@@ -2102,7 +2215,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@6d69158878e0eb9cca48d8542c621bc8692760f5
+      uses: vmactions/freebsd-vm@c6d9b096aedae82f7bf19a48050512479ebc0bad
       with:
         debug: true
         # No `true` and no double quotes: this body runs on every guest, and
