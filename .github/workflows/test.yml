@@ -2149,6 +2149,153 @@ jobs:
         retention-days: 7
         if-no-files-found: ignore
 
+  # cache-after-prepare-key-suffix (optional): same seed/hit pair as above,
+  # but with a key suffix built from a hashFiles() expression, the documented
+  # way to tie the prepared image to a file that 'prepare' depends on. Kept
+  # separate so the pair above still shows that cache-after-prepare needs no
+  # key suffix.
+  # Chained after it for the same reason the pair above runs last: no
+  # concurrent cache saves while seed and hit run back to back.
+  testkeysuffix:
+    needs: testcacheafterpreparehit
+    if: ${{ !cancelled() }}
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-26.04
+    name: cache-after-prepare key-suffix seed FreeBSD
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v7
+    # hashFiles() returns an empty string when nothing matches; the key would
+    # then be a bare "test-" and the expression path would go untested.
+    - name: Check the key suffix hash
+      run: |
+        echo "hashFiles: ${{ hashFiles('.github/data/datafile.ini') }}"
+        [ -n "${{ hashFiles('.github/data/datafile.ini') }}" ]
+    - name: Test in FreeBSD
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
+      id: test
+      uses: vmactions/freebsd-vm@40859e13ca4d682e4a6521083d1fecdd459aac4c
+      with:
+        mem: 4096
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        cache-after-prepare: true
+        cache-after-prepare-key-suffix: test-${{ hashFiles('.github/data/datafile.ini') }}
+        prepare: |
+          
+          echo prepared >> "$HOME/.cache_after_prepare_count"
+        run: |
+          set -e
+          [ "$(grep -c prepared "$HOME/.cache_after_prepare_count")" -eq 1 ]
+          #pkg install -y curl
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          uname -a
+          #sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
+
+    - name: Collect VM debug artifacts
+      if: failure()
+      run: |
+        mkdir -p ./vm-debug-artifacts
+        find /home/runner/work/_actions -type d -name output 2>/dev/null | while read d; do
+          find "$d" -type f \( -name "*.log" -o -name "*.ppm" \) | while read f; do
+            rel="${f#/home/runner/work/_actions/}"
+            mkdir -p "./vm-debug-artifacts/$(dirname "$rel")"
+            cp "$f" "./vm-debug-artifacts/$rel"
+          done
+        done
+        echo "Collected:"
+        find ./vm-debug-artifacts -type f || true
+    - name: Upload VM debug artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: vm-debug-${{ github.job }}-${{ strategy.job-index }}
+        path: vm-debug-artifacts/
+        retention-days: 7
+        if-no-files-found: ignore
+
+  testkeysuffixhit:
+    needs: testkeysuffix
+    # Only the seed's own result matters (see testcacheafterpreparehit).
+    if: ${{ !cancelled() && needs.testkeysuffix.result == 'success' }}
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-26.04
+    name: cache-after-prepare key-suffix hit FreeBSD
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v7
+    # The inputs (notably 'prepare', 'cache-after-prepare-key-suffix' and the
+    # sync method) must be byte-identical to the seed job above: they all go
+    # into the key.
+    - name: Test in FreeBSD
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
+      id: test
+      uses: vmactions/freebsd-vm@40859e13ca4d682e4a6521083d1fecdd459aac4c
+      with:
+        mem: 4096
+        debug: true
+        debug-on-error: ${{ vars.DEBUG_ON_ERROR }}
+        cache-after-prepare: true
+        cache-after-prepare-key-suffix: test-${{ hashFiles('.github/data/datafile.ini') }}
+        prepare: |
+          
+          echo prepared >> "$HOME/.cache_after_prepare_count"
+        run: |
+          set -e
+          [ "$(grep -c prepared "$HOME/.cache_after_prepare_count")" -eq 1 ]
+          #pkg install -y curl
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+          uname -a
+          #sysctl hw.model
+          sysctl hw.ncpu
+          sysctl hw.physmem
+          sysctl hw.usermem
+
+
+    - name: Verify prepare was skipped
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
+      run: |
+        set -e
+        echo "cache-after-prepare-hit=${{ steps.test.outputs.cache-after-prepare-hit }}"
+        [ "${{ steps.test.outputs.cache-after-prepare-hit }}" = "true" ]
+    - name: Collect VM debug artifacts
+      if: failure()
+      run: |
+        mkdir -p ./vm-debug-artifacts
+        find /home/runner/work/_actions -type d -name output 2>/dev/null | while read d; do
+          find "$d" -type f \( -name "*.log" -o -name "*.ppm" \) | while read f; do
+            rel="${f#/home/runner/work/_actions/}"
+            mkdir -p "./vm-debug-artifacts/$(dirname "$rel")"
+            cp "$f" "./vm-debug-artifacts/$rel"
+          done
+        done
+        echo "Collected:"
+        find ./vm-debug-artifacts -type f || true
+    - name: Upload VM debug artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: vm-debug-${{ github.job }}-${{ strategy.job-index }}
+        path: vm-debug-artifacts/
+        retention-days: 7
+        if-no-files-found: ignore
+
   # Skipped on RISC OS: its guest agent is not a shell and has no status
   # channel at all, so anyvm can only report that a command COMPLETED, never
   # whether it succeeded. A test whose whole point is "this must come back

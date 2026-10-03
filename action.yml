@@ -59,6 +59,10 @@ inputs:
     description: 'Cache the VM image again after the prepare step, so later runs with the same prepare script skip it and start directly at run. Default is false.'
     required: false
     default: 'false'
+  cache-after-prepare-key-suffix:
+    description: 'Optional. Extra value appended to the cache-after-prepare cache key. Change it to discard the prepared VM image cache and run prepare again. Default is empty.'
+    required: false
+    default: ''
   debug-on-error:
     description: 'If true, enable remote VNC and you can connect to the VM via web VNC page to debug. Default is false.'
     required: false

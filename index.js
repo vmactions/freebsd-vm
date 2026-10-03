@@ -874,6 +874,7 @@ async function main() {
     const syncTime = core.getInput("sync-time").toLowerCase();
     const disableCache = core.getInput("disable-cache").toLowerCase() === 'true';
     const cacheAfterPrepareInput = core.getInput("cache-after-prepare").toLowerCase() === 'true';
+    const keySuffixInput = core.getInput("cache-after-prepare-key-suffix");
     let debugOnError = core.getInput("debug-on-error").toLowerCase() === 'true';
     const vncPassword = core.getInput("vnc-password");
     // Handed to anyvm.py as GITHUB_TOKEN so its GitHub API requests (the
@@ -1068,7 +1069,10 @@ async function main() {
     // cache-after-prepare: cache the qcow2 again after 'prepare' has run, so
     // the next run with the same prepare script boots the prepared image and
     // skips 'prepare' entirely. The key includes a hash of the prepare script
-    // and the sync method, so changing either falls back to the base image.
+    // and the sync method, plus the optional 'cache-after-prepare-key-suffix'
+    // value appended at the end, so changing any of them falls back to the
+    // base image (the suffix is how a user invalidates the cache by hand,
+    // vmactions/freebsd-vm#167).
     // Not usable on win32 hosts (the shutdown wait relies on pgrep/pkill).
     let cacheAfterPrepare = cacheAfterPrepareInput;
     if (cacheAfterPrepare && (!prepare || !cacheSupported || disableCache || process.platform === 'win32' || isTelnet)) {
@@ -1079,7 +1083,11 @@ async function main() {
     // Deliberately NOT a prefix-extension of cacheKey ("-prep-" replaces the
     // "-v3" tail position), so a prefix restore of the base key can never
     // match a prepared-image entry and vice versa.
-    const prepCacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-prep-${prepHash}-v3`;
+    let prepCacheKey = `${osName}-${release}-${builderVersion || 'default'}-${archForKey}-prep-${prepHash}-v3`;
+    // A non-empty key suffix is appended as-is; empty keeps the key unchanged.
+    if (keySuffixInput) {
+      prepCacheKey = `${prepCacheKey}-${keySuffixInput}`;
+    }
     let prepRestored = false;
 
     core.startGroup("Cache");
@@ -1103,7 +1111,11 @@ async function main() {
       if (cacheAfterPrepare) {
         try {
           const prepKeyHit = await cache.restoreCache([cacheDir], prepCacheKey);
-          if (prepKeyHit) {
+          // Only an exact key counts: with a key suffix appended, the key of
+          // a run without one is a prefix of the suffixed entry's key.
+          if (prepKeyHit && prepKeyHit !== prepCacheKey) {
+            core.info(`Ignoring prepared-image cache ${prepKeyHit}: not an exact match for ${prepCacheKey}`);
+          } else if (prepKeyHit) {
             prepRestored = true;
             // Also disables the base-image background save below: cacheDir
             // now holds the prepared image, not the pristine base image.
