@@ -476,7 +476,7 @@ function isSlowEmulatedArch(arch) {
 // identical push to almalinux x86_64 -- same rsync build, same XFS -- is clean.
 // Debian ppc64le is clean too, so it is this rsync build, not the architecture.
 function rsyncOmitsTimes(osName, arch) {
-  return arch === 'ppc64le' && (osName === 'almalinux' || osName === 'rocky');
+  return arch === 'ppc64le' && (osName === 'almalinux' || osName === 'rockylinux');
 }
 
 // ssh transport handed to rsync for slow emulated guests: stay connected
