@@ -324,7 +324,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -655,7 +655,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -994,7 +994,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -1131,7 +1131,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'tar') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         mem: 4096
         debug: true
@@ -1198,7 +1198,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', '9p') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         mem: 4096
         debug: true
@@ -1521,7 +1521,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1610,277 +1610,14 @@ jobs:
 
 
   # Two-level sync gating -- see the comment above testsshfs.
+  # Single job on the default release/arch: envs, nat and the custom shell
+  # are action-side features, not per-release or per-arch ones, so a full
+  # matrix only multiplied the runner time.
   testcustomshell:
     if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'rsync') }}
     strategy:
       fail-fast: false
-      matrix:
-        release: [ "13.2", "13.3", "13.4", "13.5", "14.0", "14.1", "14.2", "14.3", "14.4", "14.5", "15.0", "15.1", "10.4", "11.4"
-, ""]
-        arch: [ "aarch64", "", "riscv64", "powerpc64", "sparc64", "ppc64le", "s390x", "i386", "loongarch64", "armv7"]
-        runs: [ "ubuntu-26.04", "ubuntu-26.04-arm"]
-        exclude:
-          - runs: "ubuntu-26.04-arm"
-            arch: ""
-          - runs: "ubuntu-26.04-arm"
-            arch: "riscv64"
-          - runs: "ubuntu-26.04-arm"
-            arch: "powerpc64"
-          - runs: "ubuntu-26.04-arm"
-            arch: "sparc64"
-          - runs: "ubuntu-26.04-arm"
-            arch: "ppc64le"
-          - runs: "ubuntu-26.04-arm"
-            arch: "s390x"
-          - runs: "ubuntu-26.04-arm"
-            arch: "i386"
-          - runs: "ubuntu-26.04-arm"
-            arch: "loongarch64"
-          - runs: "ubuntu-26.04-arm"
-            arch: "armv7"
-          # Manual matrix excludes only; combos with no conf are auto-excluded.
-          - release: "13.2"
-            arch: sparc64
-          - release: "13.2"
-            arch: ppc64le
-          - release: "13.2"
-            arch: s390x
-          - release: "13.2"
-            arch: i386
-          - release: "13.2"
-            arch: loongarch64
-          - release: "13.2"
-            arch: armv7
-          - release: "13.3"
-            arch: sparc64
-          - release: "13.3"
-            arch: ppc64le
-          - release: "13.3"
-            arch: s390x
-          - release: "13.3"
-            arch: i386
-          - release: "13.3"
-            arch: loongarch64
-          - release: "13.3"
-            arch: armv7
-          - release: "13.4"
-            arch: riscv64
-          - release: "13.4"
-            arch: sparc64
-          - release: "13.4"
-            arch: ppc64le
-          - release: "13.4"
-            arch: s390x
-          - release: "13.4"
-            arch: i386
-          - release: "13.4"
-            arch: loongarch64
-          - release: "13.4"
-            arch: armv7
-          - release: "13.5"
-            arch: sparc64
-          - release: "13.5"
-            arch: ppc64le
-          - release: "13.5"
-            arch: s390x
-          - release: "13.5"
-            arch: i386
-          - release: "13.5"
-            arch: loongarch64
-          - release: "13.5"
-            arch: armv7
-          - release: "14.0"
-            arch: sparc64
-          - release: "14.0"
-            arch: ppc64le
-          - release: "14.0"
-            arch: s390x
-          - release: "14.0"
-            arch: i386
-          - release: "14.0"
-            arch: loongarch64
-          - release: "14.0"
-            arch: armv7
-          - release: "14.1"
-            arch: sparc64
-          - release: "14.1"
-            arch: ppc64le
-          - release: "14.1"
-            arch: s390x
-          - release: "14.1"
-            arch: i386
-          - release: "14.1"
-            arch: loongarch64
-          - release: "14.1"
-            arch: armv7
-          - release: "14.2"
-            arch: sparc64
-          - release: "14.2"
-            arch: ppc64le
-          - release: "14.2"
-            arch: s390x
-          - release: "14.2"
-            arch: i386
-          - release: "14.2"
-            arch: loongarch64
-          - release: "14.2"
-            arch: armv7
-          - release: "14.3"
-            arch: sparc64
-          - release: "14.3"
-            arch: ppc64le
-          - release: "14.3"
-            arch: s390x
-          - release: "14.3"
-            arch: i386
-          - release: "14.3"
-            arch: loongarch64
-          - release: "14.3"
-            arch: armv7
-          - release: "14.4"
-            arch: sparc64
-          - release: "14.4"
-            arch: ppc64le
-          - release: "14.4"
-            arch: s390x
-          - release: "14.4"
-            arch: i386
-          - release: "14.4"
-            arch: loongarch64
-          - release: "14.4"
-            arch: armv7
-          - release: "14.5"
-            arch: sparc64
-          - release: "14.5"
-            arch: ppc64le
-          - release: "14.5"
-            arch: s390x
-          - release: "14.5"
-            arch: i386
-          - release: "14.5"
-            arch: loongarch64
-          - release: "14.5"
-            arch: armv7
-          - release: "15.0"
-            arch: sparc64
-          - release: "15.0"
-            arch: ppc64le
-          - release: "15.0"
-            arch: s390x
-          - release: "15.0"
-            arch: i386
-          - release: "15.0"
-            arch: loongarch64
-          - release: "15.0"
-            arch: armv7
-          - release: "15.1"
-            arch: sparc64
-          - release: "15.1"
-            arch: ppc64le
-          - release: "15.1"
-            arch: s390x
-          - release: "15.1"
-            arch: i386
-          - release: "15.1"
-            arch: loongarch64
-          - release: "15.1"
-            arch: armv7
-          - release: "10.4"
-            arch: aarch64
-          - release: "10.4"
-            arch: riscv64
-          - release: "10.4"
-            arch: powerpc64
-          - release: "10.4"
-            arch: sparc64
-          - release: "10.4"
-            arch: ppc64le
-          - release: "10.4"
-            arch: s390x
-          - release: "10.4"
-            arch: i386
-          - release: "10.4"
-            arch: loongarch64
-          - release: "10.4"
-            arch: armv7
-          - release: "11.4"
-            arch: aarch64
-          - release: "11.4"
-            arch: riscv64
-          - release: "11.4"
-            arch: powerpc64
-          - release: "11.4"
-            arch: sparc64
-          - release: "11.4"
-            arch: ppc64le
-          - release: "11.4"
-            arch: s390x
-          - release: "11.4"
-            arch: i386
-          - release: "11.4"
-            arch: loongarch64
-          - release: "11.4"
-            arch: armv7
-          - release: ""
-            arch: sparc64
-          - release: ""
-            arch: ppc64le
-          - release: ""
-            arch: s390x
-          - release: ""
-            arch: i386
-          - release: ""
-            arch: loongarch64
-          - release: ""
-            arch: armv7
-          - release: "13.2"
-            arch: "riscv64"
-          - release: "13.2"
-            arch: "powerpc64"
-          - release: "13.3"
-            arch: "riscv64"
-          - release: "13.3"
-            arch: "powerpc64"
-          - release: "13.4"
-            arch: "powerpc64"
-          - release: "13.5"
-            arch: "riscv64"
-          - release: "13.5"
-            arch: "powerpc64"
-          - release: "14.0"
-            arch: "riscv64"
-          - release: "14.0"
-            arch: "powerpc64"
-          - release: "14.1"
-            arch: "riscv64"
-          - release: "14.1"
-            arch: "powerpc64"
-          - release: "14.2"
-            arch: "riscv64"
-          - release: "14.2"
-            arch: "powerpc64"
-          - release: "14.3"
-            arch: "riscv64"
-          - release: "14.3"
-            arch: "powerpc64"
-          - release: "14.4"
-            arch: "riscv64"
-          - release: "14.4"
-            arch: "powerpc64"
-          - release: "14.5"
-            arch: "riscv64"
-          - release: "14.5"
-            arch: "powerpc64"
-          - release: "15.0"
-            arch: "powerpc64"
-          - release: "15.1"
-            arch: "powerpc64"
-          - release: ""
-            arch: "powerpc64"
-
-
-
-    runs-on: ${{ matrix.runs }}
+    runs-on: ubuntu-26.04
     name: customshell FreeBSD
     env:
       MYTOKEN : ${{ secrets.MYTOKEN }}
@@ -1889,16 +1626,14 @@ jobs:
     steps:
     - uses: actions/checkout@v7
     - name: Test in FreeBSD
-      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
           
         mem: 4096
-        release: ${{ matrix.release }}
-        arch: ${{ matrix.arch }}
         nat: |
           "20022": "22"
           "8080": "80"
@@ -1924,7 +1659,7 @@ jobs:
 
 
     - name: Test NAT
-      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       env:
         VM_USER: ""
       run: |
@@ -1934,7 +1669,7 @@ jobs:
         ssh -v  -p 20022 ${VM_USER:-root}@localhost  "uname -a;whoami;pwd"
 
     - name: Test custom shell
-      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       shell: vmsh {0}
       run: |
         pwd
@@ -1957,17 +1692,17 @@ jobs:
     # its guest gets no GITHUB_WORKSPACE (SendEnv excluded), so the custom
     # shell does not run in the synced work tree.
     - name: Prepare custom shell sync test file on host
-      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') && !contains(github.repository, 'haiku') }}
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') && !contains(github.repository, 'haiku') }}
       run: |
         echo "host-data" > hostfile.txt
     - name: Test custom shell file sync
-      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') && !contains(github.repository, 'haiku') }}
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') && !contains(github.repository, 'haiku') }}
       shell: vmsh {0}
       run: |
         [ "$(cat hostfile.txt)" = "host-data" ]
         echo "vm-data" > vmfile.txt
     - name: Verify custom shell copyback on host
-      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') && !contains(github.repository, 'haiku') }}
+      if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') && !contains(github.repository, 'haiku') }}
       run: |
         set -e
         [ "$(cat vmfile.txt)" = "vm-data" ]
@@ -2024,7 +1759,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         mem: 4096
         debug: true
@@ -2091,7 +1826,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         mem: 4096
         debug: true
@@ -2176,7 +1911,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         mem: 4096
         debug: true
@@ -2242,7 +1977,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         mem: 4096
         debug: true
@@ -2321,7 +2056,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         debug: true
         # A command that EXISTS and fails, rather than `false` or a made-up
@@ -2367,7 +2102,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@6f0e5ed0f380470e94e62ec8b1733beec412bb89
+      uses: vmactions/freebsd-vm@6f16425165df853ea028efa4306b103a535ec74b
       with:
         debug: true
         # No `true` and no double quotes: this body runs on every guest, and
