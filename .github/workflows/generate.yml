@@ -208,11 +208,13 @@ jobs:
           printf '%s}' "$map" > .github/data/sync-map.json
           echo "sync-map: $(cat .github/data/sync-map.json)"
 
+          # The sync matrices in test.yml list test.releases only (no "" for
+          # the omitted release; that case has its own job, testdefaultrelease),
+          # so only those releases need excludes.
           : > .github/data/exclude-missing.txt
-          for r in $(sed 's/[",]/ /g' conf/test.releases) ""; do
-            rc="$r"; [ -z "$rc" ] && rc="$def"
+          for r in $(sed 's/[",]/ /g' conf/test.releases); do
             for a in $ARCHES; do
-              if [ ! -e "conf/${rc}-${a}.conf" ]; then
+              if [ ! -e "conf/${r}-${a}.conf" ]; then
                 printf '          - release: "%s"\n            arch: %s\n' "$r" "$a" >> .github/data/exclude-missing.txt
               fi
             done
@@ -246,11 +248,10 @@ jobs:
           for meth in $SYNC_JOB_METHODS; do
             : > ".github/data/exclude-${meth}.txt"
           done
-          for r in $(sed 's/[",]/ /g' conf/test.releases) ""; do
-            rc="$r"; [ -z "$rc" ] && rc="$def"
+          for r in $(sed 's/[",]/ /g' conf/test.releases); do
             for a in "" $ARCHES; do
-              if [ -n "$a" ] && [ ! -e "conf/${rc}-${a}.conf" ]; then continue; fi
-              have=",$(methods_for_rel "$rc" "$a" | tr -d ' '),"
+              if [ -n "$a" ] && [ ! -e "conf/${r}-${a}.conf" ]; then continue; fi
+              have=",$(methods_for_rel "$r" "$a" | tr -d ' '),"
               for meth in $SYNC_JOB_METHODS; do
                 case "$have" in
                   *",${meth},"*) ;;
