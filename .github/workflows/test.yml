@@ -315,7 +315,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'sshfs') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -639,7 +639,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'nfs') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -708,6 +708,57 @@ jobs:
           sysctl hw.usermem
 
 
+    # A non-root guest account must be able to write the nfs share too: CI
+    # builds often run as an unprivileged user (`useradd test; su test -c
+    # make`), and its uid rarely matches the runner's. anyvm >= 0.7.4
+    # squashes every guest uid to the runner user; before that only a uid
+    # equal to the runner's (FreeBSD's first `pw useradd` gets 1001) could
+    # write, and Solaris's 1000 got EACCES (vmactions/solaris-vm#70).
+    # uid 4321 is chosen to match nothing. x86_64 leg only. Skipped: hurd
+    # (guest root stays unsquashed -- /hurd/nfs chowns new files to 0),
+    # haiku (single-user, no useradd) and dragonflybsd (its client checks
+    # the parent directory's mode bits locally, before any request reaches
+    # the server, so no server setting can let a non-owner write a 0755
+    # share).
+    - name: Non-root write
+      if: ${{ matrix.arch == '' && contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'nfs') && !contains(github.repository, 'hurd') && !contains(github.repository, 'haiku') && !contains(github.repository, 'dragonflybsd') }}
+      shell: freebsd {0}
+      run: |
+        set -e
+        mnt="$(pwd)"
+        [ "$mnt" = "$GITHUB_WORKSPACE" ]
+        u=vmnfsuser
+        if ! id "$u" >/dev/null 2>&1; then
+          if command -v pw >/dev/null 2>&1; then
+            pw useradd "$u" -u 4321 -d /nonexistent -s /bin/sh
+          elif command -v useradd >/dev/null 2>&1; then
+            useradd -u 4321 -d /nonexistent -s /bin/sh "$u"
+          else
+            adduser -D -H -u 4321 -h /nonexistent -s /bin/sh "$u"
+          fi
+        fi
+        id "$u"
+        su "$u" -c "cd '$mnt' && mkdir nonroot.dir && echo x > nonroot.dir/f && echo y >> nonroot.dir/f && mv nonroot.dir/f nonroot.dir/g && cat nonroot.dir/g"
+    - name: Non-root write (host side)
+      if: ${{ matrix.arch == '' && contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'nfs') && !contains(github.repository, 'hurd') && !contains(github.repository, 'haiku') && !contains(github.repository, 'dragonflybsd') }}
+      run: |
+        set -e
+        f="$GITHUB_WORKSPACE/nonroot.dir/g"
+        # A live mount may still be flushing right after the guest returns.
+        for attempt in 1 2 3 4 5; do
+          if [ "$(cat "$f" 2>/dev/null)" = "$(printf 'x\ny')" ]; then
+            break
+          fi
+          if [ "$attempt" -eq 5 ]; then
+            echo "host does not see the non-root user's file content"
+            ls -lan "$GITHUB_WORKSPACE/nonroot.dir" || true
+            exit 1
+          fi
+          sleep 3
+        done
+        owner=$(stat -c %u "$f")
+        echo "host owner: $owner (runner uid $(id -u))"
+        [ "$owner" = "$(id -u)" ]
     - name: Collect VM debug artifacts
       if: failure()
       run: |
@@ -971,7 +1022,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'scp') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         envs: 'DEBUG MYTOKEN MYTOKEN2'
         prepare: |
@@ -1108,7 +1159,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', 'tar') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         mem: 4096
         debug: true
@@ -1175,7 +1226,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}', '9p') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         mem: 4096
         debug: true
@@ -1483,7 +1534,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')[matrix.arch == '' && 'x86_64' || matrix.arch], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1588,7 +1639,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         prepare: |
           
@@ -1693,7 +1744,7 @@ jobs:
         sparse-checkout-cone-mode: true
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         arch: ${{ matrix.arch }}
         debug: true
@@ -1741,7 +1792,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         envs: 'MYTOKEN MYTOKEN2'
         prepare: |
@@ -1872,7 +1923,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         mem: 4096
         debug: true
@@ -1939,7 +1990,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         mem: 4096
         debug: true
@@ -2024,7 +2075,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         mem: 4096
         debug: true
@@ -2090,7 +2141,7 @@ jobs:
     - name: Test in FreeBSD
       if: ${{ contains(fromJSON('{"x86_64":["rsync","scp","sshfs","nfs","tar"],"aarch64":["rsync","scp","sshfs","nfs","tar"],"riscv64":["rsync","scp","sshfs","nfs","tar"],"powerpc64":["nfs","scp","tar"],"sparc64":[],"ppc64le":[],"s390x":[],"i386":[],"loongarch64":[],"armv7":[]}')['x86_64'], 'rsync') }}
       id: test
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         mem: 4096
         debug: true
@@ -2169,7 +2220,7 @@ jobs:
     - name: Test in FreeBSD
       id: testerr
       continue-on-error: true
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         debug: true
         # A command that EXISTS and fails, rather than `false` or a made-up
@@ -2215,7 +2266,7 @@ jobs:
     - name: Test in FreeBSD
       id: testpass
       continue-on-error: true
-      uses: vmactions/freebsd-vm@14ff47bfaade4a0d0c64bca8f4ee76ea9eb8932b
+      uses: vmactions/freebsd-vm@d800eb013575a88d2248a6a9bf5d018eb08b3357
       with:
         debug: true
         # No `true` and no double quotes: this body runs on every guest, and
