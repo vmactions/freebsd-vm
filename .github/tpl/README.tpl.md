@@ -101,7 +101,7 @@ The `prepare` and `run` scripts are always executed with `sh` in the VM, whateve
 
 ## 2. Share code
 
-The code is shared from the host to the VM via `rsync` by default, you can choose to use `sshfs` or `nfs` or `scp` to share code instead.
+The code is shared from the host to the VM via the first sync method listed for your release and architecture in the table above (`rsync` for most of them), you can choose to use `sshfs` or `nfs` or `scp` to share code instead.
 
 
 ```yaml
@@ -142,6 +142,9 @@ When using a copy based sync method (`rsync`, `scp`, `tar` or `9p`), you can def
 
 
 ```
+
+
+With `sync: nfs` the workspace is a mount of the runner's directory, and every user in the VM, root included, is mapped to the runner's user on the host (GNU Hurd excepted). So `chown` / `chgrp` on files in the workspace fail with `Operation not permitted`, and so does `tar -x` as root on an archive that stores another owner (e.g. `uid 0`), because it tries to restore that owner. Use a copy based method (`rsync`, `scp` or `tar`), which puts the files on the VM's own disk, or extract with `tar --no-same-owner`.
 
 
 {{VM_SYNC_COMMENTS}}
