@@ -225,9 +225,9 @@ When using a copy based sync method (`rsync`, `scp`, `tar` or `9p`), you can def
 
 
 
-Becareful: 
+Note:
 
-If you use `arch: riscv64`, you can only use `sync: scp` for now.
+Where the table above lists `nfs` first (every `powerpc64` release, for example, whose image ships no `rsync`), the workspace is an `nfs` mount by default, with the `chown` / `chgrp` limits described above. Set `sync: scp` or `sync: tar` to get a copy on the VM's own disk instead.
 
 
 
