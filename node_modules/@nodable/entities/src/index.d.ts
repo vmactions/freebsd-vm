@@ -285,7 +285,7 @@ export interface EntityDecoderOptions {
 }
 
 // ---------------------------------------------------------------------------
-// EntityDecoder class (default export)
+// EntityDecoder class
 // ---------------------------------------------------------------------------
 
 /**
@@ -310,7 +310,7 @@ export interface EntityDecoderOptions {
  *
  * decoder.reset(); // clears input entities + counters, keeps external entities
  */
-export default class EntityDecoder {
+export class EntityDecoder {
   constructor(options?: EntityDecoderOptions);
 
   setExternalEntities(
@@ -329,6 +329,9 @@ export default class EntityDecoder {
   ): void;
 
   reset(): this;
+
+  /** Update the XML version used for NCR classification, once the document's `<?xml version="...">` declaration is parsed. */
+  setXmlVersion(version: number): void;
 
   decode(str: string): string;
 }
