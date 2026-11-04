@@ -730,7 +730,11 @@ jobs:
         u=vmnfsuser
         if ! id "$u" >/dev/null 2>&1; then
           if command -v pw >/dev/null 2>&1; then
-            pw useradd "$u" -u 4321 -d /nonexistent -s /bin/sh
+            # NextBSD's pw keeps accounts in its directory service and
+            # rejects -d: "a directory account's home is always
+            # /Local/Users/<name>".
+            pw useradd "$u" -u 4321 -d /nonexistent -s /bin/sh ||
+              pw useradd "$u" -u 4321 -s /bin/sh
           elif command -v useradd >/dev/null 2>&1; then
             useradd -u 4321 -d /nonexistent -s /bin/sh "$u"
           else
