@@ -66,8 +66,9 @@ jobs:
 
       # A nightly bot nobody reads is not a bot. A failure here means the
       # builder cut a tag the bump refuses (no releases.json, missing
-      # image, mixed local pins) -- that needs a human, and main is left
-      # untouched, so there is no other visible signal. One issue per
+      # image / profile / microvm kernel, mixed local pins) -- that needs
+      # a human, and main is left untouched, so there is no other
+      # visible signal. One issue per
       # repo, reused by exact title, never re-posted while open.
       - name: Report a broken bump
         if: failure()
@@ -89,10 +90,12 @@ jobs:
             echo "Run: ${RUN_URL}"
             echo
             echo "Likely causes: the new builder release has no"
-            echo "releases.json asset or is missing an image (tag cut"
-            echo "before the build finished?), or the local confs have"
-            echo "mixed BUILDER_VERSION values from a half-finished hand"
-            echo "edit. The run log names the exact one."
+            echo "releases.json asset or is missing an image, its"
+            echo "profile.json, or the kernel a microvm profile names"
+            echo "(tag cut before the build finished, or never"
+            echo "published?), or the local confs have mixed"
+            echo "BUILDER_VERSION values from a half-finished hand edit."
+            echo "The run log names the exact one."
             echo
             echo "This issue is not re-posted while it stays open. Close"
             echo "it once the bump succeeds to re-arm the report."
