@@ -180,3 +180,31 @@
             arch: loongarch64
           - release: "11.4"
             arch: armv7
+          - release: "15.0-zfs"
+            arch: powerpc64
+          - release: "15.0-zfs"
+            arch: sparc64
+          - release: "15.0-zfs"
+            arch: ppc64le
+          - release: "15.0-zfs"
+            arch: s390x
+          - release: "15.0-zfs"
+            arch: i386
+          - release: "15.0-zfs"
+            arch: loongarch64
+          - release: "15.0-zfs"
+            arch: armv7
+          - release: "15.1-zfs"
+            arch: powerpc64
+          - release: "15.1-zfs"
+            arch: sparc64
+          - release: "15.1-zfs"
+            arch: ppc64le
+          - release: "15.1-zfs"
+            arch: s390x
+          - release: "15.1-zfs"
+            arch: i386
+          - release: "15.1-zfs"
+            arch: loongarch64
+          - release: "15.1-zfs"
+            arch: armv7
