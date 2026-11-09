@@ -39,7 +39,9 @@ All the supported releases are here:
 | Release | x86_64 | aarch64(arm64) | riscv64 | powerpc64 |
 |---------|---------|---------|---------|---------|
 | 15.1 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) |
+| 15.1-zfs | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | —[^ppc-zfs] |
 | 15.0 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) |
+| 15.0-zfs | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | —[^ppc-zfs] |
 | 14.5 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
 | 14.4 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
 | 14.3 | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (rsync,scp,sshfs,nfs,tar) | ✅ (nfs,scp,tar) | ✅ (nfs,scp,tar) |
@@ -58,6 +60,8 @@ All the supported releases are here:
 <!-- absent: 13.4-riscv64 rv-stub -->
 <!-- absent: 12.4-riscv64 rv-none -->
 <!-- absent: 12.4-powerpc64 ppc-panic -->
+<!-- absent: 15.0-zfs-powerpc64 ppc-zfs -->
+<!-- absent: 15.1-zfs-powerpc64 ppc-zfs -->
 <!-- desktop-header: FreeBSD desktop images (x86_64): -->
 
 <!-- shelved: 16.0 -->
@@ -65,6 +69,15 @@ All the supported releases are here:
 [^rv-none]: riscv64 first became a FreeBSD release architecture in 13.0, so there is no 12.4 riscv64 image to build.
 [^rv-stub]: The upstream 13.4 riscv64 `qcow2.xz` on the FreeBSD archive mirror is a broken 32-byte stub rather than a real disk image, so this target cannot be built.
 [^ppc-panic]: FreeBSD 12.x powerpc64 panics in early boot under QEMU pseries -- its PAPR hash-MMU backend hard-requires 16 MiB large pages, which QEMU advertises only when guest RAM is backed by host huge pages. Reworked in FreeBSD 13.0, so 13.2+ powerpc64 build fine; 12.4 (EOL) is dropped.
+[^ppc-zfs]: FreeBSD publishes no powerpc64 VM image, and the powerpc64 images here are installed from the ISO with bsdinstall's default UFS layout, so there is no ZFS-root powerpc64 image.
+
+> **Note:** Every image in the table above has a UFS root, 15.x included
+> (built from upstream's `-ufs` VM images), except the `-zfs` releases
+> (`15.0-zfs`, `15.1-zfs`, ...): those are the same 15.x images built from
+> upstream's `-zfs` VM images, for a ZFS root. The 15.x desktop images
+> (`-xfce`, `-gnome`, `-kde6`) are built from the `-zfs` images too. No
+> image with a UFS root loads `zfs.ko` at boot; `zpool` and `zfs` load it
+> on first use.
 
 > **Note:** The 15.x riscv64 images install their packages from
 > [anyvm-org/freebsd-pkg-repo](https://github.com/anyvm-org/freebsd-pkg-repo),
