@@ -1,6 +1,6 @@
 {
   "name": "is-unsafe",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Zero-dependency, DOM-free, pure predicate for detecting unsafe strings across HTML, XML, SVG, SQL, SHELL, and REGEX contexts",
   "type": "module",
   "main": "./src/index.js",

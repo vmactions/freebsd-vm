@@ -23,7 +23,15 @@ export interface Rule {
  * whyUnsafe('danger', MY_RULES); // → { context: 'MY_CONTEXT', ... }
  * ```
  */
-export type PatternList = Rule[] & { label?: string };
+export type PatternList = Rule[] & {
+  label?: string;
+  /**
+   * When `true`, each rule is tested against the raw input AND a copy with
+   * HTML character references decoded (numeric, hex, &colon;, &Tab;, &NewLine;).
+   * Set on HTML, XML and SVG. Leave unset for non-markup contexts.
+   */
+  decodeEntities?: boolean;
+};
 
 /**
  * Valid context argument:

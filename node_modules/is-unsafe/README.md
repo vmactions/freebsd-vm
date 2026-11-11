@@ -41,6 +41,15 @@ When `@nodable/entities` resolves `&xss;`, it produces a raw string containing `
 npm install is-unsafe
 ```
 
+> **Always check the final string.** If your code builds a value by concatenating parts, call `isUnsafe` on the *result*, not on the pieces. Two harmless strings can become unsafe only once joined:
+>
+> ```js
+> const a = 'java', b = 'script&#58;alert(1)';
+> isUnsafe(a, HTML);      // false
+> isUnsafe(b, HTML);      // false
+> isUnsafe(a + b, HTML);  // true  ← check this one
+> ```
+
 ---
 
 ## Quick start
@@ -175,7 +184,27 @@ const result = whyUnsafe('https://api.internal/admin', INTERNAL_RULES);
 
 Without setting `.label`, `MatchResult.context` will be `'CUSTOM'`.
 
+#### Entity decoding (v2.0.3+)
+
+The built-in `HTML`, `XML` and `SVG` contexts test each rule against both the raw string and an entity-decoded copy, because browsers decode character references (`&#58;`, `&#x3a;`, `&colon;`, `&Tab;`, `&NewLine;`) before interpreting a URL.
+
+A custom `PatternList` does **not** do this by default. Set `decodeEntities` to opt in:
+
+```js
+const INTERNAL_RULES = [
+  { id: 'no-js-url', description: 'Blocks javascript: URLs', pattern: /javascript:/i },
+];
+
+isUnsafe('javascript&#58;alert(1)', INTERNAL_RULES);   // false (raw match only)
+
+INTERNAL_RULES.decodeEntities = true;
+isUnsafe('javascript&#58;alert(1)', INTERNAL_RULES);   // true  (decoded copy also tested)
+```
+
+Enable it only for markup contexts. Leave it off for SQL, shell, log and similar rules, which should match the string exactly as supplied.
 ---
+
+
 
 ### `VALID_CONTEXTS`
 
@@ -214,7 +243,7 @@ XSS vectors when a string is rendered as HTML:
 | `html-data-svg` | `data:image/svg+xml` URI |
 | `html-inline-event-handler` | `onclick=`, `onerror=`, `onload=`, etc. |
 | `html-entity-obfuscated-script` | `&#x3C;script`, `&#60;script`, `&lt;script` |
-| `html-entity-obfuscated-javascript` | Hex/decimal entity encoding of `javascript:` |
+| `html-entity-obfuscated-javascript` | Entity-encoded leading letters of `javascript:` (colon/letter/tab encodings are also caught — see *Entity decoding* below) |
 | `html-style-expression` | CSS `expression()` — IE code execution |
 | `html-object-embed` | `<object>` and `<embed>` tags |
 | `html-base-tag` | `<base href=` — relative URL hijacking |
@@ -222,6 +251,10 @@ XSS vectors when a string is rendered as HTML:
 | `html-srcdoc` | `srcdoc=` attribute on iframes |
 | `html-iframe` | `<iframe` tag |
 | `html-form` | `<form` tag — phishing injection |
+
+---
+
+**Entity decoding (HTML, XML, SVG).** Browsers decode character references before interpreting a URL, so `javascript&#58;alert(1)` is a `javascript:` URL. These three contexts therefore test every rule against the raw input **and** an entity-decoded copy. Decoded forms: decimal/hex numeric references (any leading zeros, semicolon optional), `&colon;`, `&Tab;`, `&NewLine;`. Named references are case-sensitive and need `;`. `&amp;` is intentionally not decoded (double-encoded text renders as text). Other contexts (SQL, SHELL, LOG, …) are matched byte-for-byte.
 
 ---
 
