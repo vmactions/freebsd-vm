@@ -27,7 +27,7 @@ jobs:
           echo "DEFAULT_RELEASE=$DEFAULT_RELEASE" >> $GITHUB_ENV
           echo "ALL_RELEASES=\"$(ls conf/ | grep -v default | sed 's/.conf//g' | tr '\n' ',' | sed "s/,\$//" | sed 's/,/", "/g')\"" >> $GITHUB_ENV
 
-          git clone https://github.com/vmactions/base-vm.git
+          git clone https://github.com/${{ github.repository_owner }}/base-vm.git
 
       - name: Sync generate.yml
         uses: anyvm-org/template-render@v0.0.4
