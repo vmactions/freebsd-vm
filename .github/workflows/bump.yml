@@ -33,7 +33,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           git switch main || (git fetch --all && git checkout -b main origin/main)
-          git clone https://github.com/vmactions/base-vm.git
+          git clone https://github.com/${{ github.repository_owner }}/base-vm.git
           python3 base-vm/bump.py
 
       - name: Commit and push changes
